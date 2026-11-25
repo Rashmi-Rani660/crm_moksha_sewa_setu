@@ -22,4 +22,5 @@ export const authConfig = {
   otpLength: 6,
   otpResendSeconds: 30,
   minPasswordLength: 6,
+  maxPasswordLength: 20,
 } as const;

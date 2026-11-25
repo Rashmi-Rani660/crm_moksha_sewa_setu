@@ -17,7 +17,11 @@ import {
 } from "@/components/ui/icons";
 import { clearFlash, setFlash } from "@/lib/auth/session";
 import { authConfig } from "@/lib/config/site";
-import { isValidMobile, validatePasswordReset } from "@/lib/validation";
+import {
+  isValidMobile,
+  sanitizePasswordInput,
+  validatePasswordReset,
+} from "@/lib/validation";
 
 const fieldClass =
   "h-[44px] w-full rounded-lg border-[1.5px] border-[#c6ccd9] bg-white pl-[48px] pr-3 text-[15px] font-medium text-navy-ink shadow-[0_1px_3px_rgba(20,40,100,0.12)] outline-none transition placeholder:text-muted focus:border-navy focus:ring-2 focus:ring-navy/15 lg:h-[44px] lg:pl-[55px] lg:text-[13.6px]";
@@ -52,9 +56,20 @@ function PasswordField({
 }) {
   return (
     <div>
-      <label htmlFor={id} className={compactLabelClass}>
-        {label}
-      </label>
+      <div className="mb-1.5 flex items-center justify-between lg:mb-[3px]">
+        <label htmlFor={id} className={`${compactLabelClass} mb-0 lg:mb-0`}>
+          {label}
+        </label>
+        <span
+          className={`text-[11.5px] font-medium ${
+            value.length >= authConfig.maxPasswordLength
+              ? "font-semibold text-[#c0262d]"
+              : "text-muted"
+          }`}
+        >
+          {value.length}/{authConfig.maxPasswordLength}
+        </span>
+      </div>
       <div className="relative">
         <LockIcon className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-navy-ink" />
         <input
@@ -62,9 +77,11 @@ function PasswordField({
           name={id}
           type={show ? "text" : "password"}
           autoComplete="new-password"
+          minLength={authConfig.minPasswordLength}
+          maxLength={authConfig.maxPasswordLength}
           placeholder={placeholder}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => onChange(sanitizePasswordInput(e.target.value))}
           className={compactFieldClass}
         />
         <button
@@ -330,7 +347,7 @@ export default function ForgotPasswordForm() {
             <PasswordField
               id="new-password"
               label="New Password"
-              placeholder={`Minimum ${authConfig.minPasswordLength} characters`}
+              placeholder={`${authConfig.minPasswordLength}–${authConfig.maxPasswordLength} characters`}
               value={password}
               show={showPassword}
               onChange={setPassword}

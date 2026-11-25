@@ -16,7 +16,11 @@ import {
 } from "@/components/ui/icons";
 import { authConfig } from "@/lib/config/site";
 import { clearFlash, startVerification, useFlash } from "@/lib/auth/session";
-import { isValidMobile, validateLogin } from "@/lib/validation";
+import {
+  isValidMobile,
+  sanitizePasswordInput,
+  validateLogin,
+} from "@/lib/validation";
 
 const fieldClass =
   "h-[42px] w-full rounded-lg border-[1.5px] border-[#c6ccd9] bg-white pl-[48px] pr-3 text-[15px] font-medium text-navy-ink shadow-[0_1px_3px_rgba(20,40,100,0.12)] outline-none transition placeholder:text-muted focus:border-navy focus:ring-2 focus:ring-navy/15 lg:h-[35px] lg:pl-[55px] lg:text-[13.6px]";
@@ -135,9 +139,20 @@ export default function LoginForm() {
 
         {/* Password */}
         <div className="mt-4 lg:mt-[15px]">
-          <label htmlFor="password" className={labelClass}>
-            Password
-          </label>
+          <div className="mb-1.5 flex items-center justify-between lg:mb-[3px]">
+            <label htmlFor="password" className={`${labelClass} mb-0 lg:mb-0`}>
+              Password
+            </label>
+            <span
+              className={`text-[11.5px] font-medium ${
+                password.length >= authConfig.maxPasswordLength
+                  ? "font-semibold text-[#c0262d]"
+                  : "text-muted"
+              }`}
+            >
+              {password.length}/{authConfig.maxPasswordLength}
+            </span>
+          </div>
           <div className="relative">
             <LockIcon className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-navy-ink" />
             <input
@@ -145,9 +160,14 @@ export default function LoginForm() {
               name="password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
-              placeholder="Enter password"
+              minLength={authConfig.minPasswordLength}
+              maxLength={authConfig.maxPasswordLength}
+              placeholder={`Enter password (max ${authConfig.maxPasswordLength} chars)`}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(sanitizePasswordInput(e.target.value));
+                if (error) setError("");
+              }}
               className={`${fieldClass} pr-11`}
             />
             <button

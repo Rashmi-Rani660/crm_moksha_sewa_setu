@@ -5,6 +5,10 @@ export const MOBILE_PATTERN = /^[6-9]\d{9}$/;
 
 export const isValidMobile = (value: string) => MOBILE_PATTERN.test(value);
 
+/** Strip whitespace and enforce max password length on input. */
+export const sanitizePasswordInput = (value: string) =>
+  value.replace(/\s/g, "").slice(0, authConfig.maxPasswordLength);
+
 export type LoginValues = {
   mobile: string;
   password: string;
@@ -14,8 +18,11 @@ export type LoginValues = {
 /** Returns the first validation error, or `null` when the values are valid. */
 export function validateLogin({ mobile, password, otp }: LoginValues) {
   if (!isValidMobile(mobile)) return "Enter a valid 10-digit mobile number.";
+  if (!password) return "Enter your password.";
   if (password.length < authConfig.minPasswordLength)
-    return "Enter your password.";
+    return `Password must be at least ${authConfig.minPasswordLength} characters.`;
+  if (password.length > authConfig.maxPasswordLength)
+    return `Password must not exceed ${authConfig.maxPasswordLength} characters.`;
   if (otp.length !== authConfig.otpLength)
     return `Enter the ${authConfig.otpLength}-digit OTP sent to your mobile.`;
   return null;
@@ -40,6 +47,8 @@ export function validatePasswordReset({
     return `Enter the ${authConfig.otpLength}-digit OTP sent to your mobile.`;
   if (password.length < authConfig.minPasswordLength)
     return `Password must be at least ${authConfig.minPasswordLength} characters.`;
+  if (password.length > authConfig.maxPasswordLength)
+    return `Password must not exceed ${authConfig.maxPasswordLength} characters.`;
   if (password !== confirmPassword) return "Passwords do not match.";
   return null;
 }
