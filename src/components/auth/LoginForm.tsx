@@ -151,6 +151,7 @@ export default function LoginForm() {
               name="password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
+              maxLength={authConfig.maxPasswordLength}
               placeholder="Enter password"
               value={password}
               onChange={(e) => {

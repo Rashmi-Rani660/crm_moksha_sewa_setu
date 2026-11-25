@@ -68,6 +68,7 @@ function PasswordField({
           name={id}
           type={show ? "text" : "password"}
           autoComplete="new-password"
+          maxLength={authConfig.maxPasswordLength}
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(sanitizePasswordInput(e.target.value))}

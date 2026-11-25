@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
+import { usePopover } from "@/components/dashboard/usePopover";
 import {
   CalendarIcon,
   CheckIcon,
@@ -47,57 +48,8 @@ function Dropdown({
   ariaLabel: string;
   children: ReactNode;
 }) {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
-  // Callers pass a fresh `setOpen` each render; keep the latest in a ref so
-  // the effect below only runs when the panel opens or closes.
-  const setOpenRef = useRef(setOpen);
-  useEffect(() => {
-    setOpenRef.current = setOpen;
-  });
-
-  useEffect(() => {
-    if (!open) return;
-    const close = () => setOpenRef.current(false);
-    const onPointer = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) close();
-    };
-    const onKey = (e: globalThis.KeyboardEvent) => {
-      if (e.key === "Escape") {
-        close();
-        triggerRef.current?.focus();
-      }
-    };
-    document.addEventListener("pointerdown", onPointer);
-    document.addEventListener("keydown", onKey);
-    // Focus the search box if there is one, else the selected option.
-    const panel = panelRef.current;
-    const first =
-      panel?.querySelector<HTMLElement>("[data-autofocus]") ??
-      panel?.querySelector<HTMLElement>(`${OPTION}[aria-selected="true"]`) ??
-      panel?.querySelector<HTMLElement>(OPTION);
-    first?.focus();
-    return () => {
-      document.removeEventListener("pointerdown", onPointer);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
-  // Arrow keys move between options.
-  const onPanelKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-    const options = Array.from(panelRef.current?.querySelectorAll<HTMLElement>(OPTION) ?? []);
-    if (!options.length) return;
-    e.preventDefault();
-    const i = options.indexOf(document.activeElement as HTMLElement);
-    const next =
-      e.key === "ArrowDown"
-        ? options[i < 0 ? 0 : Math.min(i + 1, options.length - 1)]
-        : options[i <= 0 ? 0 : i - 1];
-    next.focus();
-  };
+  const { rootRef, triggerRef, panelRef, onPanelKeyDown } = usePopover(open, setOpen, OPTION);
 
   return (
     <div ref={rootRef} className="relative">

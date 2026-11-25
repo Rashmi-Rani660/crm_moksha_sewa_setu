@@ -47,6 +47,7 @@ import {
   type IconProps,
 } from "@/components/dashboard/dashboard-icons";
 import { CentreFilter, PeriodFilter } from "@/components/dashboard/FilterDropdowns";
+import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { defaultPeriod, periodLabel, type Centre, type Period } from "@/lib/dashboard/filters";
 import { siteConfig } from "@/lib/config/site";
 
@@ -193,7 +194,7 @@ function GreenPill({ children, className = "" }: { children: ReactNode; classNam
 
 function TopBar() {
   return (
-    <header className="flex h-[48px] shrink-0 items-center border-b border-[#e4e7f1] bg-[#f7f8fd] px-4 lg:pl-[26px] lg:pr-[49px]">
+    <header className="relative z-30 flex h-[48px] shrink-0 items-center border-b border-[#e4e7f1] bg-[#f7f8fd] px-4 lg:pl-[26px] lg:pr-[43px]">
       <button type="button" aria-label="Toggle menu" className="text-[#141b45]">
         <MenuIcon className="h-[22px] w-[22px]" />
       </button>
@@ -224,13 +225,7 @@ function TopBar() {
         </span>
       </button>
       <span className="ml-[27px] h-[26px] w-px bg-[#d3d7e3]" />
-      <span className="ml-[21px] flex h-[35px] w-[35px] shrink-0 items-center justify-center rounded-full bg-[linear-gradient(180deg,#48a3e4_0%,#2f8ad6_100%)] pt-[2px] text-[17px] font-normal leading-none text-white">
-        V
-      </span>
-      <div className="ml-[16px] hidden whitespace-nowrap leading-none text-[#141b45] sm:block">
-        <p className="text-[17px] font-normal tracking-[-0.3px]">Vijay Sharma</p>
-        <p className="mt-[3px] text-[14.5px] font-normal tracking-[-0.2px]">Super Admin</p>
-      </div>
+      <ProfileMenu />
     </header>
   );
 }
