@@ -24,17 +24,17 @@ const layouts: Record<
   }
 > = {
   login: {
-    w: 804,
+    w: 844,
     h: 794,
     logo: { x: 70, y: 12, w: 232 },
     init: { x: 36, y: 203, w: 300, fs: 14.5 },
     divider: { x: 344, y: 50, h: 150 },
     tag: { x: 374, y: 58, titleFs: 30, titleLh: 1.1, barMt: 14, textFs: 17.4, textLh: 1.4, textMt: 15 },
-    photo: { x: -18, y: 175, w: 840 },
+    photo: { x: -18, y: 175, w: 862 },
     swoosh: 1,
     hexes: [
-      { cx: 746.7, cy: 106.5, r: 30 },
-      { cx: 696.2, cy: 154, r: 21 },
+      { cx: 786.7, cy: 106.5, r: 30 },
+      { cx: 736.2, cy: 154, r: 21 },
     ],
   },
   verify: {

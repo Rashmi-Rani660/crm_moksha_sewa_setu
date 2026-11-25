@@ -3,17 +3,17 @@ import type { AuthVariant } from "@/components/auth/AuthShell";
 
 const styles = {
   login: {
-    wrap: "mx-6 mb-6 mt-4 border-t border-[#b9bfd6] pt-5 sm:mx-auto sm:w-full sm:max-w-[460px] lg:ml-[23px] lg:mr-[18px] lg:mt-2 lg:mb-[34px] lg:w-auto lg:max-w-none lg:pt-[22px]",
-    row: "lg:-mx-[6px] lg:text-[10.6px]",
-    badge: "lg:h-[32px] lg:min-w-[123px]",
-    name: "lg:text-[14px]",
+    wrap: "mx-6 mb-6 mt-4 border-t border-[#b9bfd6] pt-5 sm:mx-auto sm:w-full sm:max-w-[460px] lg:ml-[23px] lg:mr-[30px] lg:mt-2 lg:mb-[34px] lg:w-auto lg:max-w-none lg:pt-[22px]",
+    row: "lg:-mx-[6px] lg:text-[11.8px]",
+    badge: "lg:h-[34px] lg:min-w-[114px] lg:px-1.5",
+    name: "lg:text-[12px]",
     sep: "",
   },
   verify: {
     wrap: "mx-6 mb-6 mt-6 border-t border-[#b9bfd6] pt-4 sm:mx-auto sm:w-full sm:max-w-[560px] lg:ml-[36px] lg:mr-[29px] lg:mt-auto lg:mb-[30px] lg:w-auto lg:max-w-none lg:pt-[15px]",
-    row: "lg:text-[11.3px]",
-    badge: "lg:h-[38px] lg:min-w-[148px]",
-    name: "lg:text-[17px]",
+    row: "lg:text-[12.2px]",
+    badge: "lg:h-[38px] lg:min-w-[130px] lg:px-1.5",
+    name: "lg:text-[14.5px]",
     sep: "mx-1.5 lg:mx-2.5",
   },
 } as const;
@@ -26,7 +26,7 @@ export default function AuthFooter({ variant }: { variant: AuthVariant }) {
   return (
     <footer className={s.wrap}>
       <div
-        className={`flex flex-wrap items-center justify-between gap-x-3 gap-y-3 text-[12px] font-medium text-navy-ink lg:flex-nowrap ${s.row}`}
+        className={`flex flex-wrap items-center justify-between gap-x-3 gap-y-3 text-[12px] font-medium text-navy-ink lg:flex-nowrap lg:justify-start lg:gap-x-[10px] ${s.row}`}
       >
         <p className="leading-snug lg:whitespace-nowrap">
           <b className="font-bold">
