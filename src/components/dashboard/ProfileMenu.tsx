@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
-import { LogoutIcon } from "@/components/dashboard/dashboard-icons";
+import { ChevronDownIcon, LogoutIcon } from "@/components/dashboard/dashboard-icons";
 import { usePopover } from "@/components/dashboard/usePopover";
 import { setFlash, signOut, useAuthSession } from "@/lib/auth/session";
 
@@ -58,6 +58,10 @@ export default function ProfileMenu() {
           <span className="block text-[17px] tracking-[-0.3px]">{user.name}</span>
           <span className="mt-[3px] block text-[14.5px] tracking-[-0.2px]">{user.role}</span>
         </span>
+        {/* Caret so it reads as a menu (account options / Sign out). */}
+        <ChevronDownIcon
+          className={`ml-[10px] h-[12px] w-[12px] shrink-0 text-[#141b45] transition-transform ${open ? "rotate-180" : ""}`}
+        />
       </button>
 
       {open && (
