@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins, Source_Serif_4 } from "next/font/google";
+import { Hind, Poppins, Source_Serif_4 } from "next/font/google";
 import { siteConfig } from "@/lib/config/site";
 import "./globals.css";
 
@@ -12,7 +12,13 @@ const poppins = Poppins({
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
   subsets: ["latin"],
-  weight: ["700", "800"],
+  weight: ["500", "700", "800"],
+});
+
+const hind = Hind({
+  variable: "--font-hind-sans",
+  subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -41,7 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${poppins.variable} ${sourceSerif.variable} h-full antialiased`}
+      className={`${poppins.variable} ${sourceSerif.variable} ${hind.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: viewportScript }} />

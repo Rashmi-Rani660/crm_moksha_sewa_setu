@@ -23,6 +23,7 @@
   --color-muted: var(--muted);
   --font-sans: var(--font-poppins);
   --font-serif: var(--font-source-serif);
+  --font-hind: var(--font-hind-sans);
 }
 
 html,
