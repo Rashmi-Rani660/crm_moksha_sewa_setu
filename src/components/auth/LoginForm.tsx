@@ -143,15 +143,6 @@ export default function LoginForm() {
             <label htmlFor="password" className={`${labelClass} mb-0 lg:mb-0`}>
               Password
             </label>
-            <span
-              className={`text-[11.5px] font-medium ${
-                password.length >= authConfig.maxPasswordLength
-                  ? "font-semibold text-[#c0262d]"
-                  : "text-muted"
-              }`}
-            >
-              {password.length}/{authConfig.maxPasswordLength}
-            </span>
           </div>
           <div className="relative">
             <LockIcon className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-navy-ink" />
@@ -160,9 +151,8 @@ export default function LoginForm() {
               name="password"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
-              minLength={authConfig.minPasswordLength}
               maxLength={authConfig.maxPasswordLength}
-              placeholder={`Enter password (max ${authConfig.maxPasswordLength} chars)`}
+              placeholder="Enter password"
               value={password}
               onChange={(e) => {
                 setPassword(sanitizePasswordInput(e.target.value));

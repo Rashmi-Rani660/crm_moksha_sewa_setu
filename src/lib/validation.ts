@@ -5,7 +5,10 @@ export const MOBILE_PATTERN = /^[6-9]\d{9}$/;
 
 export const isValidMobile = (value: string) => MOBILE_PATTERN.test(value);
 
-/** Strip whitespace and enforce max password length on input. */
+/**
+ * Strip whitespace and stop password input at the max length (also covers
+ * paste). The minimum length is checked by the validators below.
+ */
 export const sanitizePasswordInput = (value: string) =>
   value.replace(/\s/g, "").slice(0, authConfig.maxPasswordLength);
 

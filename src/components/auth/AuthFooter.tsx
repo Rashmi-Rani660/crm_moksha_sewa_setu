@@ -9,13 +9,6 @@ const styles = {
     name: "lg:text-[12px]",
     sep: "",
   },
-  verify: {
-    wrap: "mx-6 mb-6 mt-6 border-t border-[#b9bfd6] pt-4 sm:mx-auto sm:w-full sm:max-w-[560px] lg:ml-[36px] lg:mr-[29px] lg:mt-auto lg:mb-[30px] lg:w-auto lg:max-w-none lg:pt-[15px]",
-    row: "lg:text-[12.2px]",
-    badge: "lg:h-[38px] lg:min-w-[130px] lg:px-1.5",
-    name: "lg:text-[14.5px]",
-    sep: "mx-1.5 lg:mx-2.5",
-  },
 } as const;
 
 /** Copyright line + developer badge, shared by the auth screens. */

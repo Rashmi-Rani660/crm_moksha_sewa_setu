@@ -346,3 +346,12 @@ export const GradCapIcon = (p: IconProps) => (
     <path d="M22.5 8.5v7" />
   </I>
 );
+
+/* ----------------------------- account ----------------------------- */
+
+export const LogoutIcon = (p: IconProps) => (
+  <I strokeWidth={2} {...p}>
+    <path d="M9.5 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4.5" />
+    <path d="m16 16.5 4.5-4.5L16 7.5M20.5 12H9" />
+  </I>
+);

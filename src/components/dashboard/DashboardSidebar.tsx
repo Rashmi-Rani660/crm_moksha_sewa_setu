@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ComponentType, SVGProps } from "react";
-import emblem from "@/app/icon.png";
 import {
   AdminIcon,
   CasesIcon,
@@ -46,20 +45,20 @@ export default function DashboardSidebar() {
   return (
     <aside className="sticky top-0 hidden h-dvh w-[204px] lg:static lg:h-auto lg:self-stretch shrink-0 flex-col overflow-hidden bg-[linear-gradient(180deg,#001534_0%,#001432_55%,#001331_100%)] font-hind text-white md:flex">
       {/* Brand */}
-      <div className="relative h-[141px] shrink-0">
+      <div className="relative h-[182px] shrink-0">
         <Image
-          src={emblem}
-          alt=""
+          src="/images/moksha-sewa-logo-dark.png"
+          alt={siteConfig.brand}
+          width={1292}
+          height={1090}
           priority
-          className="absolute left-[69.5px] top-[2px] h-[74px] w-[74px]"
+          sizes="160px"
+          className="absolute left-[22px] top-[8px] h-auto w-[160px]"
         />
-        <p className="absolute inset-x-0 top-[64px] translate-x-[5px] text-center font-serif text-[21.5px] font-medium leading-none tracking-[0.005em] text-white">
-          {siteConfig.brand.toUpperCase()}
-        </p>
-        <p className="absolute inset-x-0 top-[97px] translate-x-[3px] text-center text-[11.3px] font-medium leading-none tracking-[-0.1px] text-white">
+        <p className="absolute inset-x-0 top-[151px] text-center text-[11.3px] font-normal leading-none tracking-[-0.1px] text-white">
           {siteConfig.initiative}
         </p>
-        <span className="absolute left-[23px] top-[122px] h-px w-[164px] bg-[#1b2b45]" />
+        <span className="absolute left-[23px] top-[168px] h-px w-[158px] bg-[#1b2b45]" />
       </div>
 
       <nav aria-label="Main" className="flex flex-col">

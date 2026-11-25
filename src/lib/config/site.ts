@@ -21,6 +21,6 @@ export const siteConfig = {
 export const authConfig = {
   otpLength: 6,
   otpResendSeconds: 30,
-  minPasswordLength: 6,
-  maxPasswordLength: 20,
+  minPasswordLength: 8,
+  maxPasswordLength: 16,
 } as const;

@@ -60,15 +60,6 @@ function PasswordField({
         <label htmlFor={id} className={`${compactLabelClass} mb-0 lg:mb-0`}>
           {label}
         </label>
-        <span
-          className={`text-[11.5px] font-medium ${
-            value.length >= authConfig.maxPasswordLength
-              ? "font-semibold text-[#c0262d]"
-              : "text-muted"
-          }`}
-        >
-          {value.length}/{authConfig.maxPasswordLength}
-        </span>
       </div>
       <div className="relative">
         <LockIcon className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-navy-ink" />
@@ -77,7 +68,6 @@ function PasswordField({
           name={id}
           type={show ? "text" : "password"}
           autoComplete="new-password"
-          minLength={authConfig.minPasswordLength}
           maxLength={authConfig.maxPasswordLength}
           placeholder={placeholder}
           value={value}
@@ -347,7 +337,7 @@ export default function ForgotPasswordForm() {
             <PasswordField
               id="new-password"
               label="New Password"
-              placeholder={`${authConfig.minPasswordLength}–${authConfig.maxPasswordLength} characters`}
+              placeholder="Enter new password"
               value={password}
               show={showPassword}
               onChange={setPassword}

@@ -1,15 +1,19 @@
 import type { CSSProperties, ReactNode } from "react";
 
 /**
- * Design sizes (px) of the desktop card for each auth screen.
+ * Design sizes (px) of the desktop card. Login, forgot / reset password and
+ * new-device verification all use the same card.
  * `fw` / `fh` = how much of the window width / height the card may fill.
  */
 export const authLayouts = {
   login: { w: 1400, h: 794, hero: 844, fw: 0.965, fh: 0.84 },
-  verify: { w: 1355, h: 912, hero: 731, fw: 0.936, fh: 0.88 },
 } as const;
 
 export type AuthVariant = keyof typeof authLayouts;
+
+/** CSS expression for a card's scale factor (unitless) at the current window size. */
+const scaleFor = ({ w, h, fw, fh }: { w: number; h: number; fw: number; fh: number }) =>
+  `clamp(0.55, min(calc(var(--vw, 1448) * ${fw} / ${w}), calc(var(--vh, 1086) * ${fh} / ${h})), 1.35)`;
 
 /**
  * Page frame for authentication screens.
@@ -33,9 +37,7 @@ export default function AuthShell({
     "--cw": l.w,
     "--ch": l.h,
     "--hero-w": `${l.hero}px`,
-    "--fw": l.fw,
-    "--fh": l.fh,
-    "--s": "clamp(0.55, min(calc(var(--vw, 1448) * var(--fw) / var(--cw)), calc(var(--vh, 1086) * var(--fh) / var(--ch))), 1.35)",
+    "--s": scaleFor(l),
   } as CSSProperties;
 
   return (
