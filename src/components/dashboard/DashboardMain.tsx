@@ -1,4 +1,7 @@
-import type { ComponentType, ReactNode } from "react";
+"use client";
+
+import Image from "next/image";
+import { useState, type ComponentType, type ReactNode } from "react";
 import BrandTitle from "@/components/auth/BrandTitle";
 import {
   AlertTriangleFillIcon,
@@ -9,12 +12,10 @@ import {
   BackupIcon,
   BellIcon,
   BubbleIcon,
-  CalendarIcon,
   ChatCircleIcon,
   ChatIcon,
   CheckCircleIcon,
   CheckIcon,
-  ChevronDownIcon,
   ChevronRightIcon,
   ClockIcon,
   DiamondIcon,
@@ -30,7 +31,6 @@ import {
   PeopleGroupIcon,
   PeopleIcon,
   PhoneFillIcon,
-  PinIcon,
   PlugIcon,
   PulseIcon,
   RosetteIcon,
@@ -46,6 +46,8 @@ import {
   WhatsAppIcon,
   type IconProps,
 } from "@/components/dashboard/dashboard-icons";
+import { CentreFilter, PeriodFilter } from "@/components/dashboard/FilterDropdowns";
+import { defaultPeriod, periodLabel, type Centre, type Period } from "@/lib/dashboard/filters";
 import { siteConfig } from "@/lib/config/site";
 
 type Icon = ComponentType<IconProps>;
@@ -233,9 +235,19 @@ function TopBar() {
   );
 }
 
-function TitleBar() {
+function TitleBar({
+  period,
+  onPeriodChange,
+  centre,
+  onCentreChange,
+}: {
+  period: Period;
+  onPeriodChange: (p: Period) => void;
+  centre: Centre;
+  onCentreChange: (c: Centre) => void;
+}) {
   return (
-    <section className="relative flex shrink-0 flex-wrap items-start gap-y-3 pb-4 pl-[6px] lg:h-[85px] lg:flex-nowrap lg:pb-0">
+    <section className="relative z-20 flex shrink-0 flex-wrap items-start gap-y-3 pb-4 pl-[6px] lg:h-[85px] lg:flex-nowrap lg:pb-0">
       {/* soft golden wave behind the heading */}
       <svg
         aria-hidden
@@ -266,22 +278,8 @@ function TitleBar() {
       </div>
 
       <div className="relative ml-[28px] flex gap-[16px] lg:ml-auto lg:mt-[22px]">
-        <button
-          type="button"
-          className="flex h-[38px] w-[145px] items-center rounded-[10px] border border-[#e8ebf3] bg-white pl-[13px] text-[#141b45] shadow-[0_3px_10px_rgba(28,45,110,0.08)]"
-        >
-          <CalendarIcon className="h-[18px] w-[18px]" />
-          <span className="ml-[9px] pt-[2px] text-[16px] font-normal leading-none tracking-[-0.3px]">This Month</span>
-          <ChevronDownIcon className="ml-[9px] h-[12px] w-[12px]" />
-        </button>
-        <button
-          type="button"
-          className="flex h-[38px] w-[143px] items-center rounded-[10px] border border-[#e8ebf3] bg-white pl-[16px] text-[#141b45] shadow-[0_3px_10px_rgba(28,45,110,0.08)]"
-        >
-          <PinIcon className="h-[17px] w-[15px] text-[#1f3fe0]" />
-          <span className="ml-[9px] pt-[2px] text-[16px] font-normal leading-none tracking-[-0.3px]">All Centres</span>
-          <ChevronDownIcon className="ml-[9px] h-[12px] w-[12px]" />
-        </button>
+        <PeriodFilter value={period} onChange={onPeriodChange} />
+        <CentreFilter value={centre} onChange={onCentreChange} />
       </div>
     </section>
   );
@@ -527,12 +525,12 @@ function Donut() {
   );
 }
 
-function SewaOverview() {
+function SewaOverview({ period }: { period: Period }) {
   return (
     <div className={card}>
       <div className="flex h-[41px] items-center pt-[2px] pl-[16px] pr-[14px]">
         <CardTitle>
-          Sewa Overview <span className="text-[16px] font-normal tracking-[-0.4px]">(This Month)</span>
+          Sewa Overview <span className="text-[16px] font-normal tracking-[-0.4px]">({periodLabel(period)})</span>
         </CardTitle>
         <span className="ml-auto">
           <LinkArrow>View Details</LinkArrow>
@@ -711,14 +709,14 @@ function Footer() {
       </p>
       <div className="flex items-center gap-[15px]">
         <p className="whitespace-nowrap pt-[2px]">Designed, Developed &amp; Maintained by</p>
-        <span
-          role="img"
-          aria-label={`${dev.name} ${dev.legal}`}
-          className="inline-flex h-[25px] w-[149px] items-center justify-center rounded-[5px] bg-[#f80e07] leading-none text-white"
-        >
-          <span className="pt-[2px] text-[15px] font-normal tracking-[-0.2px]">{dev.name}</span>
-          <span className="ml-[4px] pt-[3px] text-[10.5px] font-normal">{dev.legal}</span>
-        </span>
+        <Image
+          src="/images/encodency-logo.png"
+          alt={`${dev.name} ${dev.legal} — ${dev.slogan}`}
+          width={640}
+          height={120}
+          sizes="160px"
+          className="h-[30px] w-[160px] shrink-0 rounded-[5px]"
+        />
       </div>
     </footer>
   );
@@ -728,11 +726,16 @@ function Footer() {
 
 /** Everything to the right of the sidebar on the dashboard home screen. */
 export default function DashboardMain() {
+  // TODO: fetch the dashboard data for { period, centre } once the API exists;
+  // the figures below are still the static mock-up values.
+  const [period, setPeriod] = useState<Period>(defaultPeriod);
+  const [centre, setCentre] = useState<Centre>(null);
+
   return (
     <div className="flex min-h-dvh min-w-0 flex-1 flex-col bg-[#f4f5fb] font-hind">
       <TopBar />
       <main className="flex flex-1 flex-col pl-[14px] pr-[12px]">
-        <TitleBar />
+        <TitleBar period={period} onPeriodChange={setPeriod} centre={centre} onCentreChange={setCentre} />
         <KpiRow />
         <section className="mt-[13px] grid shrink-0 grid-cols-1 gap-[11px] md:grid-cols-2 lg:grid-cols-[369fr_315fr_338fr_315fr] lg:[grid-template-rows:217px]">
           <CriticalAlerts />
@@ -741,7 +744,7 @@ export default function DashboardMain() {
           <ApprovalsCompliance />
         </section>
         <section className="mt-[15px] grid shrink-0 grid-cols-1 gap-[11px] md:grid-cols-2 lg:grid-cols-[369fr_315fr_338fr_315fr] lg:[grid-template-rows:186px]">
-          <SewaOverview />
+          <SewaOverview period={period} />
           <RecentActivities />
           <AiInsights />
           <SystemHealth />
