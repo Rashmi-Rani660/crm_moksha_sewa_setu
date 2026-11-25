@@ -6,18 +6,22 @@ import { siteConfig } from "@/lib/config/site";
 type Hex = { cx: number; cy: number; r: number };
 
 /**
- * Desktop (lg) placement of everything in the brand panel, in design pixels
- * relative to the panel's top-left corner. One entry per auth screen.
+ * Desktop (lg) placement of the brand block (logo, initiative line, divider,
+ * tagline) in design pixels from the panel's top-left corner.
  */
+const brand = {
+  logo: { x: 70, y: 12, w: 232 },
+  init: { x: 36, y: 216, w: 300, fs: 14.5 },
+  divider: { x: 344, y: 50, h: 150 },
+  tag: { x: 374, y: 58, titleFs: 30, titleLh: 1.1, barMt: 14, textFs: 17.4, textLh: 1.4, textMt: 15 },
+};
+
+/** Per-screen panel size, photo placement and decorations. */
 const layouts: Record<
   AuthVariant,
   {
     w: number;
     h: number;
-    logo: { x: number; y: number; w: number };
-    init: { x: number; y: number; w: number; fs: number };
-    divider: { x: number; y: number; h: number };
-    tag: { x: number; y: number; titleFs: number; titleLh: number; barMt: number; textFs: number; textLh: number; textMt: number };
     photo: { x: number; y: number; w: number };
     swoosh: number;
     hexes: Hex[];
@@ -26,29 +30,11 @@ const layouts: Record<
   login: {
     w: 844,
     h: 794,
-    logo: { x: 70, y: 12, w: 232 },
-    init: { x: 36, y: 203, w: 300, fs: 14.5 },
-    divider: { x: 344, y: 50, h: 150 },
-    tag: { x: 374, y: 58, titleFs: 30, titleLh: 1.1, barMt: 14, textFs: 17.4, textLh: 1.4, textMt: 15 },
     photo: { x: -18, y: 175, w: 862 },
     swoosh: 1,
     hexes: [
       { cx: 786.7, cy: 106.5, r: 30 },
       { cx: 736.2, cy: 154, r: 21 },
-    ],
-  },
-  verify: {
-    w: 731,
-    h: 912,
-    logo: { x: 72, y: 28, w: 205 },
-    init: { x: 41, y: 195, w: 274, fs: 12.8 },
-    divider: { x: 315, y: 57, h: 137 },
-    tag: { x: 347, y: 64, titleFs: 24, titleLh: 1.125, barMt: 9, textFs: 15.3, textLh: 1.31, textMt: 20 },
-    photo: { x: -60, y: 274, w: 850 },
-    swoosh: 1.3,
-    hexes: [
-      { cx: 675, cy: 100, r: 26.5 },
-      { cx: 632, cy: 145, r: 22 },
     ],
   },
 };
@@ -64,32 +50,34 @@ const hexPath = ({ cx, cy, r }: Hex) =>
  *
  * Below `lg` it is a normal flow layout (brand block, then the photo) so
  * nothing can overlap. At `lg` the pieces are placed on the design grid
- * described by `layouts[variant]`.
+ * (`brand` + `layouts[variant]`).
  */
 export default function AuthHero({ variant }: { variant: AuthVariant }) {
   const { tagline } = siteConfig;
   const L = layouts[variant];
   const px = (n: number) => `${n}px`;
 
+  const B = brand;
+
   const vars = {
-    "--logo-x": px(L.logo.x),
-    "--logo-y": px(L.logo.y),
-    "--logo-w": px(L.logo.w),
-    "--init-x": px(L.init.x),
-    "--init-y": px(L.init.y),
-    "--init-w": px(L.init.w),
-    "--init-fs": px(L.init.fs),
-    "--div-x": px(L.divider.x),
-    "--div-y": px(L.divider.y),
-    "--div-h": px(L.divider.h),
-    "--tag-x": px(L.tag.x),
-    "--tag-y": px(L.tag.y),
-    "--title-fs": px(L.tag.titleFs),
-    "--title-lh": L.tag.titleLh,
-    "--bar-mt": px(L.tag.barMt),
-    "--text-fs": px(L.tag.textFs),
-    "--text-lh": L.tag.textLh,
-    "--text-mt": px(L.tag.textMt),
+    "--logo-x": px(B.logo.x),
+    "--logo-y": px(B.logo.y),
+    "--logo-w": px(B.logo.w),
+    "--init-x": px(B.init.x),
+    "--init-y": px(B.init.y),
+    "--init-w": px(B.init.w),
+    "--init-fs": px(B.init.fs),
+    "--div-x": px(B.divider.x),
+    "--div-y": px(B.divider.y),
+    "--div-h": px(B.divider.h),
+    "--tag-x": px(B.tag.x),
+    "--tag-y": px(B.tag.y),
+    "--title-fs": px(B.tag.titleFs),
+    "--title-lh": B.tag.titleLh,
+    "--bar-mt": px(B.tag.barMt),
+    "--text-fs": px(B.tag.textFs),
+    "--text-lh": B.tag.textLh,
+    "--text-mt": px(B.tag.textMt),
     "--ph-x": px(L.photo.x),
     "--ph-y": px(L.photo.y),
     "--ph-w": px(L.photo.w),
@@ -107,10 +95,10 @@ export default function AuthHero({ variant }: { variant: AuthVariant }) {
       <div className="relative z-10 flex flex-col gap-5 px-6 pt-7 sm:flex-row sm:items-center sm:gap-10 sm:px-10 sm:pt-9 lg:contents">
         <div className="flex w-[210px] shrink-0 flex-col items-center sm:w-[250px] lg:contents">
           <Image
-            src="/images/moksha-sewa-logo.png"
+            src="/images/moksha-sewa-logo-light.png"
             alt={siteConfig.brand}
             width={1292}
-            height={1021}
+            height={1090}
             priority
             className="h-auto w-full lg:absolute lg:left-[var(--logo-x)] lg:top-[var(--logo-y)] lg:z-10 lg:w-[var(--logo-w)]"
           />

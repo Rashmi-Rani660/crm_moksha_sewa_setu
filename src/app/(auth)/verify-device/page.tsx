@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function VerifyDevicePage() {
   return (
-    <AuthShell variant="verify">
-      <AuthHero variant="verify" />
+    <AuthShell variant="login">
+      <AuthHero variant="login" />
       <VerifyDeviceForm />
     </AuthShell>
   );

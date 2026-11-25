@@ -1,9 +1,11 @@
-// Prepares the brand logo for the login screen.
+// Prepares the brand logos and favicons.
 //
 //   node scripts/build-images.mjs
 //
 // scripts/images/logo-source.png (white background)
-//   -> public/images/moksha-sewa-logo.png (transparent background, trimmed).
+//   -> public/images/moksha-sewa-logo-light.png / -dark.png
+//      (transparent background, trimmed, with the brand ornament)
+//   -> src/app/favicon.ico, icon.png, apple-icon.png
 // Needs `sharp` (already present as a Next.js dependency).
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -43,16 +45,13 @@ const result = await sharp(rgba, {
   .png({ compressionLevel: 9 })
   .toBuffer({ resolveWithObject: true });
 
-await sharp(result.data).toFile(resolve(out, "moksha-sewa-logo.png"));
-console.log(
-  `Wrote public/images/moksha-sewa-logo.png (${result.info.width}x${result.info.height})`,
-);
-
 // ---------------------------------------------------------------------------
-// Dark-background logo for the dashboard sidebar:
-//   public/images/moksha-sewa-logo-dark.png
-// Same artwork, but the "MOKSHA SEWA" wordmark is white and the blue
-// line-dot-line ornament from the brand sheet sits underneath it.
+// Logos, both with the blue line-dot-line ornament from the brand sheet under
+// the "MOKSHA SEWA" wordmark:
+//   public/images/moksha-sewa-logo-light.png navy wordmark, light backgrounds
+//                                            (login / forgot / verify screens)
+//   public/images/moksha-sewa-logo-dark.png  white wordmark, dark backgrounds
+//                                            (dashboard sidebar)
 // ---------------------------------------------------------------------------
 {
   const { data: px, info: li } = await sharp(result.data)
@@ -78,11 +77,11 @@ console.log(
         x1 = Math.max(x1, x);
       }
 
-  const light = Buffer.from(px);
+  const whiteText = Buffer.from(px);
   for (let y = textTop; y < H; y++)
     for (let x = 0; x < W; x++) {
       const i = (y * W + x) * 4;
-      light[i] = light[i + 1] = light[i + 2] = 255;
+      whiteText[i] = whiteText[i + 1] = whiteText[i + 2] = 255;
     }
 
   // Ornament, proportioned from the brand sheet (relative to wordmark width).
@@ -107,16 +106,21 @@ console.log(
     <circle cx="${cx}" cy="${cy}" r="${dot / 2}" fill="#1f8fe0"/>
   </svg>`;
 
-  await sharp({
-    create: { width: W, height: H + extra, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
-  })
-    .composite([
-      { input: light, raw: { width: W, height: H, channels: 4 }, left: 0, top: 0 },
-      { input: Buffer.from(svg), left: 0, top: 0 },
-    ])
-    .png({ compressionLevel: 9 })
-    .toFile(resolve(out, "moksha-sewa-logo-dark.png"));
-  console.log(`Wrote public/images/moksha-sewa-logo-dark.png (${W}x${H + extra})`);
+  for (const [name, art] of [
+    ["moksha-sewa-logo-light.png", px],
+    ["moksha-sewa-logo-dark.png", whiteText],
+  ]) {
+    await sharp({
+      create: { width: W, height: H + extra, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+    })
+      .composite([
+        { input: art, raw: { width: W, height: H, channels: 4 }, left: 0, top: 0 },
+        { input: Buffer.from(svg), left: 0, top: 0 },
+      ])
+      .png({ compressionLevel: 9 })
+      .toFile(resolve(out, name));
+    console.log(`Wrote public/images/${name} (${W}x${H + extra})`);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -124,10 +128,9 @@ console.log(
 //   src/app/favicon.ico, src/app/icon.png, src/app/apple-icon.png
 // ---------------------------------------------------------------------------
 {
-  const logoPath = resolve(out, "moksha-sewa-logo.png");
-  const lm = await sharp(logoPath).metadata();
-  // The wordmark occupies the bottom ~12% of the trimmed logo.
-  const emblem = await sharp(logoPath)
+  // Use the logo without the ornament: the wordmark occupies its bottom ~12%.
+  const lm = result.info;
+  const emblem = await sharp(result.data)
     .extract({ left: 0, top: 0, width: lm.width, height: Math.round(lm.height * 0.875) })
     .trim({ threshold: 1 })
     .png()
