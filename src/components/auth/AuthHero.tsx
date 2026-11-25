@@ -144,7 +144,7 @@ export default function AuthHero({ variant }: { variant: AuthVariant }) {
       {/* Photo — fades into the sky at the top; scales with the panel */}
       <div className="relative mt-3 aspect-[4/3] w-full [mask-image:linear-gradient(to_bottom,transparent_0,#000_28%)] lg:absolute lg:left-[var(--ph-x)] lg:top-[var(--ph-y)] lg:mt-0 lg:w-[var(--ph-w)] lg:[mask-image:linear-gradient(to_bottom,transparent_0,#000_32%)]">
         <Image
-          src="/images/hero-photo.png"
+          src="/images/new.png"
           alt="A Moksha Sewa caregiver comforting an elderly woman beside the Ganga at sunrise"
           fill
           priority
