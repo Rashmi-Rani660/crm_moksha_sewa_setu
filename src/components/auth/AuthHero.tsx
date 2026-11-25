@@ -24,17 +24,17 @@ const layouts: Record<
   }
 > = {
   login: {
-    w: 804,
+    w: 844,
     h: 794,
     logo: { x: 70, y: 12, w: 232 },
     init: { x: 36, y: 203, w: 300, fs: 14.5 },
     divider: { x: 344, y: 50, h: 150 },
     tag: { x: 374, y: 58, titleFs: 30, titleLh: 1.1, barMt: 14, textFs: 17.4, textLh: 1.4, textMt: 15 },
-    photo: { x: -18, y: 175, w: 840 },
+    photo: { x: -18, y: 175, w: 862 },
     swoosh: 1,
     hexes: [
-      { cx: 746.7, cy: 106.5, r: 30 },
-      { cx: 696.2, cy: 154, r: 21 },
+      { cx: 786.7, cy: 106.5, r: 30 },
+      { cx: 736.2, cy: 154, r: 21 },
     ],
   },
   verify: {
@@ -144,7 +144,7 @@ export default function AuthHero({ variant }: { variant: AuthVariant }) {
       {/* Photo — fades into the sky at the top; scales with the panel */}
       <div className="relative mt-3 aspect-[4/3] w-full [mask-image:linear-gradient(to_bottom,transparent_0,#000_28%)] lg:absolute lg:left-[var(--ph-x)] lg:top-[var(--ph-y)] lg:mt-0 lg:w-[var(--ph-w)] lg:[mask-image:linear-gradient(to_bottom,transparent_0,#000_32%)]">
         <Image
-          src="/images/hero-photo.png"
+          src="/images/new.png"
           alt="A Moksha Sewa caregiver comforting an elderly woman beside the Ganga at sunrise"
           fill
           priority
