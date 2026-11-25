@@ -30,7 +30,7 @@ const layouts: Record<
     init: { x: 36, y: 203, w: 300, fs: 14.5 },
     divider: { x: 344, y: 50, h: 150 },
     tag: { x: 374, y: 58, titleFs: 30, titleLh: 1.1, barMt: 14, textFs: 17.4, textLh: 1.4, textMt: 15 },
-    photo: { x: -37, y: 180, w: 999 },
+    photo: { x: -18, y: 175, w: 840 },
     swoosh: 1,
     hexes: [
       { cx: 746.7, cy: 106.5, r: 30 },
@@ -44,7 +44,7 @@ const layouts: Record<
     init: { x: 41, y: 195, w: 274, fs: 12.8 },
     divider: { x: 315, y: 57, h: 137 },
     tag: { x: 347, y: 64, titleFs: 24, titleLh: 1.125, barMt: 9, textFs: 15.3, textLh: 1.31, textMt: 20 },
-    photo: { x: -92, y: 245, w: 1000 },
+    photo: { x: -60, y: 274, w: 850 },
     swoosh: 1.3,
     hexes: [
       { cx: 675, cy: 100, r: 26.5 },
@@ -142,7 +142,7 @@ export default function AuthHero({ variant }: { variant: AuthVariant }) {
       </div>
 
       {/* Photo — fades into the sky at the top; scales with the panel */}
-      <div className="relative mt-3 aspect-[3/2] w-full [mask-image:linear-gradient(to_bottom,transparent_0,#000_32%)] lg:absolute lg:left-[var(--ph-x)] lg:top-[var(--ph-y)] lg:mt-0 lg:w-[var(--ph-w)] lg:[mask-image:linear-gradient(to_bottom,transparent_0,#000_38%)]">
+      <div className="relative mt-3 aspect-[4/3] w-full [mask-image:linear-gradient(to_bottom,transparent_0,#000_28%)] lg:absolute lg:left-[var(--ph-x)] lg:top-[var(--ph-y)] lg:mt-0 lg:w-[var(--ph-w)] lg:[mask-image:linear-gradient(to_bottom,transparent_0,#000_32%)]">
         <Image
           src="/images/hero-photo.png"
           alt="A Moksha Sewa caregiver comforting an elderly woman beside the Ganga at sunrise"
@@ -150,28 +150,8 @@ export default function AuthHero({ variant }: { variant: AuthVariant }) {
           priority
           quality={90}
           sizes="(min-width: 1024px) 1200px, (min-width: 640px) 720px, 100vw"
-          className="object-fill [filter:saturate(0.9)_brightness(1.02)]"
+          className="object-cover object-top [filter:saturate(0.95)_brightness(1.01)]"
         />
-
-        {/* Lanyard, ID badge and chest logo for the nurse's uniform.
-            viewBox is in the login panel's design space (-37,180 = photo
-            top-left at 0.65x), so it follows the photo at any scale. */}
-        <svg
-          aria-hidden
-          viewBox="-37 180 999 666"
-          preserveAspectRatio="none"
-          className="pointer-events-none absolute inset-0 h-full w-full"
-        >
-          <g fill="none">
-            <path d="M289 492 L327 622" stroke="#15296e" strokeWidth="11" />
-            <path d="M351 502 L335 622" stroke="#15296e" strokeWidth="11" />
-          </g>
-          <rect x="321" y="619" width="18" height="11" rx="2" fill="#8c95b4" />
-          <rect x="304" y="628" width="52" height="56" rx="3.5" fill="#fff" stroke="#cfd4e2" strokeWidth="1" />
-          <image href="/images/moksha-sewa-logo.png" x="310" y="635" width="40" height="32" />
-          <rect x="316" y="675" width="28" height="1.6" rx="0.8" fill="#8c95b4" />
-          <image href="/images/moksha-sewa-logo.png" x="361" y="538" width="60" height="48" />
-        </svg>
       </div>
 
       {/* Bottom-left swoosh */}
