@@ -63,3 +63,32 @@ export const ArrowRightIcon = (p: IconProps) => (
     <path d="m13 6 6 6-6 6" />
   </Icon>
 );
+
+export const ArrowLeftIcon = (p: IconProps) => (
+  <Icon strokeWidth={2} {...p}>
+    <path d="M20 12H5" />
+    <path d="m11 6-6 6 6 6" />
+  </Icon>
+);
+
+export const LaptopIcon = (p: IconProps) => (
+  <Icon strokeWidth={1.7} {...p}>
+    <rect x="4.5" y="5" width="15" height="10.5" rx="1.6" />
+    <path d="M2 19h20" />
+  </Icon>
+);
+
+export const MailIcon = (p: IconProps) => (
+  <Icon strokeWidth={1.7} {...p}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="m3.5 6.5 8.5 6.5 8.5-6.5" />
+  </Icon>
+);
+
+export const InfoIcon = (p: IconProps) => (
+  <Icon strokeWidth={1.7} {...p}>
+    <circle cx="12" cy="12" r="9.5" />
+    <path d="M12 11v5.5" />
+    <circle cx="12" cy="7.6" r="0.6" fill="currentColor" />
+  </Icon>
+);

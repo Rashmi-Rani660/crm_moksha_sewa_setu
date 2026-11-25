@@ -1,6 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import AuthFooter from "@/components/auth/AuthFooter";
 import BrandTitle from "@/components/auth/BrandTitle";
 import OtpInput, { type OtpInputHandle } from "@/components/auth/OtpInput";
 import {
@@ -11,7 +13,8 @@ import {
   SendIcon,
   ShieldCheckIcon,
 } from "@/components/ui/icons";
-import { authConfig, siteConfig } from "@/lib/config/site";
+import { authConfig } from "@/lib/config/site";
+import { clearFlash, startVerification, useFlash } from "@/lib/auth/session";
 import { isValidMobile, validateLogin } from "@/lib/validation";
 
 const fieldClass =
@@ -32,6 +35,8 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const otpRef = useRef<OtpInputHandle>(null);
+  const router = useRouter();
+  const flash = useFlash();
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -59,10 +64,13 @@ export default function LoginForm() {
       return;
     }
     setError("");
+    clearFlash();
     setSubmitting(true);
     // TODO: call the sign-in API here with { mobile, password, otp, remember }.
     await new Promise((r) => setTimeout(r, 600));
-    setSubmitting(false);
+    // The API reports this as a new device, so the user must verify it next.
+    startVerification(mobile);
+    router.push("/verify-device");
   }
 
   return (
@@ -200,6 +208,15 @@ export default function LoginForm() {
           </a>
         </div>
 
+        {flash && (
+          <p
+            role="status"
+            className="mt-3 rounded-lg bg-[#fbf1cf] px-3 py-2 text-center text-[13px] font-medium text-navy-ink"
+          >
+            {flash}
+          </p>
+        )}
+
         {/* Error */}
         <p
           role="alert"
@@ -231,32 +248,7 @@ export default function LoginForm() {
         </div>
       </form>
 
-      {/* Footer */}
-      <footer className="mx-6 mb-6 mt-4 border-t border-[#b9bfd6] pt-5 sm:mx-auto sm:w-full sm:max-w-[460px] lg:ml-[23px] lg:mr-[18px] lg:mt-2 lg:mb-[34px] lg:w-auto lg:max-w-none lg:pt-[22px]">
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3 text-[12px] font-medium text-navy-ink lg:-mx-[6px] lg:flex-nowrap lg:text-[10.6px]">
-          <p className="leading-snug lg:whitespace-nowrap">
-            <b className="font-bold">
-              © {siteConfig.copyrightYear} {siteConfig.trust}
-            </b>{" "}
-            | Designed, Developed &amp; Maintained by
-          </p>
-          <span
-            className="inline-flex h-[34px] min-w-[128px] shrink-0 lg:h-[32px] lg:min-w-[123px] flex-col items-center justify-center rounded-[5px] bg-[#e3141b] px-2.5 leading-none text-white shadow-sm"
-            role="img"
-            aria-label={`${siteConfig.developer.name} ${siteConfig.developer.legal} — ${siteConfig.developer.slogan}`}
-          >
-            <span className="text-[15px] font-semibold tracking-tight lg:text-[14px]">
-              {siteConfig.developer.name}
-              <span className="ml-0.5 text-[6px] font-bold">
-                {siteConfig.developer.legal}
-              </span>
-            </span>
-            <span className="mt-0.5 text-[5px] font-semibold italic">
-              {siteConfig.developer.slogan}
-            </span>
-          </span>
-        </div>
-      </footer>
+      <AuthFooter variant="login" />
     </section>
   );
 }

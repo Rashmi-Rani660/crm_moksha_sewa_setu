@@ -5,9 +5,13 @@ import { siteConfig } from "@/lib/config/site";
  * underneath. The wave is traced from the design mock-up (viewBox is in the
  * mock-up's pixel space, text ink spans x 37–392) and scales with the text.
  */
-export default function BrandTitle() {
+export default function BrandTitle({
+  className = "text-[34px] sm:text-[38px] lg:text-[40px]",
+}: {
+  className?: string;
+}) {
   return (
-    <div className="inline-block text-left text-[34px] sm:text-[38px] lg:text-[40px]">
+    <div className={`inline-block text-left ${className}`}>
       <h1 className="text-[1em] font-extrabold leading-none tracking-[0.02em] text-[#0f2d6e]">
         {siteConfig.name}
       </h1>

@@ -30,14 +30,11 @@ export const viewport: Viewport = {
 };
 
 /**
- * Desktop (>= lg) layout helper. The login card is a fixed 1320x794 design
- * (hero 804 + form 516, exactly like the reference mock-up) that is scaled to
- * fit the window: at most 91% of the width and 78% of the height, so on a
- * 1448x1086 window it renders at exactly 1:1. The scale is clamped to
- * 0.72–1.5 (very short windows scroll instead of shrinking the text further).
- * Runs before first paint, so there is no flash of unscaled UI.
+ * Publishes the window size as unitless CSS variables (--vw / --vh). The auth
+ * card scale is derived from them in CSS (see AuthShell), so the layout is
+ * right on first paint and after client-side navigation. Runs before paint.
  */
-const stageScript = `(function(){var d=document.documentElement;function f(){var s=Math.min(innerWidth*0.912/1320,innerHeight*0.78/794);s=Math.max(0.72,Math.min(1.5,s));d.style.setProperty('--stage-scale',s.toFixed(4))}f();addEventListener('resize',f)})();`;
+const viewportScript = `(function(){var d=document.documentElement;function f(){d.style.setProperty('--vw',innerWidth);d.style.setProperty('--vh',innerHeight)}f();addEventListener('resize',f)})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -47,7 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${poppins.variable} ${sourceSerif.variable} h-full antialiased`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: stageScript }} />
+        <script dangerouslySetInnerHTML={{ __html: viewportScript }} />
       </head>
       <body className="min-h-full">{children}</body>
     </html>
