@@ -20,3 +20,26 @@ export function validateLogin({ mobile, password, otp }: LoginValues) {
     return `Enter the ${authConfig.otpLength}-digit OTP sent to your mobile.`;
   return null;
 }
+
+export type PasswordResetValues = {
+  mobile: string;
+  otp: string;
+  password: string;
+  confirmPassword: string;
+};
+
+/** Returns the first validation error for password reset, or `null` when valid. */
+export function validatePasswordReset({
+  mobile,
+  otp,
+  password,
+  confirmPassword,
+}: PasswordResetValues) {
+  if (!isValidMobile(mobile)) return "Enter a valid 10-digit mobile number.";
+  if (otp.length !== authConfig.otpLength)
+    return `Enter the ${authConfig.otpLength}-digit OTP sent to your mobile.`;
+  if (password.length < authConfig.minPasswordLength)
+    return `Password must be at least ${authConfig.minPasswordLength} characters.`;
+  if (password !== confirmPassword) return "Passwords do not match.";
+  return null;
+}

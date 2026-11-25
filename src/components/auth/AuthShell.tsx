@@ -5,8 +5,8 @@ import type { CSSProperties, ReactNode } from "react";
  * `fw` / `fh` = how much of the window width / height the card may fill.
  */
 export const authLayouts = {
-  login: { w: 1320, h: 794, hero: 804, fw: 0.912, fh: 0.78 },
-  verify: { w: 1355, h: 912, hero: 731, fw: 0.936, fh: 0.84 },
+  login: { w: 1320, h: 794, hero: 804, fw: 0.912, fh: 0.84 },
+  verify: { w: 1355, h: 912, hero: 731, fw: 0.936, fh: 0.88 },
 } as const;
 
 export type AuthVariant = keyof typeof authLayouts;
@@ -35,7 +35,7 @@ export default function AuthShell({
     "--hero-w": `${l.hero}px`,
     "--fw": l.fw,
     "--fh": l.fh,
-    "--s": "clamp(0.72, min(calc(var(--vw, 1448) * var(--fw) / var(--cw)), calc(var(--vh, 1086) * var(--fh) / var(--ch))), 1.5)",
+    "--s": "clamp(0.55, min(calc(var(--vw, 1448) * var(--fw) / var(--cw)), calc(var(--vh, 1086) * var(--fh) / var(--ch))), 1.35)",
   } as CSSProperties;
 
   return (

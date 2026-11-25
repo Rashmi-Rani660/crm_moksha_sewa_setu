@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import AuthFooter from "@/components/auth/AuthFooter";
@@ -37,6 +38,22 @@ export default function LoginForm() {
   const otpRef = useRef<OtpInputHandle>(null);
   const router = useRouter();
   const flash = useFlash();
+
+  // Next keeps the previous screen alive (hidden) when you navigate away, so
+  // state such as "Signing in…" would still be there on return. Effect cleanups
+  // run when the screen is hidden, so reset to a clean form at that point.
+  useEffect(
+    () => () => {
+      setSubmitting(false);
+      setPassword("");
+      setShowPassword(false);
+      setOtp(Array(authConfig.otpLength).fill(""));
+      setOtpSent(false);
+      setCountdown(0);
+      setError("");
+    },
+    [],
+  );
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -200,12 +217,12 @@ export default function LoginForm() {
             </span>
             Remember me
           </label>
-          <a
-            href="#"
+          <Link
+            href="/forgot-password"
             className="text-[15px] font-bold text-navy-ink hover:underline lg:text-[14.1px]"
           >
             Forgot Password?
-          </a>
+          </Link>
         </div>
 
         {flash && (
@@ -237,14 +254,14 @@ export default function LoginForm() {
         </button>
 
         <div className="mt-5 flex items-center justify-center gap-3 text-[14.5px] font-medium text-navy-ink lg:-mx-[19px] lg:mt-[22px] lg:text-[13.8px]">
-          <span className="hidden h-px flex-1 bg-line sm:block" />
+          <span className="h-px min-w-3 flex-1 bg-line" />
           <span className="inline-flex items-center gap-2 text-center">
             <ShieldCheckIcon size={22} className="shrink-0" />
             <span className="text-balance">
               Secured Login with <b className="font-bold">Password + OTP</b>
             </span>
           </span>
-          <span className="hidden h-px flex-1 bg-line sm:block" />
+          <span className="h-px min-w-3 flex-1 bg-line" />
         </div>
       </form>
 

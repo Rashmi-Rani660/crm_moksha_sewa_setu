@@ -22,7 +22,7 @@ import {
 import { authConfig } from "@/lib/config/site";
 
 const outlineBtn =
-  "inline-flex h-[46px] flex-1 items-center justify-center gap-2.5 whitespace-nowrap rounded-full border-[1.5px] border-navy-ink bg-white px-4 text-[15px] font-semibold text-navy-ink transition hover:bg-navy-ink hover:text-white lg:h-[45px] lg:flex-none lg:text-[16.5px]";
+  "inline-flex h-[46px] min-w-[160px] flex-1 items-center justify-center gap-2.5 whitespace-nowrap rounded-full border-[1.5px] border-navy-ink bg-white px-4 text-[15px] font-semibold text-navy-ink transition hover:bg-navy-ink hover:text-white lg:h-[45px] lg:min-w-0 lg:flex-none lg:text-[16.5px]";
 
 export default function VerifyDeviceForm() {
   const router = useRouter();
@@ -34,6 +34,19 @@ export default function VerifyDeviceForm() {
   // Set once we navigate away on purpose, so the "no pending sign-in" guard
   // below does not redirect to /login while clearing the pending state.
   const leaving = useRef(false);
+
+  // Next keeps hidden screens alive, so reset when this one is hidden: the next
+  // sign-in attempt gets an empty code, a new 30s timer and an enabled button.
+  useEffect(
+    () => () => {
+      leaving.current = false;
+      setOtp("");
+      setError("");
+      setSubmitting(false);
+      setCountdown(authConfig.otpResendSeconds);
+    },
+    [],
+  );
 
   // No sign-in attempt to verify (e.g. page opened directly) → back to login.
   useEffect(() => {
@@ -99,7 +112,7 @@ export default function VerifyDeviceForm() {
           <BrandTitle className="text-[32px] sm:text-[34px] lg:text-[29.5px]" />
         </div>
 
-        <h2 className="mt-6 text-[26px] font-bold leading-[1.2] text-[#10299b] sm:text-[30px] lg:mt-[27px] lg:text-[32px]">
+        <h2 className="mt-6 text-[26px] font-bold leading-[1.2] text-navy-ink sm:text-[30px] lg:mt-[27px] lg:text-[32px]">
           New Device Verification
         </h2>
         <p className="mt-2 text-[15px] leading-[1.45] text-navy-ink sm:text-[16px] lg:mt-[9px] lg:text-[16.7px] lg:leading-[23px]">
@@ -227,7 +240,7 @@ export default function VerifyDeviceForm() {
           </button>
         </div>
 
-        <p className="mt-5 flex items-center justify-center gap-3 rounded-lg bg-[#fbf1cf] px-3 py-3 text-center text-[14px] font-medium text-navy-ink lg:mt-[28px] lg:h-[42px] lg:gap-[22px] lg:py-0 lg:text-[15.6px]">
+        <p className="mt-5 flex items-center justify-center gap-3 rounded-lg bg-[#fbf1cf] px-3 py-3 text-center text-[14px] font-medium text-navy-ink lg:mt-[28px] lg:h-[42px] lg:gap-3 lg:py-0 lg:text-[15.6px]">
           <InfoIcon size={24} className="shrink-0" />
           Never share your OTP with anyone.
         </p>
