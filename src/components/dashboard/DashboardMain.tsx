@@ -194,7 +194,7 @@ function GreenPill({ children, className = "" }: { children: ReactNode; classNam
 
 function TopBar() {
   return (
-    <header className="relative z-30 flex h-[48px] shrink-0 items-center border-b border-[#e4e7f1] bg-[#f7f8fd] px-4 lg:pl-[26px] lg:pr-[43px]">
+    <header className="relative z-30 flex h-[48px] shrink-0 items-center border-b border-[#e4e7f1] bg-[#f7f8fd] px-4 lg:pl-[26px] lg:pr-[21px]">
       <button type="button" aria-label="Toggle menu" className="text-[#141b45]">
         <MenuIcon className="h-[22px] w-[22px]" />
       </button>
@@ -217,14 +217,14 @@ function TopBar() {
         <MagicIcon className="h-[20px] w-[20px] text-[#3532c8]" />
         <span className="ml-[7px] pt-[2px] text-[17.5px] font-normal leading-none">AI</span>
       </button>
-      <span className="ml-[16px] h-[26px] w-px bg-[#d3d7e3]" />
+      <span className="ml-[16px] hidden h-[26px] w-px bg-[#d3d7e3] sm:block" />
       <button type="button" aria-label="Notifications" className="relative ml-[22px] text-[#141b45]">
         <BellIcon className="h-[22px] w-[22px]" />
         <span className="absolute -right-[8px] -top-[8px] flex h-[17px] w-[17px] items-center justify-center rounded-full bg-[#fa0606] pt-[1px] text-[11px] font-normal leading-none text-white">
           1
         </span>
       </button>
-      <span className="ml-[27px] h-[26px] w-px bg-[#d3d7e3]" />
+      <span className="ml-[27px] hidden h-[26px] w-px bg-[#d3d7e3] sm:block" />
       <ProfileMenu />
     </header>
   );
