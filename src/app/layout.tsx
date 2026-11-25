@@ -18,7 +18,7 @@ const sourceSerif = Source_Serif_4({
 const hind = Hind({
   variable: "--font-hind-sans",
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {

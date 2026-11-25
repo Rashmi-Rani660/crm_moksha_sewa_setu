@@ -160,7 +160,7 @@ const card =
 
 function CardTitle({ children }: { children: ReactNode }) {
   return (
-    <h2 className="whitespace-nowrap text-[length:var(--t,18px)] font-normal leading-none tracking-[-0.2px] text-[#111a45]">
+    <h2 className="whitespace-nowrap text-[length:var(--t,18px)] font-semibold leading-none tracking-[-0.2px] text-[#111a45]">
       {children}
     </h2>
   );
@@ -170,7 +170,7 @@ function LinkArrow({ children }: { children: ReactNode }) {
   return (
     <a
       href="#"
-      className="inline-flex shrink-0 items-center gap-[5px] whitespace-nowrap pt-[2px] text-[12.8px] font-normal leading-none tracking-[-0.2px] text-[#2d2de5] hover:underline"
+      className="inline-flex shrink-0 items-center gap-[5px] whitespace-nowrap pt-[2px] text-[12.8px] font-medium leading-none tracking-[-0.2px] text-[#2d2de5] hover:underline"
     >
       {children}
       <ArrowRightIcon className="h-[13px] w-[13px]" />
@@ -200,7 +200,7 @@ function TopBar() {
       </button>
       <BrandTitle className="ml-4 mt-[9px] text-[26px] lg:ml-[38px]" />
       <span className="ml-[5px] hidden h-[31px] w-px bg-[#c9cedd] lg:block" />
-      <p className="ml-[17px] hidden whitespace-nowrap pt-[2px] text-[19.3px] lg:block font-normal leading-none tracking-[-0.2px] text-[#141b45]">
+      <p className="ml-[17px] hidden whitespace-nowrap pt-[2px] text-[19.3px] lg:block font-medium leading-none tracking-[-0.2px] text-[#141b45]">
         CRM for Humanitarian Services
       </p>
 
@@ -215,12 +215,12 @@ function TopBar() {
 
       <button type="button" className="ml-auto flex items-center text-[#141b45] lg:ml-[24px]">
         <MagicIcon className="h-[20px] w-[20px] text-[#3532c8]" />
-        <span className="ml-[7px] pt-[2px] text-[17.5px] font-normal leading-none">AI</span>
+        <span className="ml-[7px] pt-[2px] text-[17.5px] font-medium leading-none">AI</span>
       </button>
       <span className="ml-[16px] hidden h-[26px] w-px bg-[#d3d7e3] sm:block" />
       <button type="button" aria-label="Notifications" className="relative ml-[22px] text-[#141b45]">
         <BellIcon className="h-[22px] w-[22px]" />
-        <span className="absolute -right-[8px] -top-[8px] flex h-[17px] w-[17px] items-center justify-center rounded-full bg-[#fa0606] pt-[1px] text-[11px] font-normal leading-none text-white">
+        <span className="absolute -right-[8px] -top-[8px] flex h-[17px] w-[17px] items-center justify-center rounded-full bg-[#fa0606] pt-[1px] text-[11px] font-medium leading-none text-white">
           1
         </span>
       </button>
@@ -264,10 +264,10 @@ function TitleBar({
 
       <span className="relative mt-[12px] h-[58px] w-[6px] shrink-0 rounded-full bg-[linear-gradient(180deg,#f3b009_0%,#f7b00a_50%,#ffb90e_100%)]" />
       <div className="relative ml-[22px] mt-[14px] w-[calc(100%-28px)] min-w-0 lg:w-auto">
-        <h1 className="text-[24px] lg:whitespace-nowrap lg:text-[32.9px] font-normal leading-none tracking-[-0.3px] text-[#0d1847]">
+        <h1 className="text-[24px] lg:whitespace-nowrap lg:text-[32.9px] font-semibold leading-none tracking-[-0.3px] text-[#0d1847]">
           Management Command Centre
         </h1>
-        <p className="mt-[2px] text-[15px] lg:whitespace-nowrap lg:text-[18.8px] font-normal leading-none tracking-[-0.2px] text-[#0d1847]">
+        <p className="mt-[2px] text-[15px] lg:whitespace-nowrap lg:text-[18.8px] font-medium leading-none tracking-[-0.2px] text-[#0d1847]">
           Namo Gange Namaskar! Here is your live operational overview...
         </p>
       </div>
@@ -294,16 +294,16 @@ function KpiRow() {
             {i === 0 && (
               <span className="absolute left-[12px] top-[11px] h-[73px] w-[8px] rounded-full bg-[linear-gradient(180deg,#ffd586_0%,#fdc652_45%,#f1a921_100%)]" />
             )}
-            <p className="mt-[11px] whitespace-nowrap text-[28px] font-normal leading-none tracking-[0px] text-[#08083c]">
+            <p className="mt-[11px] whitespace-nowrap text-[28px] font-medium leading-none tracking-[0px] text-[#08083c]">
               {k.value}
             </p>
-            <p className="mt-[2px] whitespace-nowrap text-[14.8px] font-normal leading-none tracking-[-0.4px] text-[#111a45]">
+            <p className="mt-[2px] whitespace-nowrap text-[14.8px] font-medium leading-none tracking-[-0.4px] text-[#111a45]">
               {k.label}
             </p>
-            <p className="mt-[7px] flex items-center whitespace-nowrap text-[14.2px] leading-none tracking-[-0.3px]">
+            <p className="mt-[7px] flex items-center whitespace-nowrap text-[13.8px] leading-none tracking-[-0.3px]">
               <Arrow className={`h-[14px] w-[14px] ${tone}`} />
-              <span className={`ml-[5px] pt-[2px] font-normal ${tone}`}>{k.delta}</span>
-              <span className="ml-[5px] pt-[2px] font-normal text-[#3d4f86]">{k.period}</span>
+              <span className={`ml-[4px] pt-[2px] font-medium ${tone}`}>{k.delta}</span>
+              <span className="ml-[4px] pt-[2px] font-medium text-[#3d4f86]">{k.period}</span>
             </p>
           </div>
         );
@@ -317,7 +317,7 @@ function CriticalAlerts() {
     <div className={card}>
       <div className="flex h-[38px] items-center pt-[2px] [--t:17.4px] pl-[15px] pr-[15px]">
         <CardTitle>Critical Alerts / Priority Actions</CardTitle>
-        <span className="ml-[3px] mt-[-3px] flex h-[25px] w-[25px] shrink-0 items-center justify-center rounded-full bg-[#ef1515] pt-[2px] text-[15px] font-normal leading-none text-white">
+        <span className="ml-[3px] mt-[-3px] flex h-[25px] w-[25px] shrink-0 items-center justify-center rounded-full bg-[#ef1515] pt-[2px] text-[15px] font-medium leading-none text-white">
           5
         </span>
         <span className="ml-auto">
@@ -336,13 +336,13 @@ function CriticalAlerts() {
           >
             <Icon className={`h-[22px] w-[22px] shrink-0 ${a.color}`} />
             <div className="ml-[18px] min-w-0 flex-1 leading-none">
-              <p className="whitespace-nowrap text-[14.7px] font-normal tracking-[-0.3px] text-[#111a45]">{a.title}</p>
-              <p className="mt-[2px] whitespace-nowrap text-[11.9px] font-normal tracking-[-0.3px] text-[#1d2233]">{a.sub}</p>
+              <p className="whitespace-nowrap text-[14.7px] font-medium tracking-[-0.3px] text-[#111a45]">{a.title}</p>
+              <p className="mt-[2px] whitespace-nowrap text-[11.9px] font-medium tracking-[-0.3px] text-[#1d2233]">{a.sub}</p>
             </div>
             {a.tone === "attention" ? (
-              <span className="ml-2 pt-[2px] text-[14px] font-normal tracking-[-0.2px] text-[#3b2a12]">{a.value}</span>
+              <span className="ml-2 pt-[2px] text-[14px] font-medium tracking-[-0.2px] text-[#3b2a12]">{a.value}</span>
             ) : (
-              <span className="ml-2 pt-[3px] text-[19px] font-normal leading-none text-[#e0201b]">{a.value}</span>
+              <span className="ml-2 pt-[3px] text-[19px] font-medium leading-none text-[#e0201b]">{a.value}</span>
             )}
             <ChevronRightIcon
               className={`ml-[9px] h-[13px] w-[13px] shrink-0 ${
@@ -374,13 +374,13 @@ function SnapshotCell({
       <Icon className="h-[20px] w-[20px] shrink-0 text-[#1d2a6b]" />
       <span
         className={`min-w-0 flex-1 whitespace-nowrap pt-[2px] leading-[1.15] text-[#1a2040] ${
-          small ? `ml-[7px] ${small} font-normal tracking-[-0.4px]` : "ml-[10px] text-[12.2px] font-normal tracking-[-0.5px]"
+          small ? `ml-[5px] ${small} font-medium tracking-[-0.4px]` : "ml-[10px] text-[12.2px] font-medium tracking-[-0.5px]"
         }`}
       >
         {label}
       </span>
       {value !== undefined && (
-        <span className="ml-1 shrink-0 pt-[2px] text-[16px] font-normal leading-none tracking-[-0.3px] text-[#111a45]">
+        <span className="ml-1 shrink-0 pt-[2px] text-[16px] font-medium leading-none tracking-[-0.3px] text-[#111a45]">
           {value}
         </span>
       )}
@@ -394,7 +394,7 @@ function LiveSnapshot() {
     <div className={card}>
       <div className="flex h-[38px] items-center pt-[2px] [--t:17.4px] pl-[9px] pr-[7px]">
         <CardTitle>Live Operational Snapshot</CardTitle>
-        <GreenPill className="ml-auto h-[25px] w-[86px] gap-[6px] text-[13px] font-normal">
+        <GreenPill className="ml-auto h-[25px] w-[86px] gap-[6px] text-[13px] font-medium">
           <CheckIcon className="h-[13px] w-[13px] text-[#1f8a2e]" />
           <span className="pt-[2px]">Healthy</span>
         </GreenPill>
@@ -404,32 +404,32 @@ function LiveSnapshot() {
         <SnapshotCell icon={VanIcon} label="My Active" value="2 / 2" small="text-[11.5px]" />
         <SnapshotCell icon={ChatCircleIcon} label="Cases Closing Today" value="07" />
         <SnapshotCell icon={DiamondIcon} label="Avg. Response" small="text-[9.3px]">
-          <GreenPill className="h-[19px] shrink-0 px-[3px] pt-[2px] text-[10px] font-normal">18 mins</GreenPill>
+          <GreenPill className="ml-[3px] h-[19px] shrink-0 px-[3px] pt-[2px] text-[9.6px] font-medium">18 mins</GreenPill>
         </SnapshotCell>
         <SnapshotCell icon={PeopleIcon} label="Staff On Duty" value="08 / 10" />
         <SnapshotCell icon={WarningIcon} label="SLA Breaches" small="text-[11px]" value={<span className="text-[#e3251d]">03</span>} />
         <div className="flex min-w-0 items-start pt-[8px]">
           <PeopleGroupIcon className="mt-[2px] h-[20px] w-[20px] shrink-0 text-[#1d2a6b]" />
-          <span className="ml-[10px] min-w-0 flex-1 pt-[2px] text-[12.2px] font-normal leading-[1.25] tracking-[-0.5px] text-[#1a2040]">
+          <span className="ml-[10px] min-w-0 flex-1 pt-[2px] text-[12.2px] font-medium leading-[1.25] tracking-[-0.5px] text-[#1a2040]">
             Volunteers
             <br />
             Availability
           </span>
           <span className="flex shrink-0 flex-col items-end">
-            <span className="pt-[2px] text-[16px] font-normal leading-none tracking-[-0.3px] text-[#111a45]">126 / 148</span>
-            <GreenPill className="mr-[1px] mt-[8px] h-[17px] w-[39px] pt-[2px] text-[11.5px] font-normal">(85%)</GreenPill>
+            <span className="pt-[2px] text-[16px] font-medium leading-none tracking-[-0.3px] text-[#111a45]">126 / 148</span>
+            <GreenPill className="mr-[1px] mt-[8px] h-[17px] w-[39px] pt-[2px] text-[11.5px] font-medium">(85%)</GreenPill>
           </span>
         </div>
         <div className="flex min-w-0 items-start pt-[8px]">
           <LocationIcon className="mt-[2px] h-[19px] w-[19px] shrink-0 text-[#1d2a6b]" />
-          <span className="ml-[7px] min-w-0 flex-1 whitespace-nowrap pt-[2px] text-[9.6px] font-normal leading-[1.55] tracking-[-0.4px] text-[#1a2040]">
+          <span className="ml-[7px] min-w-0 flex-1 whitespace-nowrap pt-[2px] text-[9.6px] font-medium leading-[1.55] tracking-[-0.4px] text-[#1a2040]">
             City / Centre
             <br />
             Coverage
           </span>
           <span className="flex shrink-0 flex-col items-end">
-            <span className="pt-[2px] text-[16px] font-normal leading-none tracking-[-0.3px] text-[#111a45]">12 / 12</span>
-            <GreenPill className="mt-[8px] h-[17px] w-[36px] pt-[2px] text-[11px] font-normal">(100%)</GreenPill>
+            <span className="pt-[2px] text-[16px] font-medium leading-none tracking-[-0.3px] text-[#111a45]">12 / 12</span>
+            <GreenPill className="mt-[8px] h-[17px] w-[36px] pt-[2px] text-[11px] font-medium">(100%)</GreenPill>
           </span>
         </div>
       </div>
@@ -441,14 +441,14 @@ function CommunicationStatus() {
   const cols = "grid grid-cols-[1fr_60px_52px_66px] items-center";
   return (
     <div className={card}>
-      <div className="flex h-[38px] items-center pt-[2px] [--t:16.6px] pl-[14px] pr-[18px]">
+      <div className="flex h-[38px] items-center pt-[2px] [--t:16.2px] pl-[14px] pr-[14px]">
         <CardTitle>Communication &amp; Lead Status</CardTitle>
         <span className="ml-auto">
           <LinkArrow>View Report</LinkArrow>
         </span>
       </div>
       <div className="pl-[16px] pr-[16px]">
-        <div className={`${cols} mt-[3px] h-[21px] border-b border-[#eef0f6] pt-[1px] text-[12px] font-normal tracking-[-0.3px] text-[#1d2550]`}>
+        <div className={`${cols} mt-[3px] h-[21px] border-b border-[#eef0f6] pt-[1px] text-[12px] font-medium tracking-[-0.3px] text-[#1d2550]`}>
           <span>Channel</span>
           <span className="text-center">Received</span>
           <span className="text-center">Pending</span>
@@ -458,10 +458,10 @@ function CommunicationStatus() {
           <div key={c.name} className={`${cols} h-[24px] border-b border-[#f0f2f7] last:border-b-0`}>
             <span className="flex min-w-0 items-center">
               <Icon className={`h-[18px] w-[18px] shrink-0 ${c.color}`} />
-              <span className="ml-[15px] whitespace-nowrap pt-[2px] text-[13px] font-normal tracking-[-0.5px] text-[#1a2040]">{c.name}</span>
+              <span className="ml-[15px] whitespace-nowrap pt-[2px] text-[13px] font-medium tracking-[-0.5px] text-[#1a2040]">{c.name}</span>
             </span>
             {[c.received, c.pending, c.unanswered].map((n, i) => (
-              <span key={i} className={`pt-[2px] text-center text-[14.5px] font-normal text-[#111a45] ${i === 0 ? "pl-[8px]" : ""}`}>
+              <span key={i} className={`pt-[2px] text-center text-[14.5px] font-medium text-[#111a45] ${i === 0 ? "pl-[8px]" : ""}`}>
                 {n}
               </span>
             ))}
@@ -485,10 +485,10 @@ function ApprovalsCompliance() {
         {approvals.map(({ icon: Icon, ...a }) => (
           <li key={a.label} className="flex h-[32.5px] items-center border-b border-[#eef0f6] last:border-b-0">
             <Icon className="h-[21px] w-[21px] shrink-0 text-[#f39a2c]" />
-            <span className="ml-[14px] min-w-0 flex-1 truncate pt-[2px] text-[14.8px] font-normal tracking-[-0.4px] text-[#1a2040]">
+            <span className="ml-[14px] min-w-0 flex-1 truncate pt-[2px] text-[14.8px] font-medium tracking-[-0.4px] text-[#1a2040]">
               {a.label}
             </span>
-            <span className="pt-[3px] text-[19px] font-normal leading-none text-[#e0201b]">{a.value}</span>
+            <span className="pt-[3px] text-[19px] font-medium leading-none text-[#e0201b]">{a.value}</span>
           </li>
         ))}
       </ul>
@@ -525,7 +525,7 @@ function SewaOverview({ period }: { period: Period }) {
     <div className={card}>
       <div className="flex h-[41px] items-center pt-[2px] pl-[16px] pr-[14px]">
         <CardTitle>
-          Sewa Overview <span className="text-[16px] font-normal tracking-[-0.4px]">({periodLabel(period)})</span>
+          Sewa Overview <span className="text-[16px] font-medium tracking-[-0.4px]">({periodLabel(period)})</span>
         </CardTitle>
         <span className="ml-auto">
           <LinkArrow>View Details</LinkArrow>
@@ -535,18 +535,18 @@ function SewaOverview({ period }: { period: Period }) {
         <div className="relative">
           <Donut />
           <div className="absolute inset-0 flex flex-col items-center justify-center text-[#111a45]">
-            <span className="pt-[4px] text-[31px] font-normal leading-none">65</span>
-            <span className="mt-[1px] text-[14px] font-normal leading-none tracking-[-0.3px]">Total Cases</span>
+            <span className="pt-[4px] text-[31px] font-medium leading-none">65</span>
+            <span className="mt-[1px] text-[14px] font-medium leading-none tracking-[-0.3px]">Total Cases</span>
           </div>
         </div>
-        <ul className="-mt-[10px] ml-[15px] min-w-0 flex-1">
+        <ul className="-mt-[10px] ml-[12px] min-w-0 flex-1">
           {overview.map((s) => (
             <li key={s.label} className="flex h-[34px] items-center">
               <span className="h-[12px] w-[12px] shrink-0 rounded-full" style={{ background: s.color }} />
-              <span className="ml-[9px] min-w-0 flex-1 whitespace-nowrap pt-[2px] text-[13.4px] font-normal tracking-[-0.4px] text-[#1a2040]">
+              <span className="ml-[8px] min-w-0 flex-1 whitespace-nowrap pt-[2px] text-[13px] font-medium tracking-[-0.4px] text-[#1a2040]">
                 {s.label}
               </span>
-              <span className="pt-[2px] text-[14.5px] tracking-[-0.2px] text-[#111a45]">
+              <span className="ml-[6px] shrink-0 pt-[2px] text-[14.5px] tracking-[-0.2px] text-[#111a45]">
                 {s.value} ({s.pct}%)
               </span>
             </li>
@@ -566,14 +566,14 @@ function RecentActivities() {
           <LinkArrow>View All</LinkArrow>
         </span>
       </div>
-      <ul className="mt-[1px] pl-[16px] pr-[14px]">
+      <ul className="mt-[1px] pl-[13px] pr-[14px]">
         {activities.map((a) => (
           <li key={a.text} className="flex h-[27px] items-center">
             <span className={`h-[9px] w-[9px] shrink-0 rounded-full ${a.dot}`} />
-            <span className="ml-[10px] min-w-0 flex-1 whitespace-nowrap pt-[2px] text-[11.2px] font-normal tracking-[-0.45px] text-[#1a2040]">
+            <span className="ml-[8px] min-w-0 flex-1 whitespace-nowrap pt-[2px] text-[11.2px] font-medium tracking-[-0.45px] text-[#1a2040]">
               {a.text}
             </span>
-            <span className="ml-2 shrink-0 pt-[2px] text-[12px] tracking-[-0.3px] text-[#1b2d6b]">{a.time}</span>
+            <span className="ml-2 shrink-0 pt-[2px] text-[11.6px] tracking-[-0.3px] text-[#1b2d6b]">{a.time}</span>
           </li>
         ))}
       </ul>
@@ -605,7 +605,7 @@ function AiInsights() {
         {insights.map((t) => (
           <li key={t} className="flex min-h-[26px] items-start">
             <CheckCircleIcon className="mt-[2px] h-[17px] w-[17px] shrink-0 text-[#1e8f35]" />
-            <span className="ml-[6px] pt-[4px] text-[10.5px] font-normal leading-[14px] tracking-[-0.4px] text-[#1a2040]">{t}</span>
+            <span className="ml-[6px] pt-[4px] text-[10.5px] font-medium leading-[14px] tracking-[-0.4px] text-[#1a2040]">{t}</span>
           </li>
         ))}
       </ul>
@@ -618,7 +618,7 @@ function SystemHealth() {
     <div className={card}>
       <div className="flex h-[41px] items-center pt-[2px] pl-[10px] pr-[9px]">
         <CardTitle>System Health</CardTitle>
-        <GreenPill className="ml-auto h-[25px] w-[148px] gap-[6px] text-[12px] font-normal tracking-[-0.4px]">
+        <GreenPill className="ml-auto h-[25px] w-[148px] gap-[6px] text-[12px] font-medium tracking-[-0.4px]">
           <CheckIcon className="h-[12px] w-[12px] text-[#1f8a2e]" />
           <span className="pt-[2px]">All Systems Operational</span>
         </GreenPill>
@@ -631,14 +631,14 @@ function SystemHealth() {
           >
             <Icon className="h-[19px] w-[19px] shrink-0 text-[#2a3a8c]" />
             <span className="ml-[14px] min-w-0 flex-1 pt-[2px] leading-none">
-              <span className="block truncate text-[13px] font-normal tracking-[-0.4px] text-[#1a2040]">{h.label}</span>
+              <span className="block truncate text-[13px] font-medium tracking-[-0.4px] text-[#1a2040]">{h.label}</span>
               {h.sub && (
                 <span className="mt-[2px] block truncate text-[10px] tracking-[-0.3px] text-[#1a2040]">{h.sub}</span>
               )}
             </span>
             <span
               className={`ml-2 shrink-0 pt-[2px] text-[13px] tracking-[-0.3px] ${
-                h.green ? "font-normal text-[#1f8a2e]" : "font-normal text-[#111a45]"
+                h.green ? "font-medium text-[#1f8a2e]" : "font-medium text-[#111a45]"
               }`}
             >
               {h.value}
@@ -666,10 +666,10 @@ function TeamTraining() {
           <div key={s.label} className="flex h-[50px] items-center rounded-[12px] bg-[#eef8ef] pl-[24px]">
             <Icon className="h-[34px] w-[34px] shrink-0 text-[#1f8a2e]" />
             <div className="ml-[16px] leading-none text-[#111a45]">
-              <p className="text-[14px] font-normal tracking-[-0.3px]">{s.label}</p>
-              <p className="mt-[5px] whitespace-nowrap text-[18px] font-normal tracking-[-0.3px]">
+              <p className="text-[14px] font-medium tracking-[-0.3px]">{s.label}</p>
+              <p className="mt-[5px] whitespace-nowrap text-[18px] font-medium tracking-[-0.3px]">
                 {s.value}
-                {s.extra && <span className="ml-[5px] text-[13.5px] font-normal text-[#1f8a2e]">{s.extra}</span>}
+                {s.extra && <span className="ml-[5px] text-[13.5px] font-medium text-[#1f8a2e]">{s.extra}</span>}
               </p>
             </div>
           </div>
@@ -678,7 +678,7 @@ function TeamTraining() {
       <div className="mx-[11px] mt-[10px] flex h-[62px] items-start rounded-[10px] bg-[linear-gradient(90deg,#fff6ea_0%,#fff7e8_50%,#fef4e0_100%)] pl-[22px] pt-[3px]">
         <ExclamationFillIcon className="mt-[4px] h-[19px] w-[19px] shrink-0 text-[#f7b500]" />
         <div className="ml-[17px] leading-none text-[#1a1a2e]">
-          <p className="pt-[1px] text-[16.5px] font-normal tracking-[-0.3px] text-[#2a1a0a]">Top Pending Issues</p>
+          <p className="pt-[1px] text-[16.5px] font-semibold tracking-[-0.3px] text-[#2a1a0a]">Top Pending Issues</p>
           <ul className="mt-[2px] pl-[3px]">
             {pendingIssues.map((t) => (
               <li key={t} className="flex h-[19px] items-center text-[14px] tracking-[-0.3px]">
@@ -696,7 +696,7 @@ function TeamTraining() {
 function Footer() {
   const dev = siteConfig.developer;
   return (
-    <footer className="mt-auto flex h-[57px] shrink-0 items-center justify-between gap-4 pl-[6px] pr-[8px] text-[15px] font-normal tracking-[-0.3px] text-[#141b45]">
+    <footer className="mt-auto flex h-[57px] shrink-0 items-center justify-between gap-4 pl-[6px] pr-[8px] text-[15px] font-medium tracking-[-0.3px] text-[#141b45]">
       <p className="whitespace-nowrap pt-[2px]">
         © {siteConfig.copyrightYear} {siteConfig.trust}
         <span className="mx-[12px]">|</span>
@@ -727,7 +727,7 @@ export default function DashboardMain() {
   const [centre, setCentre] = useState<Centre>(null);
 
   return (
-    <div className="flex min-h-dvh min-w-0 flex-1 flex-col bg-[#f4f5fb] font-hind">
+    <div className="flex min-h-dvh min-w-0 flex-1 flex-col bg-[#f4f5fb] font-hind font-medium">
       <TopBar />
       <main className="flex flex-1 flex-col pl-[14px] pr-[12px]">
         <TitleBar period={period} onPeriodChange={setPeriod} centre={centre} onCentreChange={setCentre} />
