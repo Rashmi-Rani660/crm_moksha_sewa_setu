@@ -10,9 +10,13 @@ import { useSyncExternalStore } from "react";
 const PENDING_KEY = "sewa-setu:pending-verification";
 const SESSION_KEY = "sewa-setu:session";
 const FLASH_KEY = "sewa-setu:flash";
+/** Per-session UI state (e.g. notifications read) — cleared on sign out. */
+const STATE_PREFIX = "sewa-setu:notifications-read:";
 
 export type PendingVerification = {
   mobile: string;
+  /** Role the sign-in is for (decided by the login OTP). */
+  role: Role;
   /** Masked e-mail the OTP was sent to. TODO: comes from the sign-in API. */
   email: string;
   device: string;
@@ -22,7 +26,13 @@ export type PendingVerification = {
   time: string;
 };
 
-export type AuthSession = { mobile: string; signedInAt: number };
+export type Role = "user" | "admin" | "super-admin";
+export const roles: Role[] = ["user", "admin", "super-admin"];
+
+/** `role` decides which dashboard opens. TODO: comes from the sign-in API. */
+export type AuthSession = { mobile: string; signedInAt: number; role: Role };
+
+export const isRole = (value: unknown): value is Role => roles.includes(value as Role);
 
 /* ------------------------------ tiny store ------------------------------ */
 
@@ -116,9 +126,10 @@ export function formatDeviceTime(date = new Date()) {
 
 /* ---------------------------- pending verification ---------------------------- */
 
-export function startVerification(mobile: string) {
+export function startVerification(mobile: string, role: Role) {
   const pending: PendingVerification = {
     mobile,
+    role,
     email: "v****@namogange.org", // TODO: from API
     ...describeDevice(),
     location: "New Delhi, India (Approx.)", // TODO: from API
@@ -136,14 +147,28 @@ export function usePendingVerification() {
 
 /* --------------------------------- session --------------------------------- */
 
-export function signIn(mobile: string) {
-  write(SESSION_KEY, JSON.stringify({ mobile, signedInAt: Date.now() }));
+export function signIn(mobile: string, role: Role) {
+  write(SESSION_KEY, JSON.stringify({ mobile, signedInAt: Date.now(), role }));
 }
-export const signOut = () => write(SESSION_KEY, null);
+
+/** Ends the session: removes the session, any pending sign-in and per-session UI state. */
+export function signOut() {
+  try {
+    for (const key of Object.keys(window.sessionStorage)) {
+      if (key.startsWith(STATE_PREFIX)) window.sessionStorage.removeItem(key);
+    }
+  } catch {
+    /* storage unavailable */
+  }
+  write(PENDING_KEY, null);
+  write(SESSION_KEY, null);
+}
 
 export function useAuthSession() {
   const { raw, ready } = useStored(SESSION_KEY);
-  return { session: parse<AuthSession>(raw), ready };
+  const session = parse<AuthSession>(raw);
+  // A session without a valid role (e.g. from an older build) is not usable.
+  return { session: session && isRole(session.role) ? session : null, ready };
 }
 
 /* ------------------------------ flash message ------------------------------ */

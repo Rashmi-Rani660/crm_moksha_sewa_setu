@@ -12,13 +12,13 @@ const poppins = Poppins({
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
   subsets: ["latin"],
-  weight: ["500", "700", "800"],
+  weight: ["400", "500", "700", "800"],
 });
 
 const hind = Hind({
   variable: "--font-hind-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {

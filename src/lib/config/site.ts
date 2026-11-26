@@ -19,6 +19,7 @@ export const siteConfig = {
 } as const;
 
 export const authConfig = {
+  /** Digits in every OTP (login, device verification, password reset). */
   otpLength: 6,
   otpResendSeconds: 30,
   minPasswordLength: 8,

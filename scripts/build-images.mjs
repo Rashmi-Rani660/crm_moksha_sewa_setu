@@ -136,6 +136,11 @@ const result = await sharp(rgba, {
     .png()
     .toBuffer();
 
+  // Emblem on its own for the dashboard sidebar, where the wordmark is set
+  // as live text under it (matches the dashboard designs).
+  await sharp(emblem).resize(480).png({ compressionLevel: 9 }).toFile(resolve(out, "moksha-sewa-emblem.png"));
+  console.log("Wrote public/images/moksha-sewa-emblem.png");
+
   const square = async (size, background = { r: 0, g: 0, b: 0, alpha: 0 }) => {
     const inner = Math.round(size * 0.92);
     const art = await sharp(emblem)

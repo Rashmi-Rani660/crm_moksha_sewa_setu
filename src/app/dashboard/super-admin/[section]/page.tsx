@@ -1,0 +1,28 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import SectionPage from "@/components/dashboards/SectionPage";
+import { findSection, sectionsOf } from "@/components/dashboards/shells";
+
+export function generateStaticParams() {
+  return sectionsOf("super-admin").map((s) => ({ section: s.slug }));
+}
+
+export async function generateMetadata({ params }: PageProps<"/dashboard/super-admin/[section]">): Promise<Metadata> {
+  const { section } = await params;
+  return { title: `${findSection("super-admin", section)?.label ?? "Not found"} | Super Admin` };
+}
+
+export default function Page({ params }: PageProps<"/dashboard/super-admin/[section]">) {
+  return (
+    <Suspense fallback={<main className="min-h-dvh bg-[#f7f8fd]" />}>
+      <Section params={params} />
+    </Suspense>
+  );
+}
+
+async function Section({ params }: { params: PageProps<"/dashboard/super-admin/[section]">["params"] }) {
+  const { section } = await params;
+  if (!findSection("super-admin", section)) notFound();
+  return <SectionPage role="super-admin" slug={section} />;
+}

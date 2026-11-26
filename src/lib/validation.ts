@@ -1,7 +1,7 @@
 import { authConfig } from "@/lib/config/site";
 
-/** Indian mobile number: 10 digits, starting with 6-9. */
-export const MOBILE_PATTERN = /^[6-9]\d{9}$/;
+/** Mobile number: any 10 digits. */
+export const MOBILE_PATTERN = /^\d{10}$/;
 
 export const isValidMobile = (value: string) => MOBILE_PATTERN.test(value);
 
@@ -19,14 +19,15 @@ export type LoginValues = {
 };
 
 /** Returns the first validation error, or `null` when the values are valid. */
-export function validateLogin({ mobile, password, otp }: LoginValues) {
+/** `checkOtp: false` skips the OTP (while OTPs are not verified). */
+export function validateLogin({ mobile, password, otp }: LoginValues, { checkOtp = true } = {}) {
   if (!isValidMobile(mobile)) return "Enter a valid 10-digit mobile number.";
   if (!password) return "Enter your password.";
   if (password.length < authConfig.minPasswordLength)
     return `Password must be at least ${authConfig.minPasswordLength} characters.`;
   if (password.length > authConfig.maxPasswordLength)
     return `Password must not exceed ${authConfig.maxPasswordLength} characters.`;
-  if (otp.length !== authConfig.otpLength)
+  if (checkOtp && otp.length !== authConfig.otpLength)
     return `Enter the ${authConfig.otpLength}-digit OTP sent to your mobile.`;
   return null;
 }

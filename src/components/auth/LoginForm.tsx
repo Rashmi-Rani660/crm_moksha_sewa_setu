@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/icons";
 import { authConfig } from "@/lib/config/site";
 import { clearFlash, startVerification, useFlash } from "@/lib/auth/session";
+import { OTP_CHECK_ENABLED, otpError, roleForLogin } from "@/lib/auth/test-otp";
 import {
   isValidMobile,
   sanitizePasswordInput,
@@ -79,9 +80,16 @@ export default function LoginForm() {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const problem = validateLogin({ mobile, password, otp: otp.join("") });
+    const problem = validateLogin({ mobile, password, otp: otp.join("") }, { checkOtp: OTP_CHECK_ENABLED });
     if (problem) {
       setError(problem);
+      return;
+    }
+    // TODO: the sign-in API verifies the OTP and returns the role. Until then
+    // the role comes from the test mobile numbers (see lib/auth/test-otp).
+    const role = roleForLogin(mobile, otp.join(""));
+    if (!role) {
+      setError(otpError());
       return;
     }
     setError("");
@@ -90,7 +98,7 @@ export default function LoginForm() {
     // TODO: call the sign-in API here with { mobile, password, otp, remember }.
     await new Promise((r) => setTimeout(r, 600));
     // The API reports this as a new device, so the user must verify it next.
-    startVerification(mobile);
+    startVerification(mobile, role);
     router.push("/verify-device");
   }
 
@@ -235,29 +243,31 @@ export default function LoginForm() {
           </Link>
         </div>
 
-        {flash && (
+        {/* Messages: shown in the fixed gap above the button, so a validation
+            error or the signed-out notice never pushes the rest of the card down. */}
+        <div className="flex min-h-6 items-center justify-center py-1 text-center lg:h-[31px] lg:min-h-0 lg:py-0">
           <p
-            role="status"
-            className="mt-3 rounded-lg bg-[#fbf1cf] px-3 py-2 text-center text-[13px] font-medium text-navy-ink"
+            role="alert"
+            aria-live="polite"
+            className={`text-[14px] font-semibold leading-[16px] text-[#c0262d] lg:text-[13px] lg:leading-[15px] ${error ? "" : "hidden"}`}
           >
-            {flash}
+            {error}
           </p>
-        )}
-
-        {/* Error */}
-        <p
-          role="alert"
-          aria-live="polite"
-          className={`mt-3 text-center text-[14px] font-semibold text-[#c0262d] ${error ? "" : "hidden"}`}
-        >
-          {error}
-        </p>
+          {!error && flash && (
+            <p
+              role="status"
+              className="rounded-md bg-[#fbf1cf] px-2.5 py-[2px] text-[13px] font-medium leading-[15px] text-navy-ink lg:text-[12px] lg:leading-[13px]"
+            >
+              {flash}
+            </p>
+          )}
+        </div>
 
         {/* Sign in */}
         <button
           type="submit"
           disabled={submitting}
-          className="mx-auto mt-6 inline-flex h-[50px] w-full max-w-[200px] lg:h-[46px] lg:max-w-[186px] items-center justify-center gap-2 rounded-full bg-[linear-gradient(180deg,#143c93_0%,#0a2268_100%)] text-[18px] lg:text-[17px] font-semibold text-white shadow-[0_10px_20px_-6px_rgba(10,34,104,0.55)] transition hover:brightness-110 active:translate-y-px disabled:opacity-70 lg:mt-[31px]"
+          className="mx-auto inline-flex h-[50px] w-full max-w-[200px] lg:h-[46px] lg:max-w-[186px] items-center justify-center gap-2 rounded-full bg-[linear-gradient(180deg,#143c93_0%,#0a2268_100%)] text-[18px] lg:text-[17px] font-semibold text-white shadow-[0_10px_20px_-6px_rgba(10,34,104,0.55)] transition hover:brightness-110 active:translate-y-px disabled:opacity-70"
         >
           {submitting ? "Signing in…" : "Sign In"}
           {!submitting && <ArrowRightIcon />}
