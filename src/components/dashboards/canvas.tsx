@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useState, type CSSProperties, typ
 import Sidebar from "@/components/dashboards/Sidebar";
 import TopBar from "@/components/dashboards/TopBar";
 import { shells } from "@/components/dashboards/shells";
-import { useAuthSession, type Role } from "@/lib/auth/session";
+import { isSigningOut, useAuthSession, type Role } from "@/lib/auth/session";
 
 /**
  * The dashboards are drawn on the design's 1600×901 canvas and every block is
@@ -78,7 +78,9 @@ export function DashboardCanvas({
   const otherRole = session && session.role !== role ? session.role : null;
   useEffect(() => {
     if (!ready) return;
-    if (!session) router.replace("/login");
+    if (!session) {
+      if (!isSigningOut()) router.replace("/login"); // sign-out does its own redirect
+    }
     else if (otherRole) router.replace(`/dashboard/${otherRole}`);
   }, [ready, session, otherRole, router]);
 

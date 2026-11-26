@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import SuperAdminDashboard from "@/components/dashboards/SuperAdminDashboard";
+import SA001Dashboard from "@/components/dashboards/super-admin/pages/SA001Dashboard";
 
 export const metadata: Metadata = {
   title: "Super Admin Dashboard",
 };
 
 export default function Page() {
-  return <SuperAdminDashboard />;
+  return <SA001Dashboard />;
 }

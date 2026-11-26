@@ -4,8 +4,13 @@ import { Suspense } from "react";
 import SectionPage from "@/components/dashboards/SectionPage";
 import { findSection, sectionsOf } from "@/components/dashboards/shells";
 
+/** Sections with their own page folder (SA-002 … SA-008) are not generated here. */
+const ownPages = new Set(["live-operations", "notification-alerts", "central-approvals", "organisation-setup", "city-zone-centres", "departments-centres", "users-access-control"]);
+
 export function generateStaticParams() {
-  return sectionsOf("super-admin").map((s) => ({ section: s.slug }));
+  return sectionsOf("super-admin")
+    .filter((s) => !ownPages.has(s.slug))
+    .map((s) => ({ section: s.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/dashboard/super-admin/[section]">): Promise<Metadata> {
