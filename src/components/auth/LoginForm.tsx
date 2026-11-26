@@ -15,7 +15,7 @@ import {
   ShieldCheckIcon,
 } from "@/components/ui/icons";
 import { authConfig } from "@/lib/config/site";
-import { clearFlash, startVerification, useFlash } from "@/lib/auth/session";
+import { clearFlash, startVerification, useAuthSession, useFlash } from "@/lib/auth/session";
 import { OTP_CHECK_ENABLED, otpError, roleForLogin } from "@/lib/auth/test-otp";
 import {
   isValidMobile,
@@ -43,6 +43,13 @@ export default function LoginForm() {
   const otpRef = useRef<OtpInputHandle>(null);
   const router = useRouter();
   const flash = useFlash();
+  const { session, ready } = useAuthSession();
+
+  // Already signed in (e.g. browser Back / Forward onto this screen): go to the
+  // dashboard, replacing this entry so no login screen is left in history.
+  useEffect(() => {
+    if (ready && session) router.replace(`/dashboard/${session.role}`);
+  }, [ready, session, router]);
 
   // Next keeps the previous screen alive (hidden) when you navigate away, so
   // state such as "Signing in…" would still be there on return. Effect cleanups
@@ -99,7 +106,8 @@ export default function LoginForm() {
     await new Promise((r) => setTimeout(r, 600));
     // The API reports this as a new device, so the user must verify it next.
     startVerification(mobile, role);
-    router.push("/verify-device");
+    // replace: the login screen should not stay behind the sign-in steps in history
+    router.replace("/verify-device");
   }
 
   return (

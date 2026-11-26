@@ -17,6 +17,7 @@ import {
   clearVerification,
   setFlash,
   signIn,
+  useAuthSession,
   usePendingVerification,
 } from "@/lib/auth/session";
 import { authConfig } from "@/lib/config/site";
@@ -49,10 +50,15 @@ export default function VerifyDeviceForm() {
     [],
   );
 
-  // No sign-in attempt to verify (e.g. page opened directly) → back to login.
+  const { session, ready: sessionReady } = useAuthSession();
+
+  // Already signed in → dashboard; no sign-in attempt to verify (e.g. page
+  // opened directly or reached with Back) → login. Both replace this entry.
   useEffect(() => {
-    if (ready && !pending && !leaving.current) router.replace("/login");
-  }, [ready, pending, router]);
+    if (!ready || !sessionReady || leaving.current) return;
+    if (session) router.replace(`/dashboard/${session.role}`);
+    else if (!pending) router.replace("/login");
+  }, [ready, sessionReady, session, pending, router]);
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -87,7 +93,8 @@ export default function VerifyDeviceForm() {
     const role = pending.role;
     signIn(pending.mobile, role);
     clearVerification();
-    router.push(`/dashboard/${role}`);
+    // replace: Back from the dashboard must not return to the sign-in steps
+    router.replace(`/dashboard/${role}`);
   }
 
   function notMe() {
@@ -96,13 +103,13 @@ export default function VerifyDeviceForm() {
     setFlash(
       "Thanks for letting us know. This sign-in was blocked — if you did not try to log in, please change your password.",
     );
-    router.push("/login");
+    router.replace("/login");
   }
 
   function backToLogin() {
     leaving.current = true;
     clearVerification();
-    router.push("/login");
+    router.replace("/login");
   }
 
   const labelBold = "font-semibold lg:font-semibold";

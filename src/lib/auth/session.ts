@@ -38,6 +38,14 @@ export const isRole = (value: unknown): value is Role => roles.includes(value as
 
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
+// A page restored from the back/forward cache keeps its old render; re-read
+// storage so a signed-out session is noticed (and the guard redirects).
+if (typeof window !== "undefined") {
+  window.addEventListener("pageshow", (e) => {
+    if (e.persisted) emit();
+  });
+}
+
 const subscribe = (cb: () => void) => {
   listeners.add(cb);
   return () => listeners.delete(cb);
@@ -151,8 +159,13 @@ export function signIn(mobile: string, role: Role) {
   write(SESSION_KEY, JSON.stringify({ mobile, signedInAt: Date.now(), role }));
 }
 
+/** True while a sign-out is moving to /login (guards should not redirect too). */
+let signingOut = false;
+export const isSigningOut = () => signingOut;
+
 /** Ends the session: removes the session, any pending sign-in and per-session UI state. */
 export function signOut() {
+  signingOut = true;
   try {
     for (const key of Object.keys(window.sessionStorage)) {
       if (key.startsWith(STATE_PREFIX)) window.sessionStorage.removeItem(key);

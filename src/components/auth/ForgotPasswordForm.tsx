@@ -173,7 +173,7 @@ export default function ForgotPasswordForm() {
     setFlash(
       "Password reset successfully. Please sign in with your new password.",
     );
-    router.push("/login");
+    router.replace("/login");
   }
 
   function handleChangeMobile() {

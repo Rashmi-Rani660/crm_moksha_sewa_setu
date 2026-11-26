@@ -277,6 +277,42 @@ function Notifications({ role, count }: { role: Role; count: number }) {
 
 /* ---------------------------------- profile -------------------------------- */
 
+type NavigationApi = {
+  entries(): { url: string | null; key: string }[];
+  currentEntry: { index: number } | null;
+  traverseTo(key: string): { finished: Promise<unknown> };
+};
+
+/**
+ * After sign-out, step back to the first dashboard entry of this visit (so
+ * the dashboard pages behind it are not left in Back history), then run
+ * `done`, which replaces that entry with /login. Without the Navigation API
+ * (e.g. Firefox) `done` runs right away. If the step back loads another
+ * document, that page's own guard sends it to /login (the session is gone).
+ */
+function leaveDashboard(done: () => void) {
+  let ran = false;
+  const finish = () => {
+    if (ran) return;
+    ran = true;
+    done();
+  };
+  const nav = (window as unknown as { navigation?: NavigationApi }).navigation;
+  const current = nav?.currentEntry;
+  if (!nav || !current || typeof nav.traverseTo !== "function") return finish();
+  const entries = nav.entries();
+  const isDashboard = (url: string | null) => !!url && new URL(url).pathname.startsWith("/dashboard");
+  let first = current.index;
+  while (first > 0 && isDashboard(entries[first - 1]?.url)) first--;
+  if (first === current.index) return finish();
+  window.setTimeout(finish, 1500);
+  try {
+    nav.traverseTo(entries[first].key).finished.then(finish, finish);
+  } catch {
+    finish();
+  }
+}
+
 function ProfileMenu({
   role,
   user,
@@ -290,7 +326,6 @@ function ProfileMenu({
   roleSize?: number;
   compact?: boolean;
 }) {
-  const router = useRouter();
   const { open, setOpen, ref } = usePopover();
 
   return (
@@ -343,8 +378,9 @@ function ProfileMenu({
             type="button"
             role="menuitem"
             onClick={() => {
-              signOut();
-              router.replace("/login");
+              signOut(); // always first: the session ends no matter what follows
+              // full load of /login: nothing from the signed-in screens survives
+              leaveDashboard(() => window.location.replace("/login"));
             }}
             className="flex h-[36px] w-full items-center gap-[10px] rounded-[8px] px-[10px] text-[14px] font-semibold text-[#d61f1f] hover:bg-[#fdf1f1]"
           >

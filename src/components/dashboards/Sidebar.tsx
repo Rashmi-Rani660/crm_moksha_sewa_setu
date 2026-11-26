@@ -29,6 +29,10 @@ export type SidebarSpec = {
   items: NavItem[];
   /** How far the diya artwork sits below its default place. */
   diyaShift?: number;
+  /** Height of a plain (non-pill) row; keep ≤ the row pitch so rows never overlap. */
+  rowHeight?: number;
+  /** Text size inside a pill (defaults to fontSize + 1.5). */
+  pillFontSize?: number;
 };
 
 /**
@@ -48,7 +52,7 @@ export default function Sidebar({
   active?: string;
   onNavigate?: () => void;
 }) {
-  const { width, fontSize, iconSize, textX, iconX, pill, items, diyaShift = 0 } = spec;
+  const { width, fontSize, iconSize, textX, iconX, pill, items, diyaShift = 0, rowHeight = 32, pillFontSize = spec.fontSize + 1.5 } = spec;
   return (
     <aside
       style={{ width }}
@@ -83,7 +87,7 @@ export default function Sidebar({
             const current = active ? slugify(label) === active : item.pill === "gold";
             const kind = current ? "gold" : item.pill === "blue" ? "blue" : undefined;
             const p = box ?? pill;
-            const h = kind ? p.h : 32;
+            const h = kind ? p.h : rowHeight;
             const isCurrent = kind === "gold";
             return (
               <li key={label} style={{ top: y - h / 2, height: h, left: kind ? p.x : 0, width: kind ? p.w : width }} className="absolute">
@@ -105,7 +109,7 @@ export default function Sidebar({
                     className="absolute"
                   />
                   <span
-                    style={{ left: textX - (kind ? p.x : 0), fontSize: kind ? fontSize + 1.5 : fontSize }}
+                    style={{ left: textX - (kind ? p.x : 0), fontSize: kind ? pillFontSize : fontSize }}
                     className={`absolute whitespace-nowrap pt-px leading-none tracking-[-0.2px] ${
                       kind ? "font-semibold" : "font-medium"
                     }`}
