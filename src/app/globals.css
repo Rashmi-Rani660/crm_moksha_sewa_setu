@@ -36,3 +36,10 @@ body {
   color: var(--foreground);
   font-family: var(--font-poppins), system-ui, sans-serif;
 }
+
+/* If the Hind variable is ever missing (e.g. a dev tab left open across a font
+   change), keep the dashboards' narrow metrics instead of inheriting the wide
+   Poppins body font, which pushes text out of its boxes. */
+.font-hind {
+  font-family: var(--font-hind-sans, Arial, Helvetica, sans-serif);
+}

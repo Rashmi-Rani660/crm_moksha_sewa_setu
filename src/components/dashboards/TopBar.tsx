@@ -51,7 +51,7 @@ export default function TopBar({ spec, role, menuOpen }: { spec: TopBarSpec; rol
       <div className="lg:hidden">
         <div className="flex h-[56px] items-center gap-3 px-3">
           {menuButton}
-          <Link href={`/dashboard/${role}`} className="text-[22px] font-bold leading-none tracking-[-0.5px] text-[#0a0b3c]">Sewa Setu</Link>
+          <Link href={`/dashboard/${role}`} className="whitespace-nowrap text-[22px] font-bold leading-none tracking-[-0.5px] text-[#0a0b3c]">Sewa Setu</Link>
           <div className="relative ml-auto"><Notifications role={role} count={spec.notifications} /></div>
           <div className="relative"><ProfileMenu role={role} user={spec.user} compact /></div>
         </div>
@@ -65,7 +65,7 @@ export default function TopBar({ spec, role, menuOpen }: { spec: TopBarSpec; rol
 
         {/* Sewa Setu wordmark */}
         <Link href={`/dashboard/${role}`} aria-label="Sewa Setu dashboard" style={x(spec.logoX)} className="absolute top-[12px] w-[112px]">
-          <span className="block text-[24.4px] font-bold leading-none tracking-[-0.5px] text-[#0a0b3c]">Sewa Setu</span>
+          <span className="block whitespace-nowrap text-[24.4px] font-bold leading-none tracking-[-0.5px] text-[#0a0b3c]">Sewa Setu</span>
           {/* Swoosh traced from the brand artwork; viewBox units = artwork px with
               the wordmark's left edge at x 0 and its cap height at y 0 → 22. */}
           <svg viewBox="0 0 147 50" className="pointer-events-none absolute left-[-2.8px] top-[-1px] h-[38.8px] w-[114px]" aria-hidden>
