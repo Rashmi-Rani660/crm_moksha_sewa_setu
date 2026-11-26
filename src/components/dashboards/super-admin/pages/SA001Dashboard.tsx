@@ -494,7 +494,7 @@ export default function SA001Dashboard() {
             );
           })}
         </Panel>
-        <Panel title={<span className="inline-flex items-center gap-[6px]"><ChartColumn strokeWidth={2} className="h-[16px] w-[16px]" />Key Performance</span>} note="(This Month)" bodyClassName="grid grid-cols-3 text-center">
+        <Panel title="Key Performance" icon={ChartColumn} note="(This Month)" bodyClassName="grid grid-cols-3 text-center">
           {[
             [ChartColumn, "82%", "Task Completion", "text-[#2f6fe0]"],
             [Target, "96%", "SLA Compliance", "text-[#7a3fe0]"],
