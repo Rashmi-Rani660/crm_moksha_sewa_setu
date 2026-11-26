@@ -210,6 +210,27 @@ export const shells: Record<Role, Shell> = {
   },
 };
 
+/**
+ * Menu rows are spaced so the visible gap between neighbours is the same
+ * everywhere: a plain row counts as its icon + text (ROW_VISUAL px), a pill
+ * as its full height. The first and last rows keep their design position.
+ */
+const ROW_VISUAL = 22;
+
+function spaceMenuEvenly({ items, pill }: SidebarSpec) {
+  const heights = items.map((i) => (i.pill ? (i.box ?? pill).h : ROW_VISUAL));
+  const top = items[0].y - heights[0] / 2;
+  const bottom = items[items.length - 1].y + heights[heights.length - 1] / 2;
+  const gap = (bottom - top - heights.reduce((a, b) => a + b, 0)) / (items.length - 1);
+  let edge = top;
+  items.forEach((item, i) => {
+    item.y = Math.round((edge + heights[i] / 2) * 10) / 10;
+    edge += heights[i] + gap;
+  });
+}
+
+for (const shell of Object.values(shells)) spaceMenuEvenly(shell.sidebar);
+
 /** Menu rows that are the dashboard itself (current-page pill, heading pill, "Dashboard"). */
 export const isHomeItem = (item: SidebarSpec["items"][number]) => Boolean(item.pill) || item.label === "Dashboard";
 
