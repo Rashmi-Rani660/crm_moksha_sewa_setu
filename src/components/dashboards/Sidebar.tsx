@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import { isHomeItem, homeHref, sectionHref, slugify } from "@/components/dashboards/shells";
 import type { Role } from "@/lib/auth/session";
+import SidebarMotto from "@/components/dashboards/SidebarMotto";
 import { siteConfig } from "@/lib/config/site";
 
 export type NavItem = {
@@ -126,15 +127,9 @@ export default function Sidebar({
         </ul>
       </nav>
 
-      <Image
-        src="/images/sidebar-diya-glow.png"
-        alt=""
-        width={442}
-        height={490}
-        sizes="222px"
-        style={{ bottom: -diyaShift }}
-        className="pointer-events-none absolute left-0 h-auto w-full [mask-image:linear-gradient(transparent,#000_44px)]"
-      />
+      <div style={{ bottom: -diyaShift }} className="absolute inset-x-0">
+        <SidebarMotto />
+      </div>
     </aside>
   );
 }

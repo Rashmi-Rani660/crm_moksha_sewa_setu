@@ -172,7 +172,7 @@ export const shells: Record<Role, Shell> = {
     pill: { x: 8, w: 194, h: 36 },
     rowHeight: 26,
     pillFontSize: 14,
-    diyaShift: 62,
+    diyaShift: 0,
     items: [
       { label: "Super Admin", icon: House, y: 152, pill: "gold" },
       { label: "Dashboard", icon: LayoutGrid, y: 180 },
@@ -194,7 +194,7 @@ export const shells: Record<Role, Shell> = {
       { label: "System Security", icon: ShieldCheck, y: 596 },
       { label: "Backup & Recovery", icon: CloudUpload, y: 622 },
       { label: "Audit Logs", icon: FileText, y: 648 },
-      { label: "System Settings", icon: Settings, y: 700 },
+      { label: "System Settings", icon: Settings, y: 652 },
     ],
   },
     topBar: {
