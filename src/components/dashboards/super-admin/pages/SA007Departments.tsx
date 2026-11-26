@@ -8,7 +8,9 @@
  * tasks and access before archiving.
  */
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { saRoutes } from "@/components/dashboards/super-admin/routes";
 import {
   ChevronRight,
   Cog,
@@ -70,6 +72,7 @@ const actions: { icon: LucideIcon; label: string }[] = [
 
 export default function SA007Departments() {
   const notice = useNotice();
+  const router = useRouter();
   const [tab, setTab] = useState<(typeof tabs)[number]>("Departments (07)");
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<(typeof statusList)[number]>("All Status");
@@ -103,7 +106,7 @@ export default function SA007Departments() {
               type="button"
               role="tab"
               aria-selected={tab === t}
-              onClick={() => setTab(t)}
+              onClick={() => (t === "Team Structure" || t === "Department Heads" ? router.push(saRoutes.hierarchy) : t === "Role Mapping" ? router.push(saRoutes.roles) : setTab(t))}
               className={`flex h-[38px] shrink-0 items-center whitespace-nowrap rounded-[9px] border px-[20px] pt-px text-[14px] font-semibold shadow-[0_2px_6px_rgba(30,50,110,0.06)] ${
                 tab === t ? "border-[#1d4fe0] bg-[#1d4fe0] text-white" : "border-[#e1e5ee] bg-white hover:bg-[#f4f6fc]"
               }`}
