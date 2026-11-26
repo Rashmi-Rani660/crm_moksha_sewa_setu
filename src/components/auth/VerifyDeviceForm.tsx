@@ -20,6 +20,7 @@ import {
   usePendingVerification,
 } from "@/lib/auth/session";
 import { authConfig } from "@/lib/config/site";
+import { OTP_CHECK_ENABLED, deviceOtpAccepted, otpError } from "@/lib/auth/test-otp";
 
 const outlineBtn =
   "inline-flex h-[46px] min-w-[160px] flex-1 items-center justify-center gap-2.5 whitespace-nowrap rounded-full border-[1.5px] border-navy-ink bg-white px-4 text-[15px] font-semibold text-navy-ink transition hover:bg-navy-ink hover:text-white lg:h-[38px] lg:min-w-0 lg:flex-none lg:gap-2 lg:text-[14px]";
@@ -69,18 +70,24 @@ export default function VerifyDeviceForm() {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (otp.length !== authConfig.otpLength) {
+    if (OTP_CHECK_ENABLED && otp.length !== authConfig.otpLength) {
       setError(`Enter the ${authConfig.otpLength}-digit code sent to your email.`);
+      return;
+    }
+    // TODO: call the "verify device" API here with { otp }. Until then the
+    // static test OTP of the role being signed in is accepted.
+    if (!pending || !deviceOtpAccepted(otp, pending.role)) {
+      setError(otpError());
       return;
     }
     setError("");
     setSubmitting(true);
-    // TODO: call the "verify device" API here with { otp }.
     await new Promise((r) => setTimeout(r, 600));
     leaving.current = true;
-    if (pending) signIn(pending.mobile);
+    const role = pending.role;
+    signIn(pending.mobile, role);
     clearVerification();
-    router.push("/dashboard");
+    router.push(`/dashboard/${role}`);
   }
 
   function notMe() {

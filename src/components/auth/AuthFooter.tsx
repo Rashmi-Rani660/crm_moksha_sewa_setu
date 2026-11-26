@@ -1,5 +1,6 @@
 import { siteConfig } from "@/lib/config/site";
 import type { AuthVariant } from "@/components/auth/AuthShell";
+import EncodencyBadge from "@/components/ui/EncodencyBadge";
 
 const styles = {
   login: {
@@ -14,8 +15,6 @@ const styles = {
 /** Copyright line + developer badge, shared by the auth screens. */
 export default function AuthFooter({ variant }: { variant: AuthVariant }) {
   const s = styles[variant];
-  const dev = siteConfig.developer;
-
   return (
     <footer className={s.wrap}>
       <div
@@ -28,19 +27,7 @@ export default function AuthFooter({ variant }: { variant: AuthVariant }) {
           <span className={s.sep}> | </span>
           Designed, Developed &amp; Maintained by
         </p>
-        <span
-          className={`inline-flex h-[34px] min-w-[128px] shrink-0 flex-col items-center justify-center rounded-[5px] bg-[#e3141b] px-2.5 leading-none text-white shadow-sm ${s.badge}`}
-          role="img"
-          aria-label={`${dev.name} ${dev.legal} — ${dev.slogan}`}
-        >
-          <span className={`text-[15px] font-semibold tracking-tight ${s.name}`}>
-            {dev.name}
-            <span className="ml-0.5 text-[6px] font-bold">{dev.legal}</span>
-          </span>
-          <span className="mt-0.5 text-[5px] font-semibold italic">
-            {dev.slogan}
-          </span>
-        </span>
+        <EncodencyBadge className={s.badge} nameClassName={s.name} />
       </div>
     </footer>
   );
