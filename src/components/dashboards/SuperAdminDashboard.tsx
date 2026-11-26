@@ -394,7 +394,7 @@ export default function SuperAdminDashboard() {
       </Card>
 
       {/* AI & Automation */}
-      <Card at={[637, 617, 487, 141]} label="AI & Automation">
+      <Card at={[637, 617, 487, 141]} label="AI & Automation" span={[6, 12]}>
         <CardTitle x={11} y={9} size={18}>AI &amp; Automation</CardTitle>
         {ai.map((t) => (
           <At key={t.label} x={t.x} y={28} w={t.w} h={76} className="rounded-[9px] border border-[#e1e5ee] bg-white shadow-[0_2px_6px_rgba(30,50,110,0.08)]">

@@ -15,10 +15,8 @@ import { useAuthSession, type Role } from "@/lib/auth/session";
  * the design, the content is stretched sideways to use the spare width (up to
  * MAX_STRETCH, see `--k`); anything beyond that is shared on both sides.
  *
- * Below `lg` (phones, tablets) the blocks flow and wrap in design order, all
- * zoomed by the same factor `--s` so a ~490px design card fits the screen
- * width (never stretched, at most 1.1×). Blocks wider than that scroll
- * sideways inside themselves (or are cropped, see `Box` `fit`).
+ * Below `lg` (phones, tablets) the blocks flow in design order in a grid and
+ * each is zoomed to fit its cell (see `Box`).
  */
 export const DESIGN_W = 1600;
 export const DESIGN_H = 901;
@@ -31,8 +29,8 @@ export const useMenuToggle = () => useContext(MenuToggle);
 
 const DESKTOP = "(min-width: 1024px)";
 
-/** Below `lg`: zoom that fits a 490px design card in the window (max 1.1). */
-const MOBILE_SCALE = "min(1.1, calc((var(--vw, 390) - 40) / 490))";
+/** Below `lg`: grid of 6 columns (12 from `sm`), 12px padding and gaps — see `Box`. */
+const MOBILE_GRID = "grid grid-cols-6 content-start gap-3 p-3 [--cols:6] sm:grid-flow-row-dense sm:grid-cols-12 sm:[--cols:12]";
 
 const RoleContext = createContext<Role>("user");
 /** Role of the dashboard being shown. */
@@ -110,8 +108,8 @@ export function DashboardCanvas({
         <div className="relative min-w-0 flex-1">
           <TopBar spec={shell.topBar} role={role} menuOpen={drawer || !collapsed} />
           <main
-            style={{ "--inner": `${DESIGN_W - sidebarWidth}px`, "--s": MOBILE_SCALE } as CSSProperties}
-            className="flex flex-wrap content-start justify-center gap-3 p-3 lg:relative lg:overflow-visible lg:mx-auto lg:block lg:h-[901px] lg:w-[var(--inner)] lg:gap-0 lg:p-0 lg:[transform:scaleX(var(--k))]"
+            style={{ "--inner": `${DESIGN_W - sidebarWidth}px` } as CSSProperties}
+            className={`${MOBILE_GRID} lg:relative lg:overflow-visible lg:mx-auto lg:block lg:h-[901px] lg:w-[var(--inner)] lg:gap-0 lg:p-0 lg:[transform:scaleX(var(--k))]`}
           >
             {children}
           </main>
@@ -124,25 +122,41 @@ export function DashboardCanvas({
 }
 
 /**
- * How a block behaves below `lg`: `scale` (zoomed by `--s`, the default for
- * normal blocks), `scroll` (zoomed, scrolls sideways when wider than the
- * screen — default for blocks 600px+ wide), `clip` (zoomed, cropped to the
- * screen width) or `fluid` (full width, natural height, not zoomed).
+ * Below `lg` (phones / tablets) blocks sit in a grid of 6 columns (12 from
+ * `sm`): normal cards take a full row on phones and half a row on tablets,
+ * KPI tiles and controls a quarter/half, wide strips a full row. Each block
+ * is zoomed so its design width fits its grid cell (never above 1×, so text
+ * is never enlarged); when it is narrower than the cell its card chrome
+ * (`chrome`) is drawn on the cell so cards still line up edge to edge.
+ *
+ * `fit`: `scale` (default), `scroll` (wide strips: at least 0.75×, scrolls
+ * sideways inside itself), `clip` (like scroll but cropped) or `fluid`
+ * (full row, natural height, not zoomed).
  */
 export type BoxFit = "scale" | "scroll" | "clip" | "fluid";
 
-const zoomed = "h-[var(--h)] w-[var(--w)] [zoom:var(--s)] lg:[zoom:1]";
-const fitClass: Record<BoxFit, string> = {
-  scale: zoomed,
-  scroll: zoomed,
-  clip: zoomed,
+/** Grid columns a block spans below `lg`: [phone (of 6), tablet (of 12)]. */
+export type BoxSpan = [number, number];
+
+const inferSpan = (w: number, h: number, fit: BoxFit): BoxSpan => {
+  if (fit === "fluid" || w >= 600) return [6, 12];
+  if (h <= 45) return w <= 150 ? [6, 4] : [3, 4]; // controls (date, centre, refresh)
+  if (h <= 82) return [3, 3]; // KPI tiles
+  return [6, 6]; // cards
+};
+
+const zoomClass: Record<BoxFit, string> = {
+  scale: "h-[var(--h)] w-[var(--w)] shrink-0 [zoom:min(1,var(--fill))] lg:[zoom:1]",
+  scroll: "h-[var(--h)] w-[var(--w)] shrink-0 [zoom:max(0.75,min(1,var(--fill)))] lg:[zoom:1]",
+  clip: "h-[var(--h)] w-[var(--w)] shrink-0 [zoom:max(0.75,min(1,var(--fill)))] lg:[zoom:1]",
   fluid: "w-full lg:h-[var(--h)] lg:w-[var(--w)]",
 };
 
-/** Wrapper below `lg` for `scroll` / `clip`; it disappears from `lg` up. */
-const wrapClass: Partial<Record<BoxFit, string>> = {
-  scroll: "w-full overflow-x-auto overscroll-x-contain lg:contents",
-  clip: "w-full overflow-hidden rounded-[12px] lg:contents",
+const cellClass: Record<BoxFit, string> = {
+  scale: "flex items-start justify-center",
+  scroll: "flex items-start overflow-x-auto overscroll-x-contain",
+  clip: "flex items-start overflow-hidden rounded-[12px]",
+  fluid: "flex",
 };
 
 /**
@@ -156,6 +170,9 @@ export function Box({
   as: Tag = "section",
   label,
   fit = w >= 600 ? "scroll" : "scale",
+  span,
+  chrome = "",
+  chromeStyle,
 }: {
   at: [number, number, number, number];
   className?: string;
@@ -163,23 +180,34 @@ export function Box({
   as?: "section" | "div" | "footer";
   label?: string;
   fit?: BoxFit;
+  /** Override the grid span below `lg`. */
+  span?: BoxSpan;
+  /** Card chrome drawn on the grid cell below `lg` (the block keeps its own from `lg`). */
+  chrome?: string;
+  chromeStyle?: CSSProperties;
 }) {
   const sb = useContext(SidebarWidth);
+  const [phone, tablet] = span ?? inferSpan(w, h, fit);
   const style = {
     "--x": `${x - sb}px`,
     "--y": `${y}px`,
     "--w": `${w}px`,
     "--h": `${h}px`,
+    // design width → cell width (unitless px from --vw, see MOBILE_GRID)
+    "--fill": `calc(((var(--vw, 390) - 24 - (var(--cols) - 1) * 12) / var(--cols) * var(--span) + (var(--span) - 1) * 12) / ${w})`,
   } as CSSProperties;
-  const block = (
-    <Tag
-      aria-label={label}
-      style={style}
-      className={`relative shrink-0 lg:absolute lg:left-[var(--x)] lg:top-[var(--y)] ${fitClass[fit]} ${className}`}
+  return (
+    <div
+      style={{ "--sp-p": phone, "--sp-t": tablet, ...chromeStyle } as CSSProperties}
+      className={`min-w-0 [--span:var(--sp-p)] [grid-column:span_var(--span)/span_var(--span)] sm:[--span:var(--sp-t)] lg:contents ${cellClass[fit]} ${chrome}`}
     >
-      {children}
-    </Tag>
+      <Tag
+        aria-label={label}
+        style={style}
+        className={`relative lg:absolute lg:left-[var(--x)] lg:top-[var(--y)] ${zoomClass[fit]} ${className}`}
+      >
+        {children}
+      </Tag>
+    </div>
   );
-  const wrap = wrapClass[fit];
-  return wrap ? <div className={wrap}>{block}</div> : block;
 }
