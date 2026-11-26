@@ -160,7 +160,7 @@ export default function SA015CaseManagement() {
             </button>
           </section>
 
-          <Panel title="Case List" note={`(${applied.stage === "All Stages" && applied.centre === "All Centres" && applied.service === "All Service Types" ? 276 : rows.length} Cases)`} icon={List} titleSize={16} className="min-h-0 lg:flex-1" action={<ViewLink to="Case & Workflow" />} bodyClassName="pt-[2px] [&_td]:px-[4px] [&_td]:text-[11.6px] [&_th]:px-[4px]">
+          <Panel title="Case List" note={`(${applied.stage === "All Stages" && applied.centre === "All Centres" && applied.service === "All Service Types" ? 276 : rows.length} Cases)`} icon={List} className="min-h-0 lg:flex-1" action={<ViewLink to="Case & Workflow" />} bodyClassName="pt-[2px] [&_td]:px-[4px] [&_td]:text-[11.6px] [&_th]:px-[4px]">
             <TableWrap>
               <Thead>
                 {["#", "Case ID", "Linked Request ID", "Service Type", "Beneficiary / Family", "Centre", "Assigned Admin", "Current Stage", "Priority", "Action"].map((h) => (
@@ -199,7 +199,7 @@ export default function SA015CaseManagement() {
         </div>
 
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Case Stage Breakdown" icon={Layers} titleSize={15.5} className="lg:h-[175px]" bodyClassName="flex flex-col justify-between pt-[4px]">
+          <Panel title="Case Stage Breakdown" icon={Layers} className="lg:h-[175px]" bodyClassName="flex flex-col justify-between pt-[4px]">
             {breakdown.map(([l, v, p, c, w]) => {
               const I = stageStyle[l].icon;
               return (
@@ -212,7 +212,7 @@ export default function SA015CaseManagement() {
               );
             })}
           </Panel>
-          <Panel title="Quick Actions" icon={Zap} titleSize={15.5} className="lg:h-[200px]" bodyClassName="pt-[4px]">
+          <Panel title="Quick Actions" icon={Zap} className="lg:h-[200px]" bodyClassName="pt-[4px]">
             <QuickList
               items={[
                 { icon: Briefcase, label: "Create Case", onClick: () => notice.show("Cases are created from verified requests (demo).") },
@@ -223,7 +223,7 @@ export default function SA015CaseManagement() {
               ]}
             />
           </Panel>
-          <Panel title="Recent Case Updates" icon={History} titleSize={15.5} className="min-h-0 lg:flex-1" action={<ViewLink to="Audit Logs" />} bodyClassName="flex flex-col justify-between pt-[4px]">
+          <Panel title="Recent Case Updates" icon={History} className="min-h-0 lg:flex-1" action={<ViewLink to="Audit Logs" />} bodyClassName="flex flex-col justify-between pt-[4px]">
             {updates.map(([id, t, at, c]) => (
               <div key={id} className="flex items-center gap-[7px] text-[11.6px] font-medium">
                 <span style={{ background: c }} className="h-[8px] w-[8px] shrink-0 rounded-full" />

@@ -109,7 +109,7 @@ export default function SA012MasterData() {
       <Tabs tabs={tabs} value={tab ?? "Service Masters"} onChange={(t) => setTab(t === tab ? null : t)} icons={tabIcons} />
 
       <div className="grid gap-[10px] lg:h-[350px] lg:grid-cols-[885fr_465fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title={tab ? `Master Data Records — ${tab}` : "Master Data Records"} icon={Database} titleSize={17} bodyClassName="pt-[4px]">
+        <Panel title={tab ? `Master Data Records — ${tab}` : "Master Data Records"} icon={Database} bodyClassName="pt-[4px]">
           <TableWrap>
             <Thead>
               {["#", "Master Type", "Record Name", "Code", "Last Updated", "Version", "Owner", "Status", "Action"].map((h) => (
@@ -143,7 +143,7 @@ export default function SA012MasterData() {
         </Panel>
 
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Version History" icon={History} titleSize={17} className="lg:h-[170px]" action={<ViewLink to="Audit Logs" />} bodyClassName="flex flex-col justify-between pt-[4px]">
+          <Panel title="Version History" icon={History} className="lg:h-[170px]" action={<ViewLink to="Audit Logs" />} bodyClassName="flex flex-col justify-between pt-[4px]">
             {versions.map(([v, at]) => (
               <div key={v} className="flex items-center gap-[10px] text-[12px] font-medium">
                 <span className="w-[44px] rounded-[5px] bg-[#e3ecfd] py-[2px] text-center font-bold text-[#1d3fc4]">{v}</span>
@@ -152,7 +152,7 @@ export default function SA012MasterData() {
               </div>
             ))}
           </Panel>
-          <Panel title="Change Log" icon={FileText} titleSize={17} className="min-h-0 lg:flex-1" action={<ViewLink to="Audit Logs" />} bodyClassName="flex flex-col justify-between pt-[4px]">
+          <Panel title="Change Log" icon={FileText} className="min-h-0 lg:flex-1" action={<ViewLink to="Audit Logs" />} bodyClassName="flex flex-col justify-between pt-[4px]">
             {changeLog.map(([t, at, c]) => (
               <div key={t} className="flex items-center gap-[8px] text-[12px] font-medium">
                 <span style={{ background: c }} className="h-[8px] w-[8px] shrink-0 rounded-full" />
@@ -165,7 +165,7 @@ export default function SA012MasterData() {
       </div>
 
       <div className="grid gap-[10px] lg:min-h-0 lg:flex-1 lg:grid-cols-[460fr_440fr_450fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Template Library" icon={Layers} titleSize={17} bodyClassName="grid grid-cols-2 gap-[10px] pt-[6px]">
+        <Panel title="Template Library" icon={Layers} bodyClassName="grid grid-cols-2 gap-[10px] pt-[6px]">
           {templates.map((t) => (
             <button key={t.label} type="button" onClick={() => notice.show(`${t.label} (demo).`)} style={{ background: t.bg }} className="flex items-center gap-[12px] rounded-[10px] border border-[#e6e9f2] px-[14px] text-left hover:brightness-[0.98]">
               <t.icon strokeWidth={1.9} style={{ color: t.fg }} className="h-[28px] w-[28px] shrink-0" />
@@ -177,7 +177,7 @@ export default function SA012MasterData() {
           ))}
         </Panel>
 
-        <Panel title="Governance & Compliance" icon={ShieldCheck} titleSize={17} bodyClassName="flex flex-col gap-[9px] pt-[8px]">
+        <Panel title="Governance & Compliance" icon={ShieldCheck} bodyClassName="flex flex-col gap-[9px] pt-[8px]">
           {[
             [Crown, "#f0a020", "Approval Required", <Pill key="y" tone="green" className="h-[22px] px-[12px] text-[12.5px]">Yes</Pill>],
             [RefreshCw, "#2f6fe0", "Auto Sync Status", <Pill key="e" tone="green" className="h-[22px] px-[12px] text-[12.5px]">Enabled</Pill>],
@@ -195,7 +195,7 @@ export default function SA012MasterData() {
           })}
         </Panel>
 
-        <Panel title="Quick Actions" icon={Zap} titleSize={17} bodyClassName="pt-[6px]">
+        <Panel title="Quick Actions" icon={Zap} bodyClassName="pt-[6px]">
           <QuickList
             items={[
               { icon: CirclePlus, label: "Add Master", onClick: () => notice.show("New master record — saved as draft for review (demo).") },

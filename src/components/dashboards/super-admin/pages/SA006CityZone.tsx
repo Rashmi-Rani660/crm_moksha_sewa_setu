@@ -261,7 +261,7 @@ export default function SA006CityZone() {
         </div>
 
         <div className="flex min-h-0 flex-col gap-[12px]">
-          <Panel title="Geographical Hierarchy" icon={ListTree} titleSize={16.5} bodyClassName="flex flex-col items-stretch gap-0 pt-[6px]">
+          <Panel title="Geographical Hierarchy" icon={ListTree} bodyClassName="flex flex-col items-stretch gap-0 pt-[6px]">
             {hierarchy.map((h, i) => (
               <div key={h.bold} className="flex flex-col items-center">
                 {i > 0 && <ArrowDown strokeWidth={2.4} className="h-[12px] w-[12px] text-[#3b4256]" />}
@@ -273,7 +273,7 @@ export default function SA006CityZone() {
             ))}
           </Panel>
 
-          <Panel title="Quick Actions" icon={Zap} titleSize={16.5} bodyClassName="flex flex-col pt-[4px]">
+          <Panel title="Quick Actions" icon={Zap} bodyClassName="flex flex-col pt-[4px]">
             {quick.map((a) => (
               <button key={a.label} type="button" onClick={() => notice.show(`${a.label}: needs readiness check and approval (demo).`)} className="flex min-h-[32px] flex-1 items-center gap-[10px] border-b border-[#eef0f5] px-[4px] text-left last:border-0 hover:bg-[#f6f8fd]">
                 <a.icon strokeWidth={2} style={{ color: a.color }} className="h-[18px] w-[18px] shrink-0" />

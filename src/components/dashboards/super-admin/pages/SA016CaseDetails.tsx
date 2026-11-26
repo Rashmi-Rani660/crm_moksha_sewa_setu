@@ -123,7 +123,7 @@ export default function SA016CaseDetails() {
       <div className="grid gap-[10px] lg:min-h-0 lg:flex-1 lg:grid-cols-[1000fr_350fr] lg:[grid-template-rows:minmax(0,1fr)]">
         <div className="flex min-h-0 min-w-0 flex-col gap-[8px]">
           <div className="grid gap-[8px] lg:h-[198px] lg:grid-cols-[370fr_340fr_280fr] lg:[grid-template-rows:minmax(0,1fr)]">
-            <Panel title="Case Summary" icon={FolderOpen} titleSize={15} bodyClassName="pt-[2px]">
+            <Panel title="Case Summary" icon={FolderOpen} bodyClassName="pt-[2px]">
               <dl className="grid grid-cols-[118px_1fr] gap-y-[2px] text-[11.8px]">
                 <Row k="Case No."><b>{CASE_ID}</b></Row>
                 <Row k="Request Type">Medical Assistance – Mobility Support</Row>
@@ -134,7 +134,7 @@ export default function SA016CaseDetails() {
                 <Row k="Target / SLA">24 Nov 2026, 06:00 PM (Within 48 Hours)</Row>
               </dl>
             </Panel>
-            <Panel title="Requester / Family Details" icon={UserRound} titleSize={15} bodyClassName="pt-[2px]">
+            <Panel title="Requester / Family Details" icon={UserRound} bodyClassName="pt-[2px]">
               <dl className="grid grid-cols-[118px_1fr] gap-y-[3px] text-[11.8px]">
                 <Row k="Requester Name">Shri Rajesh Kumar</Row>
                 <Row k="Relationship">Self</Row>
@@ -144,7 +144,7 @@ export default function SA016CaseDetails() {
                 <Row k="Family Members"><b>04</b> (Senior Citizen: 01, Child: 01)</Row>
               </dl>
             </Panel>
-            <Panel title="Service Plan" icon={CalendarDays} titleSize={15} bodyClassName="flex flex-col justify-between pt-[2px]">
+            <Panel title="Service Plan" icon={CalendarDays} bodyClassName="flex flex-col justify-between pt-[2px]">
               {stages.map((s, i) => {
                 const done = i < stage;
                 const current = i === stage;
@@ -160,17 +160,17 @@ export default function SA016CaseDetails() {
           </div>
 
           <div className="grid gap-[8px] lg:h-[144px] lg:grid-cols-[480fr_512fr] lg:[grid-template-rows:minmax(0,1fr)]">
-            <Panel title="Assigned Staff (03)" icon={UsersRound} titleSize={14.5} action={<ViewLink to="Users & Access Control">View / Manage</ViewLink>} bodyClassName="pt-[0px]">
+            <Panel title="Assigned Staff (03)" icon={UsersRound} action={<ViewLink to="Users & Access Control">View / Manage</ViewLink>} bodyClassName="pt-[0px]">
               <People rows={staff} head={["#", "Staff Name", "Role / Designation", "Contact No.", "Status"]} />
             </Panel>
-            <Panel title="Assigned Volunteers (06)" icon={UsersRound} titleSize={14.5} action={<ViewLink to="Users & Access Control">View / Manage</ViewLink>} bodyClassName="pt-[0px]">
+            <Panel title="Assigned Volunteers (06)" icon={UsersRound} action={<ViewLink to="Users & Access Control">View / Manage</ViewLink>} bodyClassName="pt-[0px]">
               <People rows={volunteers} head={["#", "Volunteer Name", "Role", "Contact No.", "Status"]} />
               <p className="text-center text-[11px] font-semibold leading-[13px] text-[#1d4fe0]">+ 3 more volunteers (Total: 06)</p>
             </Panel>
           </div>
 
           <div className="grid gap-[8px] lg:min-h-0 lg:flex-1 lg:grid-cols-[370fr_290fr_330fr] lg:[grid-template-rows:minmax(0,1fr)]">
-            <Panel title="Assigned Vehicle / Driver" icon={Truck} titleSize={14.5} action={<ViewLink to="Live Operations">View Details</ViewLink>} bodyClassName="pt-[0px]">
+            <Panel title="Assigned Vehicle / Driver" icon={Truck} action={<ViewLink to="Live Operations">View Details</ViewLink>} bodyClassName="pt-[0px]">
               <dl className="grid grid-cols-[100px_1fr] text-[11.4px] leading-[15px]">
                 <Row k="Vehicle Code"><b>VCH-0234</b></Row>
                 <Row k="Vehicle Type">Ambulance (BLS)</Row>
@@ -180,7 +180,7 @@ export default function SA016CaseDetails() {
                 <Row k="Route">Ghaziabad Centre → Ganga Vihar (18.6 km)</Row>
               </dl>
             </Panel>
-            <Panel title="Linked Documents (04)" icon={FileText} titleSize={14.5} action={<ViewLink to="Audit Logs">View All</ViewLink>} bodyClassName="flex flex-col justify-between pt-[2px]">
+            <Panel title="Linked Documents (04)" icon={FileText} action={<ViewLink to="Audit Logs">View All</ViewLink>} bodyClassName="flex flex-col justify-between pt-[2px]">
               {linkedDocs.map(([n, s]) => (
                 <div key={n} className="flex items-center gap-[7px] text-[11.6px] font-medium">
                   <FileText strokeWidth={2} className="h-[14px] w-[14px] shrink-0 text-[#e02424]" />
@@ -190,7 +190,7 @@ export default function SA016CaseDetails() {
                 </div>
               ))}
             </Panel>
-            <Panel title="Evidence / Uploads (05)" icon={Images} titleSize={14.5} action={<ViewLink to="Audit Logs">View All</ViewLink>} bodyClassName="grid grid-cols-4 gap-[6px] pt-[2px]">
+            <Panel title="Evidence / Uploads (05)" icon={Images} action={<ViewLink to="Audit Logs">View All</ViewLink>} bodyClassName="grid grid-cols-4 gap-[6px] pt-[2px]">
               {evidence.map((e) => (
                 <button key={e.name} type="button" onClick={() => notice.show(`${e.name} (demo).`)} className="flex min-w-0 flex-col items-center gap-[2px]">
                   <span className="flex h-[50px] w-full items-center justify-center rounded-[6px] border border-[#e1e5ee] bg-[#f6f8fd]">
@@ -205,7 +205,7 @@ export default function SA016CaseDetails() {
 
         </div>
 
-        <Panel title="Activity Timeline" icon={Clock3} titleSize={15} action={<ViewLink to="Audit Logs" />} bodyClassName="pt-[8px]">
+        <Panel title="Activity Timeline" icon={Clock3} action={<ViewLink to="Audit Logs" />} bodyClassName="pt-[8px]">
           <div className="relative flex flex-col gap-[18px]">
           <span className="absolute bottom-[26px] left-[5px] top-[8px] w-[2px] bg-[#cfd5e2]" />
           {activity.map((a) => (
@@ -226,7 +226,7 @@ export default function SA016CaseDetails() {
       </div>
 
         <div className="grid gap-[10px] lg:h-[100px] lg:grid-cols-[640fr_705fr] lg:[grid-template-rows:minmax(0,1fr)]">
-          <Panel title="Notes" note="(Latest First)" icon={MessageSquareText} titleSize={14.5} action={<ViewLink to="Audit Logs">View All Notes</ViewLink>} bodyClassName="flex flex-col justify-between pt-[0px]">
+          <Panel title="Notes" note="(Latest First)" icon={MessageSquareText} action={<ViewLink to="Audit Logs">View All Notes</ViewLink>} bodyClassName="flex flex-col justify-between pt-[0px]">
             {initialNotes.map(([at, t]) => (
               <p key={at} className="grid grid-cols-[150px_1fr] text-[11.6px] font-medium">
                 <span>{at}</span>
@@ -234,7 +234,7 @@ export default function SA016CaseDetails() {
               </p>
             ))}
           </Panel>
-          <Panel title="Quick Actions" icon={Zap} titleSize={14.5} bodyClassName="grid grid-cols-2 gap-[10px] pt-[4px] sm:grid-cols-4">
+          <Panel title="Quick Actions" icon={Zap} bodyClassName="grid grid-cols-2 gap-[10px] pt-[4px] sm:grid-cols-4">
             <PrimaryButton icon={RefreshCw} className="h-[34px] text-[13px]" onClick={() => (closed ? notice.show("Case is already closed.") : setStage((s) => s + 1))}>Update Case Stage</PrimaryButton>
             <PrimaryButton outline icon={Upload} className="h-[34px] text-[13px]" onClick={() => notice.show("Upload evidence (photo / PDF) (demo).")}>Upload Evidence</PrimaryButton>
             <PrimaryButton outline icon={UsersRound} className="h-[34px] text-[13px]" onClick={() => notice.show("Reassign staff, volunteers or vehicle (demo).")}>Reassign Resources</PrimaryButton>

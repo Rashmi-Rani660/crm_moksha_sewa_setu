@@ -131,7 +131,7 @@ export default function SA010RolesPermissions() {
       <div className="grid gap-[10px] lg:h-[612px] lg:grid-cols-[1000fr_355fr] lg:[grid-template-rows:minmax(0,1fr)]">
         <div className="flex min-h-0 min-w-0 flex-col gap-[10px]">
           <div className="grid gap-[10px] lg:h-[420px] lg:grid-cols-[285fr_705fr] lg:[grid-template-rows:minmax(0,1fr)]">
-            <Panel title="Role Summary" icon={UsersRound} titleSize={16} bodyClassName="flex flex-col gap-[8px] pt-[6px]">
+            <Panel title="Role Summary" icon={UsersRound} bodyClassName="flex flex-col gap-[8px] pt-[6px]">
               {roles.map((r) => (
                 <div key={r.name} className={`flex flex-1 flex-col justify-between rounded-[10px] border border-[#e6e9f2] px-[12px] py-[8px] ${r.bg}`}>
                   <div className="flex items-center gap-[10px]">
@@ -154,7 +154,6 @@ export default function SA010RolesPermissions() {
             <Panel
               title="Permission Matrix — Module-wise Access"
               icon={LayoutGrid}
-              titleSize={16}
               action={
                 <button
                   type="button"
@@ -200,7 +199,7 @@ export default function SA010RolesPermissions() {
             </Panel>
           </div>
 
-          <Panel title="Recent Permission Changes" icon={History} titleSize={16} className="min-h-0 lg:flex-1" action={<ViewLink to="Audit Logs" />} bodyClassName="pt-[4px]">
+          <Panel title="Recent Permission Changes" icon={History} className="min-h-0 lg:flex-1" action={<ViewLink to="Audit Logs" />} bodyClassName="pt-[4px]">
             <TableWrap>
               <Thead>
                 {["#", "Change Detail", "Updated By", "Date & Time", "Status"].map((h) => (
@@ -223,7 +222,7 @@ export default function SA010RolesPermissions() {
         </div>
 
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Permission Legend" icon={Info} titleSize={16} className="lg:h-[260px]" bodyClassName="flex flex-col justify-between pt-[6px]">
+          <Panel title="Permission Legend" icon={Info} className="lg:h-[260px]" bodyClassName="flex flex-col justify-between pt-[6px]">
             {levels.map((l) => (
               <div key={l} className="flex items-center gap-[10px]">
                 <span className="w-[100px] shrink-0"><LevelChip level={l} big /></span>
@@ -231,7 +230,7 @@ export default function SA010RolesPermissions() {
               </div>
             ))}
           </Panel>
-          <Panel title="Quick Actions" icon={Zap} titleSize={16} className="min-h-0 lg:flex-1" bodyClassName="pt-[6px]">
+          <Panel title="Quick Actions" icon={Zap} className="min-h-0 lg:flex-1" bodyClassName="pt-[6px]">
             <QuickList
               items={[
                 { icon: UserPlus, label: "Create Role", onClick: () => notice.show("New role: name, scope and permission set — activates after approval (demo).") },

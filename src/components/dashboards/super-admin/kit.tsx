@@ -42,7 +42,6 @@ function PageFooter() {
         <span className="mx-[12px] inline-block h-[16px] w-[1.5px] translate-y-[3px] bg-[#3a3d55]" />
         <b className="font-bold text-[#0b0c36]">{siteConfig.name} CRM v1.0</b>
       </p>
-      <p className="whitespace-nowrap text-[12.5px] font-medium tracking-[0.2px] text-[#5b6280]">DEMO DATA — Design reference only</p>
       <p className="flex items-center whitespace-nowrap">
         Designed, Developed &amp; Maintained by
         <EncodencyBadge className="ml-[12px] h-[28px] min-w-[132px] px-2.5" nameClassName="text-[16px]" legalClassName="text-[7px]" sloganClassName="text-[5.5px]" />
@@ -234,7 +233,6 @@ export function Panel({
   bodyClassName = "",
   children,
   label,
-  titleSize = 15.5,
 }: {
   title?: ReactNode;
   /** Lighter suffix after the title, e.g. "(This Month)". */
@@ -245,8 +243,6 @@ export function Panel({
   bodyClassName?: string;
   children: ReactNode;
   label?: string;
-  /** Title font size (long titles in narrow panels). */
-  titleSize?: number;
 }) {
   return (
     <section
@@ -256,7 +252,7 @@ export function Panel({
       {title && (
         <header className="flex items-center gap-[8px] px-[12px] pt-[9px]">
           {Icon && <Icon strokeWidth={2} className="h-[18px] w-[18px] shrink-0 text-[#0b0c36]" />}
-          <h2 style={{ fontSize: titleSize }} className="min-w-0 flex-1 font-bold leading-tight lg:truncate tracking-[-0.3px] text-[#0b0c36]">
+          <h2 className="min-w-0 flex-1 text-[15.5px] font-bold leading-tight lg:truncate tracking-[-0.3px] text-[#0b0c36]">
             {title}
             {note && <span className="text-[13px] font-medium tracking-[-0.1px]"> {note}</span>}
           </h2>

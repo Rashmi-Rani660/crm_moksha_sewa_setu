@@ -111,7 +111,7 @@ export default function SA020SlaEscalation() {
       <Tabs tabs={tabs} value={tab} onChange={setTab} icons={tabIcons} />
 
       <div className="grid gap-[10px] lg:h-[180px] lg:grid-cols-[945fr_400fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title={`SLA Rules (${String(18 - (initialRules.length - rules.length)).padStart(2, "0")} Active)`} icon={Layers} titleSize={15.5} action={<ViewLink to="Case & Workflow" />} bodyClassName="pt-[2px]">
+        <Panel title={`SLA Rules (${String(18 - (initialRules.length - rules.length)).padStart(2, "0")} Active)`} icon={Layers} action={<ViewLink to="Case & Workflow" />} bodyClassName="pt-[2px]">
           <TableWrap>
             <Thead>
               {["#", "Rule Name", "Service Type", "Response Target", "Escalation Trigger", "Responsible Admin", "Status", "Action"].map((h) => <th key={h} className={`${thS} ${h === "Action" ? "text-center" : ""}`}>{h}</th>)}
@@ -138,13 +138,13 @@ export default function SA020SlaEscalation() {
           </TableWrap>
         </Panel>
 
-        <Panel title="SLA Compliance Trend" note="(Last 6 Months)" icon={Gauge} titleSize={15} action={<ViewLink to="Reports & Analytics">View Details</ViewLink>}>
+        <Panel title="SLA Compliance Trend" note="(Last 6 Months)" icon={Gauge} action={<ViewLink to="Reports & Analytics">View Details</ViewLink>}>
           <TrendLine />
         </Panel>
       </div>
 
       <div className="grid gap-[10px] lg:h-[206px] lg:grid-cols-[945fr_400fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title={`Escalation Queue (${queue.filter((q) => q.status !== "Acknowledged").length + 21} Pending)`} icon={UsersRound} titleSize={15.5} action={<ViewLink to="Live Operations" />} bodyClassName="pt-[2px]">
+        <Panel title={`Escalation Queue (${queue.filter((q) => q.status !== "Acknowledged").length + 21} Pending)`} icon={UsersRound} action={<ViewLink to="Live Operations" />} bodyClassName="pt-[2px]">
           <TableWrap>
             <Thead>
               {["#", "Case ID", "Stage", "Breach Risk", "Escalation Level", "Responsible Admin", "Acknowledged By", "Acknowledgement Time", "Current Status"].map((h) => <th key={h} className={`${thS}`}>{h}</th>)}
@@ -167,7 +167,7 @@ export default function SA020SlaEscalation() {
           </TableWrap>
         </Panel>
 
-        <Panel title="Rule Builder / Response Policy" icon={Network} titleSize={15} bodyClassName="flex flex-col gap-[3px] pt-[2px]">
+        <Panel title="Rule Builder / Response Policy" icon={Network} bodyClassName="flex flex-col gap-[3px] pt-[2px]">
           <p className="text-[12.6px] font-bold">Escalation Ladder (Default Policy)</p>
           {ladder.map(([n, t, s, d, c, bg], i) => (
             <div key={n} className="flex flex-col">
@@ -186,7 +186,7 @@ export default function SA020SlaEscalation() {
       </div>
 
       <div className="grid gap-[10px] lg:min-h-0 lg:flex-1 lg:grid-cols-[615fr_380fr_350fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Alert Acknowledgements" note="(Critical Notifications)" icon={Bell} titleSize={15} action={<ViewLink to="Notification & Alerts" />} bodyClassName="pt-[2px]">
+        <Panel title="Alert Acknowledgements" note="(Critical Notifications)" icon={Bell} action={<ViewLink to="Notification & Alerts" />} bodyClassName="pt-[2px]">
           <TableWrap>
             <Thead>
               {["#", "Notification / Alert", "Read By", "Acknowledged By", "Acknowledgement Time"].map((h) => <th key={h} className={`${thS}`}>{h}</th>)}
@@ -202,7 +202,7 @@ export default function SA020SlaEscalation() {
           </TableWrap>
         </Panel>
 
-        <Panel title="SLA Compliance Summary" icon={Gauge} titleSize={15} bodyClassName="flex items-center gap-[16px] pt-[2px]">
+        <Panel title="SLA Compliance Summary" icon={Gauge} bodyClassName="flex items-center gap-[16px] pt-[2px]">
           <Donut size={118} thickness={13} segments={[{ value: 90, color: "#1f9a1f" }, { value: 5, color: "#f7b500" }, { value: 5, color: "#e02424" }]}>
             <b className="text-[22px] leading-none">96%</b>
             <span className="text-[12px] font-semibold">Compliant</span>
@@ -223,7 +223,7 @@ export default function SA020SlaEscalation() {
           </ul>
         </Panel>
 
-        <Panel title="Quick Actions" icon={Zap} titleSize={15} bodyClassName="pt-[4px]">
+        <Panel title="Quick Actions" icon={Zap} bodyClassName="pt-[4px]">
           <QuickList
             items={[
               { icon: Plus, label: "Add SLA Rule", onClick: () => notice.show("New SLA rule: target, trigger and responsible admin (demo).") },

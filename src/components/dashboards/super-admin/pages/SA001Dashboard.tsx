@@ -309,7 +309,7 @@ export default function SA001Dashboard() {
       </div>
 
       {/* Row 2 */}
-      <div className="grid gap-[10px] sm:grid-cols-2 lg:h-[268px] lg:[grid-template-rows:minmax(0,1fr)] lg:grid-cols-[290fr_303fr_267fr_297fr]">
+      <div className="grid gap-[10px] sm:grid-cols-2 lg:h-[268px] lg:[grid-template-rows:minmax(0,1fr)] lg:grid-cols-[275fr_290fr_307fr_285fr]">
         <Panel title="Critical Alerts & Priority Actions" action={<ViewLink to="Notification & Alerts" />} bodyClassName="flex flex-col justify-between gap-[3px] pb-[8px] pt-[2px]">
           {alerts.map((a) => (
             <Link key={a.title} href={href(a.to)} className="flex items-center gap-[8px] rounded-[6px] hover:bg-[#f6f8fd]">
@@ -354,7 +354,7 @@ export default function SA001Dashboard() {
           </div>
         </Panel>
 
-        <Panel title="Integrations & Communication Status" titleSize={12.6} action={<ViewLink to="Integrations & API" />} bodyClassName="flex flex-col gap-[1px] pb-[3px] pt-0">
+        <Panel title="Integrations & Communication Status" action={<ViewLink to="Integrations & API" />} bodyClassName="flex flex-col gap-[1px] pb-[3px] pt-0">
           <div className="flex items-center gap-[10px]">
             <Donut size={52} thickness={8} segments={[{ value: 12, color: "#1f9a1f" }, { value: 1, color: "#f7b500" }, { value: 1, color: "#e02424" }]}>
               <b className="text-[18px] leading-none">14</b>

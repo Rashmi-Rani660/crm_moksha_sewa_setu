@@ -162,7 +162,7 @@ export default function SA013LeadsRequests() {
       <Tabs tabs={tabs} value={tab} onChange={setTab} icons={tabIcons} />
 
       <div className="grid gap-[10px] lg:h-[248px] lg:grid-cols-[515fr_435fr_395fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Request Intake Sources" note="(Omnichannel)" icon={Network} titleSize={14.5} bodyClassName="grid grid-cols-2 gap-[6px] pt-[4px] sm:grid-cols-4">
+        <Panel title="Request Intake Sources" note="(Omnichannel)" icon={Network} bodyClassName="grid grid-cols-2 gap-[6px] pt-[4px] sm:grid-cols-4">
           {sources.map((s) => (
             <div key={s.label} className="flex min-w-0 items-center gap-[7px] rounded-[8px] border border-[#e1e5ee] px-[7px] py-[3px] shadow-[0_1px_4px_rgba(30,50,110,0.06)]">
               <span className="flex w-[26px] shrink-0 justify-center">{s.icon}</span>
@@ -175,7 +175,7 @@ export default function SA013LeadsRequests() {
           ))}
         </Panel>
 
-        <Panel title="Source-wise Request Distribution" note="(This Month)" titleSize={14.5} bodyClassName="flex items-center gap-[14px] pt-[2px]">
+        <Panel title="Source-wise Request Distribution" note="(This Month)" bodyClassName="flex items-center gap-[14px] pt-[2px]">
           <Donut size={142} thickness={30} segments={distribution.map(([, v, , c]) => ({ value: v, color: c }))}>
             <b className="text-[21px] leading-none">1,486</b>
             <span className="text-[12px] font-semibold">Total</span>
@@ -192,7 +192,7 @@ export default function SA013LeadsRequests() {
           </ul>
         </Panel>
 
-        <Panel title="Live Channel Health" icon={Activity} titleSize={14.5} action={<ViewLink to="Integrations & API">View Details</ViewLink>} bodyClassName="pt-[2px]">
+        <Panel title="Live Channel Health" icon={Activity} action={<ViewLink to="Integrations & API">View Details</ViewLink>} bodyClassName="pt-[2px]">
           <TableWrap>
             <Thead>
               {["Channel", "Status", "Response Time"].map((h) => <th key={h} className={`${thS}`}>{h}</th>)}
@@ -228,7 +228,7 @@ export default function SA013LeadsRequests() {
       </section>
 
       <div className="grid gap-[10px] lg:min-h-0 lg:flex-1 lg:grid-cols-[955fr_395fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Lead / Request List" note="(Recent)" icon={List} titleSize={15} action={<ViewLink to="Sewa Operations" />} bodyClassName="pt-[2px]">
+        <Panel title="Lead / Request List" note="(Recent)" icon={List} action={<ViewLink to="Sewa Operations" />} bodyClassName="pt-[2px]">
           <TableWrap>
             <Thead>
               {["#", "Request ID", "Source", "Requester Name", "Mobile", "Service Type", "Centre / Area", "Stage", "Priority", "Action"].map((h) => (
@@ -258,7 +258,7 @@ export default function SA013LeadsRequests() {
         </Panel>
 
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Communication Monitoring" icon={MessageSquareText} titleSize={14.5} className="lg:h-[100px]" bodyClassName="grid grid-cols-4 gap-[6px] pt-[4px]">
+          <Panel title="Communication Monitoring" icon={MessageSquareText} className="lg:h-[100px]" bodyClassName="grid grid-cols-4 gap-[6px] pt-[4px]">
             {[
               [PhoneMissed, "#e02424", "18", "Missed Callbacks"],
               [Mail, "#7a3fe0", "56", "Unread Messages"],
@@ -277,7 +277,7 @@ export default function SA013LeadsRequests() {
               );
             })}
           </Panel>
-          <Panel title="Quick Actions" icon={Zap} titleSize={14.5} className="min-h-0 lg:flex-1" bodyClassName="pt-[4px]">
+          <Panel title="Quick Actions" icon={Zap} className="min-h-0 lg:flex-1" bodyClassName="pt-[4px]">
             <QuickList
               items={[
                 { icon: CircleCheck, label: "Verify Lead", color: "#1f9a2b", href: saRoutes.requestDetails },

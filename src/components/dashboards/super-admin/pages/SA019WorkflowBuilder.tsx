@@ -122,7 +122,6 @@ export default function SA019WorkflowBuilder() {
       <Panel
         title={`Template Library (${132 + templates.length - initialTemplates.length} Templates)`}
         icon={ListChecks}
-        titleSize={16}
         className="lg:h-[222px]"
         action={
           <div className="hidden items-center gap-[8px] lg:flex">
@@ -176,7 +175,6 @@ export default function SA019WorkflowBuilder() {
           title={<>Workflow Builder <span className="text-[14px] font-medium">– &quot;Sewa Request Processing&quot;</span></>}
           label="Workflow Builder"
           icon={Network}
-          titleSize={16}
           action={<PrimaryButton outline icon={Pencil} className="h-[28px] px-[10px] text-[12.5px]" onClick={() => notice.show("Workflow editor: drag steps, set SLAs and owners (demo).")}>Edit Workflow</PrimaryButton>}
           bodyClassName="flex items-center gap-[4px] overflow-x-auto pt-[4px]"
         >
@@ -192,7 +190,7 @@ export default function SA019WorkflowBuilder() {
           ))}
         </Panel>
 
-        <Panel title="Failure Handling" icon={TriangleAlert} titleSize={16} bodyClassName="flex flex-col justify-between pt-[4px]">
+        <Panel title="Failure Handling" icon={TriangleAlert} bodyClassName="flex flex-col justify-between pt-[4px]">
           {[
             [CircleX, "#e02424", "Failed Workflows", <span key="a" className="rounded-[5px] bg-[#fde0e0] px-[10px] text-[12.5px] font-bold text-[#b42318]">14</span>],
             [CalendarDays, "#3b4256", "Last Failure", <b key="b" className="text-[12.5px]">24 Nov 2026, 10:48 AM</b>],
@@ -212,7 +210,7 @@ export default function SA019WorkflowBuilder() {
       </div>
 
       <div className="grid gap-[10px] lg:min-h-0 lg:flex-1 lg:grid-cols-[875fr_470fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Conditional Logic" note="(Automation Routing Rules)" icon={GitBranch} titleSize={16} bodyClassName="grid grid-cols-1 gap-[10px] pt-[4px] sm:grid-cols-3">
+        <Panel title="Conditional Logic" note="(Automation Routing Rules)" icon={GitBranch} bodyClassName="grid grid-cols-1 gap-[10px] pt-[4px] sm:grid-cols-3">
           {rules.map((r, i) => (
             <div key={r.title} style={{ background: r.bg }} className="flex flex-col justify-between rounded-[10px] border border-[#e6e9f2] px-[12px] py-[8px]">
               <div className="flex gap-[10px]">
@@ -230,7 +228,7 @@ export default function SA019WorkflowBuilder() {
           ))}
         </Panel>
 
-        <Panel title="Quick Actions" icon={Zap} titleSize={16} bodyClassName="grid grid-cols-2 gap-[10px] pt-[4px]">
+        <Panel title="Quick Actions" icon={Zap} bodyClassName="grid grid-cols-2 gap-[10px] pt-[4px]">
           <QuickBtn icon={CirclePlus} label="Create Template" onClick={() => notice.show("New template: trigger, steps, owner — saved as draft (demo).")} />
           <QuickBtn icon={Copy} label="Duplicate Workflow" onClick={() => duplicate(templates[0])} />
           <QuickBtn icon={CircleCheck} label="Publish Rule" onClick={() => notice.show("Rule published after review (demo).")} />

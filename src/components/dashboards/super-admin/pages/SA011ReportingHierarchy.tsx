@@ -121,7 +121,7 @@ export default function SA011ReportingHierarchy() {
       <Tabs tabs={tabs} value={tab} onChange={setTab} icons={tabIcons} />
 
       <div className="grid gap-[10px] lg:h-[452px] lg:grid-cols-[310fr_700fr_340fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Organisation Reporting Tree" icon={Network} titleSize={15.5} bodyClassName="pt-[8px]">
+        <Panel title="Organisation Reporting Tree" icon={Network} bodyClassName="pt-[8px]">
           <TreeNode depth={0} k="org" open={open} onToggle={toggle} icon={Building2} color="#7a3fe0" bg="bg-[#f3eeff]" title="Namo Gange Trust" sub="(Organisation)">
             <TreeNode depth={1} k="ms" open={open} onToggle={toggle} icon={Waves} color="#2f6fe0" bg="bg-[#eef4ff]" title="Moksha Sewa" sub="(Initiative / Vertical)">
               <TreeNode depth={2} k="sa" open={open} onToggle={toggle} icon={Crown} color="#f0a020" bg="bg-[#fff7e8]" title="Super Admin" sub="(System Level)">
@@ -153,7 +153,7 @@ export default function SA011ReportingHierarchy() {
         </Panel>
 
         <div className="flex min-h-0 min-w-0 flex-col gap-[10px]">
-          <Panel title="Admin Reporting Matrix" icon={Table2} titleSize={15.5} className="lg:h-[282px]" bodyClassName="pt-[2px] [&_th]:py-[3px]">
+          <Panel title="Admin Reporting Matrix" icon={Table2} className="lg:h-[282px]" bodyClassName="pt-[2px] [&_th]:py-[3px]">
             <TableWrap>
               <Thead>
                 {["#", "Department", "Reporting Admin", "Zone / Centre", "Team Size", "Escalation Level", "Status"].map((h) => (
@@ -178,7 +178,7 @@ export default function SA011ReportingHierarchy() {
             </TableWrap>
           </Panel>
 
-          <Panel title="Key Mapped Departments / Teams" icon={Layers} titleSize={15.5} className="min-h-0 lg:flex-1" bodyClassName="grid grid-cols-1 gap-[8px] pt-[6px] sm:grid-cols-3">
+          <Panel title="Key Mapped Departments / Teams" icon={Layers} className="min-h-0 lg:flex-1" bodyClassName="grid grid-cols-1 gap-[8px] pt-[6px] sm:grid-cols-3">
             {mapped.map((m) => (
               <div key={m.title} style={{ background: m.bg }} className="flex items-center gap-[10px] rounded-[9px] border border-[#e6e9f2] px-[10px] py-[3px]">
                 <m.icon strokeWidth={1.9} style={{ color: m.color }} className="h-[26px] w-[26px] shrink-0" />
@@ -192,7 +192,7 @@ export default function SA011ReportingHierarchy() {
         </div>
 
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Escalation Hierarchy & Approval Ladder" icon={GitBranch} titleSize={14.5} className="lg:h-[282px]" bodyClassName="flex flex-col justify-between pt-[6px]">
+          <Panel title="Escalation Hierarchy & Approval Ladder" icon={GitBranch} className="lg:h-[282px]" bodyClassName="flex flex-col justify-between pt-[6px]">
             {ladder.map((l, i) => (
               <div key={l.title} className="flex flex-col items-center">
                 {i > 0 && <ArrowDown strokeWidth={2.2} className="mb-[3px] h-[15px] w-[15px]" />}
@@ -206,7 +206,7 @@ export default function SA011ReportingHierarchy() {
               </div>
             ))}
           </Panel>
-          <Panel title="Quick Actions" icon={Zap} titleSize={15.5} className="min-h-0 lg:flex-1" bodyClassName="pt-[6px]">
+          <Panel title="Quick Actions" icon={Zap} className="min-h-0 lg:flex-1" bodyClassName="pt-[6px]">
             <QuickList
               items={[
                 { icon: UserPlus, label: "Add Reporting Line", onClick: () => notice.show("Add a reporting line — needs Super Admin approval (demo).") },
@@ -219,7 +219,7 @@ export default function SA011ReportingHierarchy() {
         </div>
       </div>
 
-      <Panel title="Recent Hierarchy Changes / Audit Trail" icon={History} titleSize={15.5} className="lg:min-h-0 lg:flex-1" action={<ViewLink to="Audit Logs" />} bodyClassName="pt-[4px]">
+      <Panel title="Recent Hierarchy Changes / Audit Trail" icon={History} className="lg:min-h-0 lg:flex-1" action={<ViewLink to="Audit Logs" />} bodyClassName="pt-[4px]">
         <TableWrap>
           <Thead>
             {["#", "Change Detail", "Updated By", "Date & Time", "Status"].map((h) => (

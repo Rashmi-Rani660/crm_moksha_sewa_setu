@@ -117,7 +117,7 @@ export default function Sidebar({
                     {label}
                   </span>
                   {submenu && (
-                    <ChevronRight strokeWidth={2.4} className="absolute right-[1px] h-[12px] w-[12px]" />
+                    <ChevronRight strokeWidth={2.4} className="absolute right-[10px] h-[12px] w-[12px]" />
                   )}
                 </Link>
               </li>

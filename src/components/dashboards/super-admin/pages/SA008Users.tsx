@@ -187,7 +187,7 @@ export default function SA008Users() {
       </div>
 
       <div className="grid gap-[12px] lg:h-[500px] lg:grid-cols-[838fr_325fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title={tab === "User List" ? `User List (${filtered.length})` : tab} icon={UsersRound} titleSize={16.5} bodyClassName="flex flex-col pt-[8px]">
+        <Panel title={tab === "User List" ? `User List (${filtered.length})` : tab} icon={UsersRound} bodyClassName="flex flex-col pt-[8px]">
           {tab === "User List" ? (
             <>
               <TableWrap>
@@ -241,7 +241,7 @@ export default function SA008Users() {
         </Panel>
 
         <div className="flex min-h-0 flex-col gap-[12px]">
-          <Panel title="Access Levels (03)" icon={UsersRound} titleSize={16} bodyClassName="flex flex-col gap-[8px] pt-[8px]">
+          <Panel title="Access Levels (03)" icon={UsersRound} bodyClassName="flex flex-col gap-[8px] pt-[8px]">
             {[
               ["Super Admin", "02", "bg-[#f1ebff]"],
               ["Admin", "12", "bg-[#e7f0ff]"],
@@ -263,7 +263,7 @@ export default function SA008Users() {
             ))}
           </Panel>
 
-          <Panel title="Quick Actions" icon={Zap} titleSize={16} className="min-h-0 flex-1" bodyClassName="flex flex-col pt-[4px]">
+          <Panel title="Quick Actions" icon={Zap} className="min-h-0 flex-1" bodyClassName="flex flex-col pt-[4px]">
             {quick.map((a) => {
               const body = (
                 <>

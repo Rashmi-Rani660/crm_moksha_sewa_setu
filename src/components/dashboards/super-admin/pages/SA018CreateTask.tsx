@@ -134,7 +134,7 @@ export default function SA018CreateTask() {
 
       <div className="grid gap-[12px] lg:min-h-0 lg:flex-1 lg:grid-cols-[925fr_420fr] lg:[grid-template-rows:minmax(0,1fr)]">
         <div className="flex min-h-0 min-w-0 flex-col gap-[8px]">
-          <Panel title="Task Details" icon={UserPlus} titleSize={15.5} className="lg:h-[158px]" bodyClassName="flex flex-col gap-[7px] pt-[2px]">
+          <Panel title="Task Details" icon={UserPlus} className="lg:h-[158px]" bodyClassName="flex flex-col gap-[7px] pt-[2px]">
             <div className="grid gap-[12px] sm:grid-cols-[1fr_1fr]">
               <Field label="Task Title" required>
                 <input value={f.title} onChange={(e) => set("title", e.target.value)} placeholder="Enter task title (e.g., Verify beneficiary details)" aria-label="Task Title" className={inputCls} />
@@ -151,7 +151,7 @@ export default function SA018CreateTask() {
             </div>
           </Panel>
 
-          <Panel title="Assignment & Scope" icon={UsersRound} titleSize={15.5} className="lg:h-[152px]" bodyClassName="flex flex-col gap-[7px] pt-[2px]">
+          <Panel title="Assignment & Scope" icon={UsersRound} className="lg:h-[152px]" bodyClassName="flex flex-col gap-[7px] pt-[2px]">
             <div className="grid gap-[12px] sm:grid-cols-2">
               <Field label="Assign To" required><Dropdown label="Assign To" value={f.assignee} options={assigneeOpts} onChange={(v) => set("assignee", v)} className="w-full" /></Field>
               <Field label="Reporting Admin" required><Dropdown label="Reporting Admin" value={f.admin} options={adminOpts} onChange={(v) => set("admin", v)} className="w-full" /></Field>
@@ -168,7 +168,7 @@ export default function SA018CreateTask() {
           </Panel>
 
           <div className="grid gap-[8px] lg:h-[200px] lg:grid-cols-[440fr_477fr] lg:[grid-template-rows:minmax(0,1fr)]">
-            <Panel title="Recurrence & Reminders" icon={RefreshCw} titleSize={15.5} bodyClassName="flex flex-col gap-[4px] pt-[2px]">
+            <Panel title="Recurrence & Reminders" icon={RefreshCw} bodyClassName="flex flex-col gap-[4px] pt-[2px]">
               <p className="text-[12.4px] font-bold leading-none">Recurring Task</p>
               <div role="radiogroup" aria-label="Recurring task" className="flex h-[28px] items-center justify-between rounded-[8px] border border-[#e1e5ee] px-[10px]">
                 <Radio on={f.recur === "one"} onClick={() => set("recur", "one")} label="One-Time" />
@@ -187,7 +187,7 @@ export default function SA018CreateTask() {
               <Checkbox checked={f.repeat} onChange={(v) => set("repeat", v)} label="Repeat Reminder (Till Completion)" />
             </Panel>
 
-            <Panel title="Checklist" note="(Sub-tasks)" icon={SquareCheck} titleSize={15.5} bodyClassName="flex flex-col gap-[4px] pt-[2px]">
+            <Panel title="Checklist" note="(Sub-tasks)" icon={SquareCheck} bodyClassName="flex flex-col gap-[4px] pt-[2px]">
               <div className="flex items-center gap-[8px]">
                 <p className="shrink-0 text-[12.4px] font-bold">Use Template</p>
                 <Dropdown label="Checklist template" value={f.template} options={templateOpts} onChange={(v) => set("template", v)} className="h-[28px] min-w-0 flex-1" size={12.4} />
@@ -204,18 +204,18 @@ export default function SA018CreateTask() {
             </Panel>
           </div>
 
-          <Panel title="Notes" icon={NotebookPen} titleSize={15.5} className="min-h-0 lg:flex-1" bodyClassName="flex pt-[2px]">
+          <Panel title="Notes" icon={NotebookPen} className="min-h-0 lg:flex-1" bodyClassName="flex pt-[2px]">
             <textarea value={f.notes} onChange={(e) => set("notes", e.target.value)} placeholder="Enter task notes, special instructions, or key references (e.g., related policy, case updates, etc.)" aria-label="Notes" className="min-h-[34px] flex-1 resize-none rounded-[8px] border border-[#cfd5e2] px-[8px] py-[6px] text-[12.6px] font-medium outline-none placeholder:text-[#5b6280] focus:border-[#5b6fe0]" />
           </Panel>
         </div>
 
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Account Security" icon={ShieldCheck} titleSize={15.5} className="lg:h-[118px]" bodyClassName="flex flex-col justify-between pt-[4px]">
+          <Panel title="Account Security" icon={ShieldCheck} className="lg:h-[118px]" bodyClassName="flex flex-col justify-between pt-[4px]">
             <Checkbox checked={f.visible} onChange={(v) => set("visible", v)} label="Visible to assigned user(s) and reporting admin only" />
             <Checkbox checked={f.governed} onChange={(v) => set("governed", v)} label="Access governed by role & permission matrix" />
             <Checkbox checked={f.restrict} onChange={(v) => set("restrict", v)} label="Restrict task details for non-authorised roles" />
           </Panel>
-          <Panel title="Task Assignment Rules" icon={Network} titleSize={15.5} className="lg:h-[196px]" bodyClassName="flex flex-col justify-between pt-[4px]">
+          <Panel title="Task Assignment Rules" icon={Network} className="lg:h-[196px]" bodyClassName="flex flex-col justify-between pt-[4px]">
             {rules.map((r) => (
               <p key={r} className="flex items-start gap-[8px] text-[12px] font-medium leading-tight">
                 <CircleCheck strokeWidth={2.2} className="mt-px h-[15px] w-[15px] shrink-0 text-[#1f9a2b]" />
@@ -223,7 +223,7 @@ export default function SA018CreateTask() {
               </p>
             ))}
           </Panel>
-          <Panel title="Quick Notes" icon={Zap} titleSize={15.5} className="min-h-0 lg:flex-1" bodyClassName="pt-[4px]">
+          <Panel title="Quick Notes" icon={Zap} className="min-h-0 lg:flex-1" bodyClassName="pt-[4px]">
             <QuickList
               items={[
                 { icon: UserPlus, label: "View Task Assignment Guidelines", onClick: () => notice.show("Assignment guidelines (demo).") },

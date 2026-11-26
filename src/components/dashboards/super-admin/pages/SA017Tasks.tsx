@@ -152,7 +152,6 @@ export default function SA017Tasks() {
             title="Task List"
             note="(1,248 Tasks)"
             icon={Layers}
-            titleSize={16}
             className="lg:h-[318px]"
             action={
               <div className="hidden items-center gap-[8px] lg:flex">
@@ -202,7 +201,7 @@ export default function SA017Tasks() {
 
           <div className="grid gap-[10px] lg:min-h-0 lg:flex-1 lg:grid-cols-[490fr_485fr] lg:[grid-template-rows:minmax(0,1fr)]">
             <div ref={kanbanRef} className="flex min-h-0">
-              <Panel title="Kanban View" note="(Task Preview)" icon={Columns3} titleSize={15} className="min-h-0 flex-1" action={<ViewLinkBtn onClick={() => notice.show("Full Kanban board (demo).")}>View Full Kanban</ViewLinkBtn>} bodyClassName="grid grid-cols-3 gap-[8px] pt-[4px]">
+              <Panel title="Kanban View" note="(Task Preview)" icon={Columns3} className="min-h-0 flex-1" action={<ViewLinkBtn onClick={() => notice.show("Full Kanban board (demo).")}>View Full Kanban</ViewLinkBtn>} bodyClassName="grid grid-cols-3 gap-[8px] pt-[4px]">
                 {kanban.map((col) => (
                   <div key={col.title} className="flex min-w-0 flex-col gap-[6px]">
                     <p className={`flex items-center gap-[5px] rounded-[7px] px-[7px] py-[5px] text-[12px] font-bold ${col.head}`}>
@@ -225,7 +224,7 @@ export default function SA017Tasks() {
             </div>
 
             <div ref={calRef} className="flex min-h-0">
-              <Panel title="Calendar View" note="(Task Schedule)" icon={CalendarDays} titleSize={15} className="min-h-0 flex-1" action={<ViewLinkBtn onClick={() => notice.show("Full calendar (demo).")}>View Full Calendar</ViewLinkBtn>} bodyClassName="grid grid-cols-[1fr_160px] gap-[8px] pt-[2px]">
+              <Panel title="Calendar View" note="(Task Schedule)" icon={CalendarDays} className="min-h-0 flex-1" action={<ViewLinkBtn onClick={() => notice.show("Full calendar (demo).")}>View Full Calendar</ViewLinkBtn>} bodyClassName="grid grid-cols-[1fr_160px] gap-[8px] pt-[2px]">
                 <div className="flex min-w-0 flex-col">
                   <div className="flex items-center justify-center gap-[18px] pb-[3px] text-[13px] font-bold">
                     <button type="button" aria-label="Previous month" onClick={() => shift(-1)}><ChevronLeft strokeWidth={2.4} className="h-[15px] w-[15px]" /></button>
@@ -269,7 +268,7 @@ export default function SA017Tasks() {
         </div>
 
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Workload Summary" icon={UsersRound} titleSize={15.5} className="lg:h-[180px]" action={<ViewLinkBtn onClick={() => notice.show("Workload by user (demo).")}>View Details</ViewLinkBtn>} bodyClassName="pt-[2px]">
+          <Panel title="Workload Summary" icon={UsersRound} className="lg:h-[180px]" action={<ViewLinkBtn onClick={() => notice.show("Workload by user (demo).")}>View Details</ViewLinkBtn>} bodyClassName="pt-[2px]">
             <TableWrap>
               <Thead>
                 {["User", "Assigned", "In Progress", "Completed", "Pending"].map((h) => <th key={h} className={`${thS} text-[11px]`}>{h}</th>)}
@@ -288,7 +287,7 @@ export default function SA017Tasks() {
             </TableWrap>
           </Panel>
 
-          <Panel title="Overdue Alerts (67)" icon={TriangleAlert} titleSize={15.5} className="lg:h-[160px]" action={<Link href={saRoutes.sla} className="flex items-center gap-[4px] text-[12.5px] font-semibold text-[#2320c4] hover:underline">View All <ChevronRight strokeWidth={2.4} className="h-[13px] w-[13px]" /></Link>} bodyClassName="flex flex-col justify-between pt-[2px]">
+          <Panel title="Overdue Alerts (67)" icon={TriangleAlert} className="lg:h-[160px]" action={<Link href={saRoutes.sla} className="flex items-center gap-[4px] text-[12.5px] font-semibold text-[#2320c4] hover:underline">View All <ChevronRight strokeWidth={2.4} className="h-[13px] w-[13px]" /></Link>} bodyClassName="flex flex-col justify-between pt-[2px]">
             {overdue.map(([id, t, d]) => (
               <div key={id} className="flex items-center gap-[6px] text-[11.6px] font-medium">
                 <span className="h-[7px] w-[7px] shrink-0 rounded-full bg-[#e02424]" />
@@ -298,7 +297,7 @@ export default function SA017Tasks() {
             ))}
           </Panel>
 
-          <Panel title="Quick Actions" icon={Zap} titleSize={15.5} className="min-h-0 lg:flex-1" bodyClassName="pt-[4px]">
+          <Panel title="Quick Actions" icon={Zap} className="min-h-0 lg:flex-1" bodyClassName="pt-[4px]">
             <QuickList
               items={[
                 { icon: CirclePlus, label: "Create Task", href: saRoutes.createTask },

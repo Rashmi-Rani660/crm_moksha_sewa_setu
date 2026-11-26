@@ -134,7 +134,7 @@ export default function SA003Notifications() {
       </KpiRow>
 
       <div className="grid gap-[10px] lg:h-[400px] lg:grid-cols-[232fr_937fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Alert Categories" titleSize={17} bodyClassName="flex flex-col gap-[2px] pt-[8px]">
+        <Panel title="Alert Categories" bodyClassName="flex flex-col gap-[2px] pt-[8px]">
           {categories.map((c, i) => (
             <button
               key={c.label}
@@ -154,7 +154,6 @@ export default function SA003Notifications() {
 
         <Panel
           title={`Recent Notifications & Alerts (${match ? rows.length : 37})`}
-          titleSize={17}
           action={
             <div className="hidden items-center gap-[8px] lg:flex">
               <SearchField value={query} onChange={setQuery} placeholder="Search by Alert ID, Case ID, Subject..." className="w-[230px]" />
@@ -228,7 +227,7 @@ export default function SA003Notifications() {
       </div>
 
       <div className="grid gap-[10px] lg:h-[178px] lg:grid-cols-[405fr_380fr_370fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Create New Notification" icon={CalendarCheck} titleSize={16.5} bodyClassName="grid grid-cols-2 gap-[10px] sm:grid-cols-4">
+        <Panel title="Create New Notification" icon={CalendarCheck} bodyClassName="grid grid-cols-2 gap-[10px] sm:grid-cols-4">
           {[
             [Users, "Team Alert", "#2f6fe0"],
             [Megaphone, "Announcement", "#f0a020"],
@@ -245,7 +244,7 @@ export default function SA003Notifications() {
           })}
         </Panel>
 
-        <Panel title="Quick Broadcast" icon={Send} titleSize={16.5} bodyClassName="flex items-center gap-[16px]">
+        <Panel title="Quick Broadcast" icon={Send} bodyClassName="flex items-center gap-[16px]">
           <div className="flex flex-col gap-[9px] rounded-[10px] border border-[#e1e5ee] px-[12px] py-[10px]">
             <Checkbox checked={channels.whatsapp} onChange={(v) => setChannels({ ...channels, whatsapp: v })} label={<span className="flex items-center gap-[6px]"><WhatsAppIcon size={16} />WhatsApp Message</span>} />
             <Checkbox checked={channels.email} onChange={(v) => setChannels({ ...channels, email: v })} label={<span className="flex items-center gap-[6px]"><Bell strokeWidth={2} className="h-[15px] w-[15px] text-[#2f6fe0]" />Email Notification</span>} />
@@ -265,7 +264,7 @@ export default function SA003Notifications() {
           </PrimaryButton>
         </Panel>
 
-        <Panel title="Notification Settings" icon={Settings} titleSize={16.5} action={<ViewLink to="System Settings" />} bodyClassName="flex flex-col justify-between">
+        <Panel title="Notification Settings" icon={Settings} action={<ViewLink to="System Settings" />} bodyClassName="flex flex-col justify-between">
           <SettingRow label="Emergency Alerts (24×7)" locked />
           <SettingRow label="Case & Task Updates" value={settings.cases} onChange={(v) => setSettings({ ...settings, cases: v })} />
           <SettingRow label="Approval Notifications" value={settings.approvals} onChange={(v) => setSettings({ ...settings, approvals: v })} />

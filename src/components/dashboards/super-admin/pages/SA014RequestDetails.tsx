@@ -106,7 +106,7 @@ export default function SA014RequestDetails() {
       <Tabs tabs={tabs} value={tab} onChange={setTab} icons={tabIcons} />
 
       <div className="grid gap-[10px] lg:h-[302px] lg:grid-cols-[400fr_410fr_535fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Request Summary" icon={UserRound} titleSize={15.5} bodyClassName="pt-[4px]">
+        <Panel title="Request Summary" icon={UserRound} bodyClassName="pt-[4px]">
           <dl className="grid grid-cols-[150px_1fr] gap-y-[3px] text-[12.4px]">
             <Row k="Request ID">
               <span className="flex items-center justify-between font-bold">
@@ -128,7 +128,7 @@ export default function SA014RequestDetails() {
           </dl>
         </Panel>
 
-        <Panel title="Family / Hospital / Location Details" icon={UsersRound} titleSize={15.5} bodyClassName="flex flex-col gap-[6px] pt-[4px]">
+        <Panel title="Family / Hospital / Location Details" icon={UsersRound} bodyClassName="flex flex-col gap-[6px] pt-[4px]">
           <SubHead icon={UsersRound} title="Family Details" />
           <dl className="grid grid-cols-[150px_1fr] gap-y-[3px] px-[4px] text-[12.2px]">
             <Row k="Family Contact">Rakesh Sharma (Son)</Row>
@@ -149,7 +149,6 @@ export default function SA014RequestDetails() {
         <Panel
           title="Document Verification"
           icon={FileText}
-          titleSize={15.5}
           action={
             <button type="button" onClick={() => notice.show("Upload or view documents (demo).")} className="flex items-center gap-[4px] text-[12.5px] font-semibold text-[#2320c4] hover:underline">
               View / Upload Documents <ArrowRight strokeWidth={2.2} className="h-[13px] w-[13px]" />
@@ -192,7 +191,7 @@ export default function SA014RequestDetails() {
       </div>
 
       <div className="grid gap-[10px] lg:min-h-0 lg:flex-1 lg:grid-cols-[590fr_755fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Verification History / Timeline" icon={History} titleSize={15.5} bodyClassName="relative flex flex-col justify-between pt-[6px]">
+        <Panel title="Verification History / Timeline" icon={History} bodyClassName="relative flex flex-col justify-between pt-[6px]">
           <span className="absolute bottom-[22px] left-[29px] top-[18px] w-[2px] bg-[#1f9a2b]/60" />
           {timeline.map((t) => (
             <div key={t.title} className="relative flex items-start gap-[12px]">
@@ -208,7 +207,7 @@ export default function SA014RequestDetails() {
           ))}
         </Panel>
 
-        <Panel title="Approving Authority" icon={UserRoundCheck} titleSize={15.5} bodyClassName="flex flex-col gap-[6px] pt-[4px]">
+        <Panel title="Approving Authority" icon={UserRoundCheck} bodyClassName="flex flex-col gap-[6px] pt-[4px]">
           {[
             ["Verified By", "Demo Admin 01 (Operations)", "24 Nov 2026, 10:06 AM", true],
             ["Reviewed By", "Operations Lead", "24 Nov 2026, 10:18 AM", true],

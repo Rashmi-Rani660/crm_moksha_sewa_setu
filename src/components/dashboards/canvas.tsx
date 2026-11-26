@@ -84,7 +84,7 @@ export function DashboardCanvas({
     else if (otherRole) router.replace(`/dashboard/${otherRole}`);
   }, [ready, session, otherRole, router]);
 
-  if (!session || otherRole) return <main className="min-h-dvh bg-[#f7f8fd]" />;
+  if (!session || otherRole) return <main className="min-h-dvh bg-[#f3f6fb]" />;
 
   return (
     <SidebarWidth.Provider value={sidebarWidth}>
@@ -92,7 +92,7 @@ export function DashboardCanvas({
       <RoleContext.Provider value={role}>
       <div
         style={canvasVars(collapsed ? 0 : sidebarWidth)}
-        className="flex min-h-dvh bg-[#f7f8fd] font-hind subpixel-antialiased text-[#0b0c36] lg:[height:max(901px,calc(var(--vh,901)*1px/var(--z)))] lg:[min-height:0] lg:[width:calc(var(--vw,1600)*1px/var(--z))] lg:overflow-hidden lg:[zoom:var(--z)]"
+        className="flex min-h-dvh bg-[#f3f6fb] font-hind subpixel-antialiased text-[#0b0c36] lg:[height:max(901px,calc(var(--vh,901)*1px/var(--z)))] lg:[min-height:0] lg:[width:calc(var(--vw,1600)*1px/var(--z))] lg:overflow-hidden lg:[zoom:var(--z)]"
       >
         <div
           id="dashboard-sidebar"
