@@ -36,11 +36,12 @@ export const viewport: Viewport = {
 };
 
 /**
- * Publishes the window size as unitless CSS variables (--vw / --vh). The auth
+ * Publishes the window size as unitless CSS variables (--vw = width without
+ * the scrollbar, --vh). The auth
  * card scale is derived from them in CSS (see AuthShell), so the layout is
  * right on first paint and after client-side navigation. Runs before paint.
  */
-const viewportScript = `(function(){var d=document.documentElement;function f(){d.style.setProperty('--vw',innerWidth);d.style.setProperty('--vh',innerHeight)}f();addEventListener('resize',f)})();`;
+const viewportScript = `(function(){var d=document.documentElement;function f(){d.style.setProperty('--vw',d.clientWidth||innerWidth);d.style.setProperty('--vh',innerHeight)}f();addEventListener('resize',f);if(window.ResizeObserver)new ResizeObserver(f).observe(d)})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

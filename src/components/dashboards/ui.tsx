@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { ArrowRight, ArrowUp, ChevronDown, type LucideIcon } from "lucide-react";
-import { Box, useDashboardRole, type BoxFit } from "@/components/dashboards/canvas";
+import { Box, useDashboardRole, type BoxFit, type BoxSpan } from "@/components/dashboards/canvas";
 import { sectionHref } from "@/components/dashboards/shells";
 import { usePopover } from "@/components/dashboards/usePopover";
 import EncodencyBadge from "@/components/ui/EncodencyBadge";
@@ -13,13 +13,30 @@ type At = [number, number, number, number];
 
 /* ---------------------------------- card ---------------------------------- */
 
-export function Card({ at, className = "", children, label, fit }: { at: At; className?: string; children: ReactNode; label?: string; fit?: BoxFit }) {
+export function Card({
+  at,
+  className = "",
+  children,
+  label,
+  fit,
+  span,
+}: {
+  at: At;
+  className?: string;
+  children: ReactNode;
+  label?: string;
+  fit?: BoxFit;
+  span?: BoxSpan;
+}) {
   return (
     <Box
       at={at}
       label={label}
       fit={fit}
-      className={`rounded-[12px] border border-[#e1e5ee] bg-white shadow-[0_3px_10px_rgba(30,50,110,0.07)] ${className}`}
+      span={span}
+      // same chrome: on the grid cell below lg, on the card from lg
+      chrome="rounded-[12px] border border-[#e1e5ee] bg-white shadow-[0_3px_10px_rgba(30,50,110,0.07)]"
+      className={`lg:rounded-[12px] lg:border lg:border-[#e1e5ee] lg:bg-white lg:shadow-[0_3px_10px_rgba(30,50,110,0.07)] ${className}`}
     >
       {children}
     </Box>
@@ -255,6 +272,7 @@ export function Kpi({
   lines,
   center = false,
   textW,
+  span,
 }: {
   at: At;
   theme: KpiTheme;
@@ -272,14 +290,18 @@ export function Kpi({
   center?: boolean;
   /** Width of the text column (centred columns). */
   textW?: number;
+  span?: BoxSpan;
 }) {
   const t = kpiThemes[theme];
   return (
     <Box
       at={at}
-      className="overflow-hidden rounded-[11px] border border-[#dfe5ee] shadow-[0_3px_9px_rgba(30,50,110,0.09)]"
+      span={span}
+      chrome="overflow-hidden rounded-[11px] border border-[#dfe5ee] shadow-[0_3px_9px_rgba(30,50,110,0.09)]"
+      chromeStyle={{ background: t.bg }}
+      className="overflow-hidden lg:rounded-[11px] lg:border lg:border-[#dfe5ee] lg:shadow-[0_3px_9px_rgba(30,50,110,0.09)]"
     >
-      <div style={{ background: t.bg }} className="absolute inset-0" />
+      <div style={{ background: t.bg }} className="absolute inset-0 hidden lg:block" />
       {!bubble.none && (
         <span
           style={{ left: bubble.cx - bubble.d / 2, top: bubble.cy - bubble.d / 2, width: bubble.d, height: bubble.d, background: t.bubble }}
@@ -432,12 +454,12 @@ export function PinSolid({ size, color = "#0b0c36" }: { size: number; color?: st
 export function Footer({ y, leftX, logoRight }: { y: number; leftX: number; logoRight: number }) {
   return (
     <>
-      <Box at={[leftX, y - 10, 400, 22]} as="div" className="flex items-center whitespace-nowrap text-[15px] font-semibold leading-none tracking-[-0.25px] text-[#1d1f33]">
+      <Box at={[leftX, y - 10, 400, 22]} as="div" span={[6, 6]} className="flex items-center whitespace-nowrap text-[15px] font-semibold leading-none tracking-[-0.25px] text-[#1d1f33]">
         <span className="pt-[2px]">© {siteConfig.copyrightYear} {siteConfig.trust}</span>
         <span className="mx-[15px] h-[20px] w-[1.5px] bg-[#3a3d55]" />
         <span className="pt-[2px] font-semibold text-[#0b0c36]">{siteConfig.name} CRM v1.0</span>
       </Box>
-      <Box at={[logoRight - 440, y - 16, 440, 32]} as="div" className="flex items-center justify-end">
+      <Box at={[logoRight - 440, y - 16, 440, 32]} as="div" span={[6, 6]} className="flex items-center justify-end">
         <span className="whitespace-nowrap pt-[2px] text-[15.5px] font-semibold tracking-[-0.25px] text-[#1d1f33]">Designed, Developed &amp; Maintained by</span>
         {/* Same badge as the login screens, sized for the dashboard footer. */}
         <EncodencyBadge

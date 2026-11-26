@@ -118,7 +118,7 @@ export default function UserDashboard() {
       </Box>
 
       {/* Date + centre */}
-      <Card at={[1350, 72, 240, 75]}>
+      <Card at={[1350, 72, 240, 75]} span={[6, 12]}>
         <At x={27} y={11}>
           <Ico icon={CalendarDays} color="#0b0c36" size={22} stroke={2.2} />
         </At>
@@ -135,12 +135,12 @@ export default function UserDashboard() {
       </Card>
 
       {/* KPIs */}
-      <Kpi at={[240, 169, 212, 79]} theme="blue" bubble={{ cx: 43, cy: 39, d: 50, none: true }} icon={<Ico icon={FileText} color="#1f6fe0" size={42} stroke={1.8} />} textX={87} value="12" valueSize={28} label="Assigned Tasks" labelSize={16} />
-      <Kpi at={[463, 169, 210, 79]} theme="orange" bubble={{ cx: 46, cy: 39, d: 50, none: true }} icon={<Ico icon={Users} color="#f0a020" size={44} stroke={1.8} />} textX={90} value="08" valueSize={28} label="Sewa Requests" labelSize={14.8} />
-      <Kpi at={[683, 169, 208, 79]} theme="purple" bubble={{ cx: 45, cy: 39, d: 50, none: true }} icon={<Ico icon={Folder} color="#8a2fe0" size={44} stroke={1.8} />} textX={90} value="03" valueSize={28} label="Active Cases" labelSize={15.5} />
-      <Kpi at={[902, 169, 228, 79]} theme="green" bubble={{ cx: 43, cy: 39, d: 50, none: true }} icon={<Ico icon={CircleCheck} color="#1f9a2b" size={44} stroke={2} />} textX={87} value="06" valueSize={28} label={<>Completed<span className="ml-[4px] text-[11.5px]">(This Month)</span></>} labelSize={14} />
-      <Kpi at={[1141, 169, 217, 79]} theme="red" bubble={{ cx: 48, cy: 39, d: 50, none: true }} icon={<Ico icon={Clock} color="#e02020" size={42} stroke={2.2} />} textX={95} value="02" valueSize={28} label="Due Today" labelSize={15.5} />
-      <Kpi at={[1368, 169, 223, 79]} theme="sky" bubble={{ cx: 44, cy: 39, d: 50, none: true }} icon={<Ico icon={ChartColumn} color="#1f63d8" size={44} stroke={2.2} />} textX={91} value="92%" valueSize={28} label="My Performance" labelSize={16} />
+      <Kpi at={[240, 169, 212, 79]} span={[3, 4]} theme="blue" bubble={{ cx: 43, cy: 39, d: 50, none: true }} icon={<Ico icon={FileText} color="#1f6fe0" size={42} stroke={1.8} />} textX={87} value="12" valueSize={28} label="Assigned Tasks" labelSize={16} />
+      <Kpi at={[463, 169, 210, 79]} span={[3, 4]} theme="orange" bubble={{ cx: 46, cy: 39, d: 50, none: true }} icon={<Ico icon={Users} color="#f0a020" size={44} stroke={1.8} />} textX={90} value="08" valueSize={28} label="Sewa Requests" labelSize={14.8} />
+      <Kpi at={[683, 169, 208, 79]} span={[3, 4]} theme="purple" bubble={{ cx: 45, cy: 39, d: 50, none: true }} icon={<Ico icon={Folder} color="#8a2fe0" size={44} stroke={1.8} />} textX={90} value="03" valueSize={28} label="Active Cases" labelSize={15.5} />
+      <Kpi at={[902, 169, 228, 79]} span={[3, 4]} theme="green" bubble={{ cx: 43, cy: 39, d: 50, none: true }} icon={<Ico icon={CircleCheck} color="#1f9a2b" size={44} stroke={2} />} textX={87} value="06" valueSize={28} label={<>Completed<span className="ml-[4px] text-[11.5px]">(This Month)</span></>} labelSize={14} />
+      <Kpi at={[1141, 169, 217, 79]} span={[3, 4]} theme="red" bubble={{ cx: 48, cy: 39, d: 50, none: true }} icon={<Ico icon={Clock} color="#e02020" size={42} stroke={2.2} />} textX={95} value="02" valueSize={28} label="Due Today" labelSize={15.5} />
+      <Kpi at={[1368, 169, 223, 79]} span={[3, 4]} theme="sky" bubble={{ cx: 44, cy: 39, d: 50, none: true }} icon={<Ico icon={ChartColumn} color="#1f63d8" size={44} stroke={2.2} />} textX={91} value="92%" valueSize={28} label="My Performance" labelSize={16} />
 
       {/* My Tasks */}
       <Card at={[240, 267, 454, 194]} label="My Tasks">
