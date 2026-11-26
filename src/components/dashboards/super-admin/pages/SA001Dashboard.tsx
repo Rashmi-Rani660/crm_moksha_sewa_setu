@@ -133,11 +133,11 @@ const sewaOps: { icon: LucideIcon; color: string; label: string; value: string }
 
 const alerts: { icon: LucideIcon; color: string; title: string; sub?: string; count: string; tone: "red" | "amber" | "yellow"; to: string }[] = [
   { icon: TriangleAlert, color: "#e02424", title: "Emergency Sewa Requests", sub: "Immediate action required", count: "03", tone: "red", to: "Live Operations" },
-  { icon: Clock3, color: "#f0a020", title: "Overdue Tasks", sub: "Beyond assigned SLA", count: "05", tone: "amber", to: "Case & Workflow" },
+  { icon: Clock3, color: "#f0a020", title: "Overdue Tasks", sub: "Beyond assigned SLA", count: "05", tone: "amber", to: "/dashboard/super-admin/case-workflow/tasks" },
   { icon: FileCheck2, color: "#f0a020", title: "Pending Critical Approvals", sub: "Management review required", count: "07", tone: "amber", to: "Central Approvals" },
   { icon: Link2, color: "#f0a020", title: "Integration failure", sub: "Accounting sync failed", count: "01", tone: "amber", to: "Integrations & API" },
   { icon: ShieldAlert, color: "#e02424", title: "Suspicious Login Attempts", sub: "Security review required", count: "02", tone: "red", to: "System Security" },
-  { icon: CircleCheck, color: "#1f9a2b", title: "Unassigned requests", count: "04", tone: "yellow", to: "Case & Workflow" },
+  { icon: CircleCheck, color: "#1f9a2b", title: "Unassigned requests", count: "04", tone: "yellow", to: "Sewa Operations" },
 ];
 
 const aiTiles: { icon: LucideIcon; label: string; value: string; foot?: string; red?: boolean }[] = [
@@ -183,7 +183,7 @@ const security: { icon: LucideIcon; label: string; value: React.ReactNode; chip?
 const quickActions: { icon: LucideIcon; label: string; to: string; bg: string; fg: string }[] = [
   { icon: UsersRound, label: "Manage Access", to: "Users & Access Control", bg: "#eaf2ff", fg: "#1d5bd6" },
   { icon: CircleCheckBig, label: "Review Approvals", to: "Central Approvals", bg: "#fff4dc", fg: "#e08a00" },
-  { icon: FileCheck2, label: "Assign Task", to: "Case & Workflow", bg: "#eaf7e8", fg: "#1f9a2b" },
+  { icon: FileCheck2, label: "Assign Task", to: "/dashboard/super-admin/case-workflow/tasks/create", bg: "#eaf7e8", fg: "#1f9a2b" },
   { icon: Sparkles, label: "Automation Control", to: "Automation & AI", bg: "#f1ebff", fg: "#7a3fe0" },
   { icon: Link2, label: "Integration Health", to: "Integrations & API", bg: "#fff4dc", fg: "#e08a00" },
   { icon: Database, label: "Backup & Restore", to: "Backup & Recovery", bg: "#eaf2ff", fg: "#1d5bd6" },
@@ -201,7 +201,7 @@ export default function SA001Dashboard() {
   const [fy, setFy] = useState<(typeof fyOptions)[number]>("FY 2026 – 27");
   const [tab, setTab] = useState<Tab>("Overview");
   // this component renders the frame, so the role is fixed here (no context yet)
-  const href = (label: string) => sectionHref("super-admin", label);
+  const href = (to: string) => (to.startsWith("/") ? to : sectionHref("super-admin", to));
   const notice = useNotice();
   const [updated, setUpdated] = useState("11:40 AM");
 
@@ -327,12 +327,12 @@ export default function SA001Dashboard() {
         <Panel title="AI & Automation Control" action={<ViewLink to="Automation & AI">View Details</ViewLink>} bodyClassName="flex flex-col gap-[5px] pt-[3px]">
           <div className="grid grid-cols-3 gap-[5px]">
             {aiTiles.map((t) => (
-              <div key={t.label} className="flex h-[42px] items-center gap-[5px] rounded-[8px] border border-[#e1e5ee] px-[5px] shadow-[0_1px_4px_rgba(30,50,110,0.06)]">
-                <t.icon strokeWidth={2} className={`h-[19px] w-[19px] shrink-0 ${t.red ? "text-[#e02424]" : "text-[#7a3fe0]"}`} />
+              <div key={t.label} className="flex h-[46px] items-start gap-[5px] rounded-[8px] border border-[#e1e5ee] px-[5px] pt-[4px] shadow-[0_1px_4px_rgba(30,50,110,0.06)]">
+                <t.icon strokeWidth={2} className={`mt-[3px] h-[19px] w-[19px] shrink-0 ${t.red ? "text-[#e02424]" : "text-[#7a3fe0]"}`} />
                 <span className="min-w-0 leading-none">
-                  <span className="block text-[9.2px] font-semibold leading-[1.05]">{t.label}</span>
-                  <b className={`mt-[2px] block text-[14px] ${t.red ? "text-[#e02424]" : ""}`}>{t.value}</b>
-                  {t.foot && <span className="text-[10.5px]"><Trend value={t.foot} /></span>}
+                  <span className="block text-[9.8px] font-semibold leading-[11px]">{t.label}</span>
+                  <b className={`mt-[2px] block text-[14.6px] leading-[16px] ${t.red ? "text-[#e02424]" : ""}`}>{t.value}</b>
+                  {t.foot && <span className="block text-[10.6px] leading-[12px]"><Trend value={t.foot} /></span>}
                 </span>
               </div>
             ))}
@@ -356,11 +356,11 @@ export default function SA001Dashboard() {
 
         <Panel title="Integrations & Communication Status" titleSize={12.6} action={<ViewLink to="Integrations & API" />} bodyClassName="flex flex-col gap-[1px] pb-[3px] pt-0">
           <div className="flex items-center gap-[10px]">
-            <Donut size={36} thickness={6} segments={[{ value: 12, color: "#1f9a1f" }, { value: 1, color: "#f7b500" }, { value: 1, color: "#e02424" }]}>
-              <b className="text-[15px] leading-none">14</b>
-              <span className="text-[9px] font-semibold leading-none">Total</span>
+            <Donut size={52} thickness={8} segments={[{ value: 12, color: "#1f9a1f" }, { value: 1, color: "#f7b500" }, { value: 1, color: "#e02424" }]}>
+              <b className="text-[18px] leading-none">14</b>
+              <span className="mt-[1px] text-[10.5px] font-semibold leading-none">Total</span>
             </Donut>
-            <ul className="flex-1 text-[10.6px] font-semibold leading-[12px]">
+            <ul className="flex flex-1 flex-col gap-[4px] text-[11.4px] font-semibold leading-none">
               {[
                 ["Connected", "12", "(86%)", "#1f9a1f"],
                 ["Delayed", "01", "(7%)", "#f7b500"],
@@ -375,13 +375,13 @@ export default function SA001Dashboard() {
               ))}
             </ul>
           </div>
-          <p className="mt-[1px] text-[11.2px] font-bold leading-none">Key Integrations <span className="font-medium">(Status)</span></p>
+          <p className="mt-[3px] text-[11.6px] font-bold leading-none">Key Integrations <span className="font-medium">(Status)</span></p>
           <ul className="flex flex-1 flex-col justify-between gap-[4px] pt-[2px]">
             {integrations.map((i) => (
               <li key={i.name} className="flex items-center gap-[6px] text-[10.4px] font-semibold leading-none">
                 <span className="flex w-[14px] justify-center">{i.icon}</span>
                 <span className="flex-1 truncate">{i.name}</span>
-                <Pill tone={i.status === "Connected" ? "green" : i.status === "Delayed" ? "amber" : "red"} className="h-[16px] w-[72px] text-[10.4px]">{i.status}</Pill>
+                <Pill tone={i.status === "Connected" ? "green" : i.status === "Delayed" ? "amber" : "red"} className="h-[15px] w-[72px] text-[10.2px]">{i.status}</Pill>
               </li>
             ))}
           </ul>

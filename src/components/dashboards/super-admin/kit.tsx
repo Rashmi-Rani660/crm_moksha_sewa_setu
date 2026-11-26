@@ -12,7 +12,7 @@
 
 import Link from "next/link";
 import { useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { ArrowRight, CalendarDays, Check, ChevronDown, Search, type LucideIcon } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, ChevronDown, ChevronRight, Search, type LucideIcon } from "lucide-react";
 import { Box, DashboardCanvas } from "@/components/dashboards/canvas";
 import { PinSolid, Select, Today, formatDay, useSectionHref } from "@/components/dashboards/ui";
 import EncodencyBadge from "@/components/ui/EncodencyBadge";
@@ -88,6 +88,11 @@ export function toneFor(text: string): PillTone {
   if (/^(normal)$/.test(t)) return "green";
   if (/^(in progress|en route)$/.test(t)) return "blue";
   if (/^(scheduled)$/.test(t)) return "purple";
+  if (/^(applied|verified|assigned|healthy|acknowledged|completed|verification complete|yes|enabled|on route|on track)$/.test(t)) return "green";
+  if (/^(overdue|escalated|not received|no access)$/.test(t)) return "red";
+  if (/^(under review|draft|pending approval|pending escalation|manual review|post-service follow-up|paused|restricted)$/.test(t)) return "amber";
+  if (/^(new lead|low|view only)$/.test(t)) return "blue";
+  if (/^(auto-assigned|team assigned|review|manage)$/.test(t)) return "purple";
   return "gray";
 }
 
@@ -170,6 +175,7 @@ export function KpiTile({
   label,
   sub,
   badge,
+  caption,
 }: {
   tone: TileTone;
   icon: LucideIcon;
@@ -179,12 +185,15 @@ export function KpiTile({
   sub?: ReactNode;
   /** Coloured status chip under the label. */
   badge?: { text: string; tone: PillTone };
+  /** Small heading above the value (detail pages: "Case Stage" → "In Progress"). */
+  caption?: ReactNode;
 }) {
   const t = tiles[tone];
   return (
     <div style={{ background: t.bg, borderColor: t.border }} className="flex min-h-[66px] min-w-0 items-center gap-[8px] rounded-[11px] border px-[9px] py-[6px] shadow-[0_3px_9px_rgba(30,50,110,0.08)]">
       <Icon strokeWidth={1.9} style={{ color: t.fg }} className="h-[30px] w-[30px] shrink-0" />
       <div className="min-w-0 flex-1">
+        {caption && <p className="mb-[3px] truncate text-[11.4px] font-semibold leading-none text-[#1a1d36]">{caption}</p>}
         <p className="whitespace-nowrap text-[22px] font-bold leading-none tracking-[-0.4px] text-[#0b0c36]">{value}</p>
         <p className="mt-[3px] text-[11.4px] font-semibold lg:truncate leading-[1.15] tracking-[-0.25px] text-[#1a1d36]">{label}</p>
         {sub && <div className="mt-[2px] text-[11px] lg:truncate font-semibold leading-none text-[#3b4256]">{sub}</div>}
@@ -494,3 +503,34 @@ export function useNotice() {
   ) : null;
   return { show, node };
 }
+
+/* ------------------------------- quick actions ------------------------------ */
+
+export type QuickItem = { icon: LucideIcon; label: string; color?: string; href?: string; onClick?: () => void };
+
+/** Bordered action rows with a chevron (right-hand "Quick Actions" panels). */
+export function QuickList({ items, className = "" }: { items: QuickItem[]; className?: string }) {
+  return (
+    <div className={`flex h-full flex-col gap-[4px] ${className}`}>
+      {items.map((a) => {
+        const body = (
+          <>
+            <a.icon strokeWidth={2} style={{ color: a.color ?? "#2f6fe0" }} className="h-[18px] w-[18px] shrink-0" />
+            <span className="min-w-0 flex-1 text-[13px] font-semibold leading-tight">{a.label}</span>
+            <ChevronRight strokeWidth={2.4} className="h-[15px] w-[15px] shrink-0" />
+          </>
+        );
+        const cls = "flex min-h-[28px] flex-1 items-center gap-[10px] rounded-[8px] border border-[#e3e7ef] bg-[#f8faff] px-[10px] text-left hover:bg-[#eef2fc]";
+        return a.href ? (
+          <Link key={a.label} href={a.href} className={cls}>{body}</Link>
+        ) : (
+          <button key={a.label} type="button" onClick={a.onClick} className={cls}>{body}</button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Compact table cell / header classes for dense lists. */
+export const thS = "whitespace-nowrap px-[6px] py-[4px] text-left text-[11.8px] font-bold leading-[15px] text-[#0b0c36]";
+export const tdS = "whitespace-nowrap px-[6px] py-[2px] text-[12px] font-medium leading-[16px] text-[#1a1d36]";

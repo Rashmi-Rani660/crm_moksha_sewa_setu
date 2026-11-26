@@ -165,13 +165,13 @@ export const shells: Record<Role, Shell> = {
   "super-admin": {
     sidebar: {
     width: 210,
-    fontSize: 14.2,
-    iconSize: 20,
-    iconX: 36,
-    textX: 61,
-    pill: { x: 7, w: 200, h: 36 },
+    fontSize: 13.6,
+    iconSize: 19,
+    iconX: 31,
+    textX: 53,
+    pill: { x: 8, w: 194, h: 36 },
     rowHeight: 26,
-    pillFontSize: 14.2,
+    pillFontSize: 14,
     diyaShift: 62,
     items: [
       { label: "Super Admin", icon: House, y: 152, pill: "gold" },

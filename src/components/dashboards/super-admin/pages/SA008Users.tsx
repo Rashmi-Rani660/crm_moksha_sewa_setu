@@ -9,6 +9,8 @@
  */
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { saRoutes } from "@/components/dashboards/super-admin/routes";
 import { useMemo, useState } from "react";
 import {
   ChevronRight,
@@ -85,8 +87,8 @@ const roleTone = { "Super Admin": "purple", Admin: "blue", User: "gray" } as con
 
 const quick: { icon: LucideIcon; label: string; href?: string; color: string }[] = [
   { icon: UserPlus, label: "Create New User", href: CREATE_USER_HREF, color: "#2f6fe0" },
-  { icon: UserCog, label: "Manage Roles & Permissions", color: "#2f6fe0" },
-  { icon: UsersRound, label: "Assign / Change User Role", color: "#2f6fe0" },
+  { icon: UserCog, label: "Manage Roles & Permissions", href: "/dashboard/super-admin/users-access-control/roles", color: "#2f6fe0" },
+  { icon: UsersRound, label: "Assign / Change User Role", href: "/dashboard/super-admin/users-access-control/roles", color: "#2f6fe0" },
   { icon: CircleCheck, label: "Deactivate / Activate User", color: "#1f9a2b" },
   { icon: KeyRound, label: "Reset Password", color: "#1f9a2b" },
   { icon: FileText, label: "View User Activity Logs", color: "#2f6fe0" },
@@ -94,6 +96,7 @@ const quick: { icon: LucideIcon; label: string; href?: string; color: string }[]
 
 export default function SA008Users() {
   const notice = useNotice();
+  const router = useRouter();
   const [tab, setTab] = useState<(typeof tabs)[number]>("User List");
   const [query, setQuery] = useState("");
   const [centre, setCentre] = useState<(typeof centres)[number]>("All Centres");
@@ -144,7 +147,7 @@ export default function SA008Users() {
               type="button"
               role="tab"
               aria-selected={tab === t}
-              onClick={() => setTab(t)}
+              onClick={() => (t === "Roles & Permissions" ? router.push(saRoutes.roles) : t === "Access Control" ? router.push(saRoutes.hierarchy) : setTab(t))}
               className={`flex h-[38px] shrink-0 items-center gap-[6px] whitespace-nowrap rounded-[9px] border px-[18px] pt-px text-[14px] font-semibold shadow-[0_2px_6px_rgba(30,50,110,0.06)] ${
                 tab === t ? "border-[#1d4fe0] bg-[#1d4fe0] text-white" : "border-[#e1e5ee] bg-white hover:bg-[#f4f6fc]"
               }`}

@@ -97,7 +97,7 @@ export default function Sidebar({
                   aria-current={isCurrent ? "page" : undefined}
                   className={`relative flex h-full items-center transition-colors ${
                     kind === "gold"
-                      ? "rounded-[9px] bg-[linear-gradient(90deg,#fdc006_0%,#f2ad0a_45%,#d99a1b_75%,rgba(160,120,40,0.55)_100%)] shadow-[0_2px_8px_rgba(0,0,0,0.25)]"
+                      ? "rounded-[9px] border border-[#ffd668]/70 bg-[linear-gradient(90deg,#fdc006_0%,#f2ad0a_45%,#d99a1b_75%,rgba(160,120,40,0.55)_100%)] shadow-[0_2px_8px_rgba(0,0,0,0.25)]"
                       : kind === "blue"
                         ? "rounded-[10px] bg-[linear-gradient(90deg,#28467a,#223d6c)]"
                         : "hover:bg-white/5"
