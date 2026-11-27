@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Hind, Poppins, Source_Serif_4 } from "next/font/google";
+import Script from "next/script";
 import { siteConfig } from "@/lib/config/site";
 import "./globals.css";
 
@@ -30,6 +31,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
+  width: "device-width",
   initialScale: 1,
   themeColor: "#d3e8fc",
 };
@@ -49,10 +51,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
       className={`${poppins.variable} ${sourceSerif.variable} ${hind.variable} h-full antialiased`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: viewportScript }} />
-      </head>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <Script id="viewport-vars" strategy="beforeInteractive">
+          {viewportScript}
+        </Script>
+        {children}
+      </body>
     </html>
   );
 }

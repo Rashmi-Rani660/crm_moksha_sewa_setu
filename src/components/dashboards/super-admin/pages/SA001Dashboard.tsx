@@ -8,31 +8,25 @@
 
 import { useState } from "react";
 import {
-  Building2,
+  Bell,
   CircleCheck,
   Clock3,
   Database,
-  FileCheck2,
-  IndianRupee,
-  LayoutGrid,
   Layers,
-  MapPin,
   MessageSquareText,
+  Radio,
   ShieldAlert,
-  ShieldCheck,
-  Sparkles,
   TriangleAlert,
   Users,
   UsersRound,
-  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { Donut } from "@/components/dashboards/ui";
 import {
   CentreDropdown,
-  Dropdown,
   KpiRow,
   KpiTile,
+  ModuleDropdown,
   PageHead,
   KV,
   Panel,
@@ -53,14 +47,6 @@ const tabs = [
 ] as const;
 type Tab = (typeof tabs)[number];
 
-const tabIcons: Partial<Record<Tab, LucideIcon>> = {
-  Overview: LayoutGrid,
-  "Requests & cases": FileCheck2,
-  "Users & resources": UsersRound,
-  "AI & automation": Sparkles,
-  "Security & finance": ShieldCheck,
-};
-
 const tabSection: Partial<Record<Tab, string>> = {
   "Requests & cases": "Case & Workflow",
   "Users & resources": "Users & Access Control",
@@ -68,13 +54,7 @@ const tabSection: Partial<Record<Tab, string>> = {
   "Security & finance": "System Security",
 };
 
-const moduleOptions = [
-  "SA-001 · Super Admin Dashboard",
-  "SA-002 · Live Operations",
-  "SA-003 · Notification & Alerts",
-] as const;
-
-type Fy = "FY 2026 – 27" | "FY 2025 – 26" | "FY 2024 – 25";
+type Fy = "FY 2026–27" | "FY 2025–26" | "FY 2024–25";
 
 const trend = [
   { m: "Jun", v: 78 },
@@ -86,7 +66,7 @@ const trend = [
 ] as const;
 
 const alerts: { icon: LucideIcon; color: string; label: string; count: string; tone: PillTone }[] = [
-  { icon: TriangleAlert, color: "#e02424", label: "Emergency requests", count: "03", tone: "red" },
+  { icon: TriangleAlert, color: "#e02424", label: "Emergency requests", count: "03 · Review", tone: "red" },
   { icon: UsersRound, color: "#2f6fe0", label: "Unassigned requests", count: "04", tone: "amber" },
   { icon: Clock3, color: "#e08a00", label: "Overdue tasks", count: "05", tone: "amber" },
   { icon: ShieldAlert, color: "#e08a00", label: "Critical approvals", count: "07", tone: "gray" },
@@ -185,7 +165,7 @@ function MonthBar() {
 
 function Bar({ pct, className = "" }: { pct: number; className?: string }) {
   return (
-    <span className={`block h-[7px] w-full overflow-hidden rounded-full bg-[#e3e7ef] ${className}`}>
+    <span className={`block h-[7px] w-full shrink-0 overflow-hidden rounded-full bg-[#e3e7ef] ${className}`}>
       <span className="block h-full rounded-full bg-[#2f6fe0]" style={{ width: `${pct}%` }} />
     </span>
   );
@@ -193,42 +173,40 @@ function Bar({ pct, className = "" }: { pct: number; className?: string }) {
 
 export default function SA001Dashboard() {
   const [tab, setTab] = useState<Tab>("Overview");
-  const [fy] = useState<Fy>("FY 2026 – 27");
-  const [module, setModule] = useState<(typeof moduleOptions)[number]>(moduleOptions[0]);
+  const [fy] = useState<Fy>("FY 2026–27");
   const notice = useNotice();
   const href = (label: string) => sectionHref("super-admin", label);
 
   return (
     <SuperAdminFrame>
-      <PageHead icon={Building2} iconTone="blue" title="Super Admin Dashboard (SA-001)" links={["Super Admin", fy, "Ghaziabad"]}>
-        <span className="inline-flex h-[30px] items-center rounded-[8px] border border-[#f0dca0] bg-[#fff6da] px-[10px] text-[12px] font-bold text-[#8a6a00]">DEMO DATA</span>
-        <Dropdown label="Module" value={module} options={moduleOptions} onChange={(m) => { setModule(m); const target = { "SA-001 · Super Admin Dashboard": "Dashboard", "SA-002 · Live Operations": "Live Operations", "SA-003 · Notification & Alert Centre": "Notification & Alerts" }[m]; if (target) window.location.assign(href(target)); }} className="w-[240px]" />
-        <CentreDropdown className="w-[170px]" />
+      <PageHead light icon={Radio} iconTone="blue" title="Super Admin Dashboard" links={["Super Admin", fy, "Ghaziabad"]}>
+        <ModuleDropdown current="SA-001" className="w-[250px] [&_button]:!font-normal" />
+        <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={8}>
-        <KpiTile tone="blue" icon={Users} value="186" label="CRM accounts" sub="162 active" />
-        <KpiTile tone="green" icon={Users} value="12" label="Active admins" sub="3 access levels" />
-        <KpiTile tone="orange" icon={Layers} value="324" label="Requests" sub="This month" />
-        <KpiTile tone="sky" icon={FileCheck2} value="18" label="Active cases" sub="Live" />
-        <KpiTile tone="blue" icon={CircleCheck} value="276" label="Completed" sub="This month" />
-        <KpiTile tone="red" icon={TriangleAlert} value="03" label="Emergency" sub="Immediate attention" />
-        <KpiTile tone="orange" icon={IndianRupee} value="₹18.76 L" label="Donations" sub="FY 26 – 27" />
-        <KpiTile tone="purple" icon={Wallet} value="₹12.40 L" label="Expenses" sub="FY 26 – 27" />
+        <KpiTile tone="blue" icon={Radio} value="186" label="CRM accounts" sub="162 active" />
+        <KpiTile tone="green" icon={Bell} value="12" label="Active admins" sub="3 access levels" />
+        <KpiTile tone="orange" icon={CircleCheck} value="324" label="Requests" sub="This month" />
+        <KpiTile tone="purple" icon={Users} value="18" label="Active cases" sub="Live" />
+        <KpiTile tone="sky" icon={Layers} value="276" label="Completed" sub="This month" />
+        <KpiTile tone="red" icon={Radio} value="03" label="Emergency" sub="Immediate attention" />
+        <KpiTile tone="orange" icon={Bell} value="₹18.76 L" label="Donations" sub="FY 26 – 27" />
+        <KpiTile tone="purple" icon={CircleCheck} value="₹12.40 L" label="Expenses" sub="FY 26 – 27" />
       </KpiRow>
 
-      <Tabs tabs={tabs} value={tab} icons={tabIcons} onChange={(t) => {
+      <Tabs tabs={tabs} value={tab} onChange={(t) => {
         setTab(t);
         const to = tabSection[t];
         if (to) window.location.assign(href(to));
       }} />
 
+      <div className="flex min-h-0 flex-1 flex-col gap-[10px]">
       {/* Row 1 */}
-      <div className="grid gap-[10px] sm:grid-cols-2 lg:h-[205px] lg:[grid-template-rows:minmax(0,1fr)] lg:grid-cols-[275fr_345fr_260fr]">
-        <Panel title="Critical alerts & priority actions" bodyClassName="flex flex-col gap-[4px] pt-[3px]">
+      <div className="grid gap-[10px] sm:grid-cols-2 lg:min-h-0 lg:flex-[225_1_0] lg:[grid-template-rows:minmax(0,1fr)] lg:grid-cols-[275fr_345fr_260fr]">
+        <Panel title="Critical alerts & priority actions" bodyClassName="flex flex-col gap-[5px] pt-[3px]">
           {alerts.map((a) => (
-            <div key={a.label} className="flex items-center gap-[8px] text-[12.4px] font-semibold leading-none">
-              <a.icon strokeWidth={2} style={{ color: a.color }} className="h-[15px] w-[15px] shrink-0" />
+            <div key={a.label} className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px] text-[12.4px] font-semibold leading-none last:border-b-0 last:pb-0">
               <span className="min-w-0 flex-1 truncate">{a.label}</span>
               <Pill tone={a.tone} className="h-[18px] min-w-[28px] text-[11px] font-bold">{a.count}</Pill>
             </div>
@@ -250,25 +228,27 @@ export default function SA001Dashboard() {
       </div>
 
       {/* Row 2 */}
-      <div className="grid gap-[10px] sm:grid-cols-2 lg:h-[172px] lg:[grid-template-rows:minmax(0,1fr)] lg:grid-cols-[275fr_345fr_260fr]">
+      <div className="grid gap-[10px] sm:grid-cols-2 lg:min-h-0 lg:flex-[185_1_0] lg:[grid-template-rows:minmax(0,1fr)] lg:grid-cols-[275fr_345fr_260fr]">
         <Panel title="Communication & integrations" bodyClassName="flex flex-col gap-[7px] pt-[3px]">
           <StatRows rows={commStats} />
-          <div className="flex flex-col gap-[6px] border-t border-[#eef0f5] pt-[6px]">
+          <div className="flex flex-col gap-[5px] border-t border-[#eef0f5] pt-[5px]">
             {commIntegrations.map((i) => (
-              <div key={i.label} className="flex items-center gap-[8px] text-[12.4px] font-semibold leading-none">
+              <div key={i.label} className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px] text-[12.4px] font-semibold leading-none last:border-b-0 last:pb-0">
                 <span className="min-w-0 flex-1 truncate">{i.label}</span>
                 <Pill tone={i.tone} className="h-[17px] text-[10.5px]">{i.status}</Pill>
               </div>
             ))}
           </div>
         </Panel>
-        <Panel title="AI & automation" bodyClassName="flex flex-col gap-[6px] pt-[3px]">
+        <Panel title="AI & automation" bodyClassName="flex flex-col gap-[5px] pt-[3px]">
           <StatRows rows={aiRows} />
-          <div className="mt-[8px] flex items-center justify-between text-[11.5px] font-semibold">
-            <span>AI budget used</span>
-            <b>56%</b>
+          <div className="mt-auto flex flex-col gap-[4px] pt-[2px]">
+            <div className="flex items-center justify-between text-[11.5px] font-semibold">
+              <span>AI budget used</span>
+              <b>56%</b>
+            </div>
+            <Bar pct={56} />
           </div>
-          <Bar pct={56} className="mt-[4px]" />
         </Panel>
         <Panel title="Security & backup" bodyClassName="flex flex-col gap-[5px] pt-[3px]">
           <StatRows rows={securityRows} />
@@ -276,23 +256,23 @@ export default function SA001Dashboard() {
       </div>
 
       {/* Row 3 */}
-      <div className="grid gap-[10px] sm:grid-cols-2 lg:h-[150px] lg:[grid-template-rows:minmax(0,1fr)] lg:grid-cols-[275fr_345fr_260fr]">
-        <Panel title="Financial control · FY" bodyClassName="flex flex-col gap-[7px] pt-[3px]">
+      <div className="grid gap-[10px] sm:grid-cols-2 lg:min-h-0 lg:flex-[175_1_0] lg:[grid-template-rows:minmax(0,1fr)] lg:grid-cols-[275fr_345fr_260fr]">
+        <Panel title="Financial control · FY" bodyClassName="flex flex-col gap-[5px] pt-[3px]">
           <StatRows rows={financeRows} />
-          <div className="mt-[8px] flex items-center justify-between text-[11.5px] font-semibold">
-            <span>Expenses / donations</span>
-            <b>66.1%</b>
+          <div className="mt-auto flex flex-col gap-[4px] pt-[2px]">
+            <div className="flex items-center justify-between text-[11.5px] font-semibold">
+              <span>Expenses / donations</span>
+              <b>66.1%</b>
+            </div>
+            <Bar pct={66.1} />
           </div>
-          <Bar pct={66.1} className="mt-[4px]" />
         </Panel>
         <Panel title="Coverage & training" bodyClassName="flex flex-col gap-[5px] pt-[3px] text-[12.4px] font-semibold">
-          <div className="flex items-center gap-[8px]">
-            <MapPin strokeWidth={2} className="h-[14px] w-[14px] shrink-0 text-[#2f6fe0]" />
+          <div className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px]">
             <span className="min-w-0 flex-1 truncate">{coverage[0].city}</span>
             <Pill tone={coverage[0].tone} className="h-[17px] text-[10.5px]">{coverage[0].status}</Pill>
           </div>
-          <div className="flex items-center gap-[8px]">
-            <MapPin strokeWidth={2} className="h-[14px] w-[14px] shrink-0 text-[#2f6fe0]" />
+          <div className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px]">
             <span className="min-w-0 flex-1 truncate">{coverage[1].city}</span>
             <Pill tone={coverage[1].tone} className="h-[17px] text-[10.5px]">{coverage[1].status}</Pill>
           </div>
@@ -300,28 +280,29 @@ export default function SA001Dashboard() {
             <span>{trainingRows[0][0]}</span>
             <b className="shrink-0 whitespace-nowrap">{trainingRows[0][1]}</b>
           </div>
-          <div className="flex flex-col gap-[4px] pt-[3px]">
+          <div className="mt-auto flex flex-col gap-[4px] pt-[2px]">
             <div className="flex items-center justify-between text-[11.5px] font-semibold">
               <span>Staff training</span>
               <b>92%</b>
             </div>
-            <Bar pct={92} className="mt-[3px]" />
+            <Bar pct={92} />
             <div className="flex items-center justify-between text-[11.5px] font-semibold">
               <span>Volunteer training</span>
               <b>80%</b>
             </div>
-            <Bar pct={80} className="mt-[3px]" />
+            <Bar pct={80} />
           </div>
         </Panel>
-        <Panel title="AI management insights" className="!border-[#f1e2b8] !bg-[#fffbef]" bodyClassName="flex flex-col gap-[8px] pt-[3px]">
-          <p className="text-[12px] font-medium leading-tight">{insights[0]}</p>
-          <p className="text-[12px] font-medium leading-tight">{insights[1]}</p>
+        <Panel title="AI management insights" bodyClassName="flex flex-col gap-[7px] pt-[6px]">
+          <p className="text-[12px] font-medium leading-tight text-[#1a1d36]">{insights[0]}</p>
+          <p className="text-[12px] font-medium leading-tight text-[#1a1d36]">{insights[1]}</p>
           <div className="flex flex-wrap gap-[8px]">
-            <button type="button" onClick={() => notice.show("Opening the alert queue (demo).")} className="flex h-[28px] items-center rounded-[7px] border-[1.5px] border-[#2f4fe0] bg-white px-[12px] text-[12px] font-semibold text-[#1d3fc4] hover:bg-[#f1f4ff]">Review alerts</button>
-            <button type="button" onClick={() => notice.show("Automation pause requested (demo).")} className="flex h-[28px] items-center rounded-[7px] border-[1.5px] border-[#2f4fe0] bg-white px-[12px] text-[12px] font-semibold text-[#1d3fc4] hover:bg-[#f1f4ff]">Pause automation</button>
+            <button type="button" onClick={() => notice.show("Opening the alert queue (demo).")} className="flex h-[28px] items-center rounded-[7px] bg-[#1d4fe0] px-[12px] text-[12px] font-semibold text-white shadow-[0_2px_6px_rgba(29,79,224,0.28)] hover:bg-[#1840c0]">Review alerts</button>
+            <button type="button" onClick={() => notice.show("Automation pause requested (demo).")} className="flex h-[28px] items-center rounded-[7px] border border-[#cfd5e2] bg-white px-[12px] text-[12px] font-semibold text-[#1d4fe0] hover:bg-[#f1f4ff]">Pause automation</button>
           </div>
-          <p className="text-[12px] font-medium leading-tight">{insights[2]}</p>
+          <p className="mt-auto rounded-[7px] border border-[#e1e5ee] bg-[#f8fafc] px-[10px] py-[6px] text-[12px] font-medium leading-tight text-[#1a1d36]">{insights[2]}</p>
         </Panel>
+      </div>
       </div>
       {notice.node}
     </SuperAdminFrame>

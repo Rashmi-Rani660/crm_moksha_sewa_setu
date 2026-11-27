@@ -10,28 +10,20 @@
 
 import { useState } from "react";
 import {
-  Activity,
+  Bell,
   CircleCheck,
-  CircleX,
-  Flag,
-  Headset,
-  History,
-  LayoutGrid,
-  Map,
+  Layers,
   MapPin,
   Radio,
-  Siren,
-  Truck,
   Users,
-  type LucideIcon,
 } from "lucide-react";
 import { Dot } from "@/components/dashboards/ui";
 import {
   CentreDropdown,
-  Dropdown,
   KpiRow,
   KpiTile,
   KV,
+  ModuleDropdown,
   PageHead,
   Panel,
   Pill,
@@ -47,20 +39,6 @@ import {
 
 const tabs = ["Overview", "Emergency queue", "Team & vehicles", "Service coverage", "Activity history"] as const;
 type Tab = (typeof tabs)[number];
-
-const tabIcons: Partial<Record<Tab, LucideIcon>> = {
-  Overview: LayoutGrid,
-  "Emergency queue": Siren,
-  "Team & vehicles": Truck,
-  "Service coverage": Map,
-  "Activity history": History,
-};
-
-const moduleOptions = [
-  "SA-001 · Super Admin Dashboard",
-  "SA-002 · Live Operations & Emergency",
-  "SA-003 · Notification & Alerts",
-] as const;
 
 type QueueRow = { id: string; category: string; owner: string; sla: string; stage: string };
 
@@ -151,7 +129,6 @@ function GpsSchematic() {
 
 export default function SA002LiveOperations() {
   const [tab, setTab] = useState<Tab>("Overview");
-  const [module, setModule] = useState<(typeof moduleOptions)[number]>(moduleOptions[1]);
   const notice = useNotice();
 
   const showQueue = tab === "Overview" || tab === "Emergency queue";
@@ -174,35 +151,33 @@ export default function SA002LiveOperations() {
   return (
     <SuperAdminFrame active="live-operations">
       <PageHead
+        light
         icon={Radio}
         iconTone="blue"
-        title="Live Operations & Emergency Control (SA-002)"
-        links={["Super Admin", "FY 2026-27", "Ghaziabad"]}
+        title="Live Operations & Emergency Control"
+        links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
       >
-        <span className="inline-flex h-[30px] items-center rounded-[8px] border border-[#f0dca0] bg-[#fff6da] px-[10px] text-[12px] font-bold text-[#8a6a00]">
-          DEMO DATA
-        </span>
-        <Dropdown label="Module" value={module} options={moduleOptions} onChange={setModule} className="w-[250px]" />
+        <ModuleDropdown current="SA-002" />
         <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={6}>
         <KpiTile tone="blue" icon={Radio} value="24" label="Requests today" sub="Received" />
-        <KpiTile tone="green" icon={CircleCheck} value="18" label="Active cases" sub="All open cases" />
-        <KpiTile tone="red" icon={CircleX} value="03" label="Emergency" sub="Open" />
+        <KpiTile tone="green" icon={Bell} value="18" label="Active cases" sub="All open cases" />
+        <KpiTile tone="red" icon={CircleCheck} value="03" label="Emergency" sub="Open" />
         <KpiTile tone="purple" icon={Users} value="04" label="Unassigned" sub="Awaiting owner" />
-        <KpiTile tone="sky" icon={Truck} value="02" label="Vehicles" sub="1 available" />
+        <KpiTile tone="sky" icon={Layers} value="02" label="Vehicles" sub="1 available" />
         <KpiTile tone="red" icon={Radio} value="05" label="SLA breaches" sub="Review" />
       </KpiRow>
 
-      <Tabs tabs={tabs} value={tab} onChange={setTab} icons={tabIcons} />
+      <Tabs tabs={tabs} value={tab} onChange={setTab} />
 
       <div className="flex min-h-0 flex-1 flex-col gap-[10px]">
         {/* Row 1 — emergency queue + live case stage */}
         {row1 && (
           <div className={`grid gap-[10px] ${row1Cols} lg:min-h-0 lg:flex-[205_1_0] lg:[grid-template-rows:minmax(0,1fr)]`}>
             {showQueue && (
-              <Panel title="Emergency queue" note="• Ghaziabad" icon={Siren}>
+              <Panel title="Emergency queue" note="• Ghaziabad">
                 <TableWrap>
                   <Thead>
                     {["Case", "Category", "Owner", "SLA left", "Stage"].map((h) => (
@@ -225,21 +200,18 @@ export default function SA002LiveOperations() {
                 </TableWrap>
                 <div className="mt-[8px] flex flex-wrap gap-[8px]">
                   <PrimaryButton
-                    icon={Users}
                     onClick={() => notice.show("Assign team: owner recorded (demo).")}
                   >
                     Assign team
                   </PrimaryButton>
                   <PrimaryButton
                     outline
-                    icon={Siren}
                     onClick={() => notice.show("Escalate: reason required, logged (demo).")}
                   >
                     Escalate
                   </PrimaryButton>
                   <PrimaryButton
                     outline
-                    icon={Activity}
                     onClick={() => notice.show("Manual override: reason recorded (demo).")}
                   >
                     Manual override
@@ -249,7 +221,7 @@ export default function SA002LiveOperations() {
             )}
 
             {showStage && (
-              <Panel title="Live case stage" icon={Activity} bodyClassName="flex flex-col pt-[3px]">
+              <Panel title="Live case stage" bodyClassName="flex flex-col pt-[3px]">
                 <div className="flex flex-col">
                   {stages.map(([label, value]) => (
                     <div key={label} className="flex items-center border-b border-[#eef0f5] py-[7px] last:border-0">
@@ -270,7 +242,7 @@ export default function SA002LiveOperations() {
         {row2 && (
           <div className={`grid gap-[10px] ${row2Cols} lg:min-h-0 lg:flex-[243_1_0] lg:[grid-template-rows:minmax(0,1fr)]`}>
             {showVehicle && (
-              <Panel title="Vehicle & GPS status" icon={Truck} bodyClassName="flex flex-col pt-[3px]">
+              <Panel title="Vehicle & GPS status" bodyClassName="flex flex-col pt-[3px]">
                 <TableWrap>
                   <Thead>
                     {["Vehicle", "Driver", "Case", "ETA / GPS"].map((h) => (
@@ -298,19 +270,17 @@ export default function SA002LiveOperations() {
             )}
 
             {showStaff && (
-              <Panel title="Staff & volunteer availability" icon={Users} bodyClassName="flex flex-col pt-[3px]">
+              <Panel title="Staff & volunteer availability" bodyClassName="flex flex-col pt-[3px]">
                 <StatRows rows={staffRows} />
                 <div className="mt-[8px] border-t border-[#eef0f5] pt-[6px]">
                   <p className="mb-[5px] text-[12px] font-bold text-[#0b0c36]">Coverage</p>
-                  <div className="flex items-center gap-[8px] text-[12.5px] font-semibold">
-                    <MapPin strokeWidth={2} className="h-[14px] w-[14px] shrink-0 text-[#1f9a2b]" />
+                  <div className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px] text-[12.5px] font-semibold">
                     <span className="min-w-0 flex-1 truncate">Ghaziabad</span>
                     <Pill tone="green" className="h-[17px] text-[10.5px]">
                       Active
                     </Pill>
                   </div>
                   <div className="mt-[5px] flex items-center gap-[8px] text-[12.5px] font-semibold">
-                    <MapPin strokeWidth={2} className="h-[14px] w-[14px] shrink-0 text-[#ef9a12]" />
                     <span className="min-w-0 flex-1 truncate">Delhi / Noida</span>
                     <Pill tone="amber" className="h-[17px] text-[10.5px]">
                       Coming soon
@@ -333,7 +303,7 @@ export default function SA002LiveOperations() {
             )}
 
             {showComm && (
-              <Panel title="Communication watch" icon={Headset} bodyClassName="flex flex-col pt-[3px]">
+              <Panel title="Communication watch" bodyClassName="flex flex-col pt-[3px]">
                 <StatRows rows={commRows} />
                 <div className="mt-auto pt-[8px]">
                   <PrimaryButton onClick={() => notice.show("Opening communication centre (demo).")}>
@@ -349,7 +319,7 @@ export default function SA002LiveOperations() {
         {row3 && (
           <div className={`grid gap-[10px] ${row3Cols} lg:min-h-0 lg:flex-[154_1_0] lg:[grid-template-rows:minmax(0,1fr)]`}>
             {showMilestones && (
-              <Panel title="Today's request milestones" icon={Flag} bodyClassName="flex flex-col pt-[3px]">
+              <Panel title="Today's request milestones" bodyClassName="flex flex-col pt-[3px]">
                 <StatRows rows={milestoneRows} />
                 <p className="mt-auto pt-[6px] text-[11px] font-medium leading-tight text-[#5b6280]">
                   Cumulative milestones, not current status.
@@ -358,7 +328,7 @@ export default function SA002LiveOperations() {
             )}
 
             {showActivity && (
-              <Panel title="Live activity & control" icon={Activity} bodyClassName="flex flex-col pt-[3px]">
+              <Panel title="Live activity & control" bodyClassName="flex flex-col pt-[3px]">
                 <div className="flex flex-col gap-[7px]">
                   {activity.map((a) => (
                     <div key={a.time} className="flex items-center gap-[8px] text-[12.5px] font-semibold">
@@ -370,13 +340,13 @@ export default function SA002LiveOperations() {
                   ))}
                 </div>
                 <div className="mt-auto flex flex-wrap gap-[8px] pt-[8px]">
-                  <PrimaryButton icon={Truck} onClick={() => notice.show("Deploy vehicle: awaiting authorisation (demo).")}>
+                  <PrimaryButton onClick={() => notice.show("Deploy vehicle: awaiting authorisation (demo).")}>
                     Deploy vehicle
                   </PrimaryButton>
-                  <PrimaryButton outline icon={Users} onClick={() => notice.show("Reassign: owner updated (demo).")}>
+                  <PrimaryButton outline onClick={() => notice.show("Reassign: owner updated (demo).")}>
                     Reassign
                   </PrimaryButton>
-                  <PrimaryButton outline icon={Activity} onClick={() => notice.show("Case automation paused (demo).")}>
+                  <PrimaryButton outline onClick={() => notice.show("Case automation paused (demo).")}>
                     Pause case automation
                   </PrimaryButton>
                 </div>

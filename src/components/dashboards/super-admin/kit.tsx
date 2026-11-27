@@ -11,9 +11,11 @@
  */
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { ArrowRight, CalendarDays, Check, ChevronDown, ChevronRight, Search, type LucideIcon } from "lucide-react";
 import { Box, DashboardCanvas } from "@/components/dashboards/canvas";
+import { saCoreModules, type CoreModuleCode } from "@/components/dashboards/super-admin/routes";
 import { PinSolid, Select, Today, formatDay, useSectionHref } from "@/components/dashboards/ui";
 import EncodencyBadge from "@/components/ui/EncodencyBadge";
 import { siteConfig } from "@/lib/config/site";
@@ -253,9 +255,9 @@ export function Panel({
       className={`flex min-h-0 min-w-0 flex-col overflow-hidden rounded-[12px] border border-[#e1e5ee] bg-white shadow-[0_3px_10px_rgba(30,50,110,0.07)] ${className}`}
     >
       {title && (
-        <header className="flex items-center gap-[8px] px-[12px] pt-[9px]">
-          {Icon && <Icon strokeWidth={2} className="h-[18px] w-[18px] shrink-0 text-[#0b0c36]" />}
-          <h2 className="min-w-0 flex-1 text-[15.5px] font-bold leading-tight lg:truncate tracking-[-0.3px] text-[#0b0c36]">
+        <header className="flex shrink-0 items-center gap-[8px] border-b border-[#e1e5ee] bg-[#f4f7fc] px-[12px] py-[7px]">
+          {Icon && <Icon strokeWidth={2} className="h-[17px] w-[17px] shrink-0 text-[#0b0c36]" />}
+          <h2 className="min-w-0 flex-1 text-[15px] font-bold leading-tight lg:truncate tracking-[-0.3px] text-[#0b0c36]">
             {title}
             {note && <span className="text-[13px] font-medium tracking-[-0.1px]"> {note}</span>}
           </h2>
@@ -263,7 +265,7 @@ export function Panel({
         </header>
       )}
       {/* Never clip: if content is ever taller/wider than the panel it scrolls inside it. */}
-      <div className={`min-h-0 flex-1 overflow-auto overscroll-contain px-[12px] pb-[10px] pt-[6px] [scrollbar-width:thin] ${bodyClassName}`}>{children}</div>
+      <div className={`min-h-0 flex-1 overflow-auto overscroll-contain px-[12px] pb-[10px] pt-[8px] [scrollbar-width:thin] ${bodyClassName}`}>{children}</div>
     </section>
   );
 }
@@ -385,6 +387,27 @@ export function CentreDropdown({ className = "w-[170px]" }: { className?: string
   return <Dropdown label="Centre" value={v} options={centreOptions} onChange={setV} className={className} icon={<span className="mr-[8px] shrink-0"><PinSolid size={17} /></span>} />;
 }
 
+const moduleLabels = saCoreModules.map((m) => m.label);
+
+/** Working module switcher dropdown for SA-001 … SA-010. */
+export function ModuleDropdown({ current, className = "w-[250px] [&_button]:!font-normal" }: { current: CoreModuleCode; className?: string }) {
+  const router = useRouter();
+  const active = saCoreModules.find((m) => m.code === current) ?? saCoreModules[0];
+  return (
+    <Dropdown
+      label="Module"
+      value={active.label}
+      options={moduleLabels}
+      onChange={(next) => {
+        const target = saCoreModules.find((m) => m.label === next);
+        if (target && target.code !== current) router.push(target.href);
+      }}
+      className={className}
+      size={13.5}
+    />
+  );
+}
+
 export function PrimaryButton({ icon: Icon, children, onClick, outline = false, className = "" }: { icon?: LucideIcon; children: ReactNode; onClick?: () => void; outline?: boolean; className?: string }) {
   return (
     <button
@@ -445,14 +468,14 @@ export const td = "whitespace-nowrap px-[8px] py-[6px] text-[12.8px] font-medium
 export function TableWrap({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
     <div className={`overflow-x-auto ${className}`}>
-      <table className="w-full min-w-max border-collapse">{children}</table>
+      <table className="w-full min-w-max border-collapse [&_tbody>tr]:border-b [&_tbody>tr]:border-[#eef0f5] [&_tbody>tr:nth-child(even)]:bg-[#f7f9fd] [&_tbody>tr:last-child]:border-b-0">{children}</table>
     </div>
   );
 }
 
 export const Thead = ({ children }: { children: ReactNode }) => (
   <thead>
-    <tr className="bg-[#eef1f7] [&>th:first-child]:rounded-l-[6px] [&>th:last-child]:rounded-r-[6px]">{children}</tr>
+    <tr className="border-b border-[#e1e5ee] bg-[#f4f7fc] [&>th:first-child]:rounded-l-[6px] [&>th:last-child]:rounded-r-[6px]">{children}</tr>
   </thead>
 );
 
@@ -480,7 +503,7 @@ export function Pager({ page, pages, onChange, shown = 5 }: { page: number; page
 /** Row in a "label … value" list. */
 export function KV({ k, v, icon, className = "" }: { k: ReactNode; v: ReactNode; icon?: ReactNode; className?: string }) {
   return (
-    <div className={`flex items-center gap-[8px] text-[13px] ${className}`}>
+    <div className={`flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px] text-[13px] last:border-b-0 last:pb-0 ${className}`}>
       {icon}
       <span className="min-w-0 flex-1 truncate font-medium text-[#1a1d36]">{k}</span>
       <span className="shrink-0 whitespace-nowrap font-bold text-[#0b0c36]">{v}</span>

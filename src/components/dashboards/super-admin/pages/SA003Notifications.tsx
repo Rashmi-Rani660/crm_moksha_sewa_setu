@@ -9,27 +9,18 @@
 
 import { useState, type ReactNode } from "react";
 import {
-  Activity,
   Bell,
-  BellRing,
-  CalendarClock,
   CircleCheck,
-  Eye,
-  History,
-  Megaphone,
+  Layers,
   Radio,
-  RefreshCw,
-  Send,
-  Settings,
-  ShieldCheck,
-  TriangleAlert,
-  UserPlus,
-  type LucideIcon,
+  Users,
 } from "lucide-react";
 import {
+  CentreDropdown,
   Dropdown,
   KpiRow,
   KpiTile,
+  ModuleDropdown,
   PageHead,
   Panel,
   Pill,
@@ -56,15 +47,6 @@ const tabs = [
   "Announcements",
 ] as const;
 
-const tabIcons: Partial<Record<Tab, LucideIcon>> = {
-  "All alerts": Bell,
-  Emergency: TriangleAlert,
-  Operations: Activity,
-  Security: ShieldCheck,
-  Approvals: CircleCheck,
-  System: Settings,
-  Announcements: Megaphone,
-};
 const tabFilter: Partial<Record<Tab, string[]>> = {
   Emergency: ["Emergency"],
   Operations: ["Learning"],
@@ -73,12 +55,6 @@ const tabFilter: Partial<Record<Tab, string[]>> = {
   System: ["System"],
   Announcements: ["Announcement"],
 };
-
-const moduleOptions = [
-  "SA-003 · Notification & Alert Centre",
-  "SA-001 · Super Admin Dashboard",
-  "SA-002 · Live Operations",
-] as const;
 
 const priorityOptions = ["All priorities", "Critical", "High", "Normal"] as const;
 
@@ -116,7 +92,7 @@ const categoryBadgeTone = (category: string): PillTone => {
 
 function PanelRow({ label, value, accent }: { label: string; value: ReactNode; accent?: boolean }) {
   return (
-    <div className="flex items-start justify-between gap-[10px] text-[12px] font-semibold leading-tight">
+    <div className="flex items-start justify-between gap-[10px] border-b border-[#eef0f5] pb-[5px] text-[12px] font-semibold leading-tight last:border-b-0 last:pb-0">
       <span className="shrink-0 whitespace-nowrap text-[#1a1d36]">{label}</span>
       <span className={`text-right ${accent ? "text-[#b42318]" : "text-[#1a1d36]"}`}>{value}</span>
     </div>
@@ -132,10 +108,9 @@ function FieldBlock({ label, children }: { label: string; children: ReactNode })
   );
 }
 
-function OutlineButton({ icon: Icon, children, onClick }: { icon?: LucideIcon; children: ReactNode; onClick?: () => void }) {
+function OutlineButton({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
   return (
     <button type="button" onClick={onClick} className="flex h-[34px] shrink-0 items-center gap-[6px] rounded-[7px] border-[1.5px] border-[#2f4fe0] bg-white px-[14px] text-[13px] font-semibold text-[#1d3fc4] hover:bg-[#f1f4ff]">
-      {Icon && <Icon strokeWidth={2.2} className="h-[16px] w-[16px]" />}
       <span className="pt-px">{children}</span>
     </button>
   );
@@ -144,7 +119,6 @@ function OutlineButton({ icon: Icon, children, onClick }: { icon?: LucideIcon; c
 export default function SA003Notifications() {
   const notice = useNotice();
   const [tab, setTab] = useState<Tab>("All alerts");
-  const [module, setModule] = useState<(typeof moduleOptions)[number]>(moduleOptions[0]);
   const [query, setQuery] = useState("");
   const [priority, setPriority] = useState<(typeof priorityOptions)[number]>("All priorities");
   const [audience, setAudience] = useState<(typeof audienceOptions)[number]>(audienceOptions[0]);
@@ -164,23 +138,24 @@ export default function SA003Notifications() {
 
   return (
     <SuperAdminFrame active="notification-alerts">
-      <PageHead icon={Bell} iconTone="blue" title="Notification & Alert Centre (SA-003)" links={["Super Admin", "FY 2026 – 27", "Ghaziabad"]}>
-        <span className="inline-flex h-[30px] items-center rounded-[8px] border border-[#f0dca0] bg-[#fff6da] px-[10px] text-[12px] font-bold text-[#8a6a00]">DEMO DATA</span>
-        <Dropdown label="Module" value={module} options={moduleOptions} onChange={setModule} className="w-[240px]" />
+      <PageHead light icon={Radio} iconTone="blue" title="Notification & Alert Centre" links={["Super Admin", "FY 2026–27", "Ghaziabad"]}>
+        <ModuleDropdown current="SA-003" />
+        <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={6}>
         <KpiTile tone="blue" icon={Radio} value="37" label="All alerts" sub="Selected period" />
-        <KpiTile tone="red" icon={TriangleAlert} value="03" label="Critical" sub="Immediate" />
-        <KpiTile tone="orange" icon={BellRing} value="07" label="High priority" sub="Open" />
-        <KpiTile tone="purple" icon={Eye} value="14" label="Unread" sub="Review" />
-        <KpiTile tone="blue" icon={CalendarClock} value="06" label="Scheduled" sub="Upcoming" />
-        <KpiTile tone="red" icon={Bell} value="02" label="Failed delivery" sub="Retry" />
+        <KpiTile tone="red" icon={Bell} value="03" label="Critical" sub="Immediate" />
+        <KpiTile tone="orange" icon={CircleCheck} value="07" label="High priority" sub="Open" />
+        <KpiTile tone="purple" icon={Users} value="14" label="Unread" sub="Review" />
+        <KpiTile tone="sky" icon={Layers} value="06" label="Scheduled" sub="Upcoming" />
+        <KpiTile tone="red" icon={Radio} value="02" label="Failed delivery" sub="Retry" />
       </KpiRow>
 
-      <Tabs tabs={tabs} value={tab} icons={tabIcons} onChange={setTab} />
+      <Tabs tabs={tabs} value={tab} onChange={setTab} />
 
-      <Panel title="Notification queue" className="lg:h-[300px]" bodyClassName="flex flex-col gap-[8px] pt-[4px]">
+      <div className="flex min-h-0 flex-1 flex-col gap-[10px]">
+      <Panel title="Notification queue" className="lg:min-h-0 lg:flex-[330_1_0]" bodyClassName="flex flex-col gap-[8px] pt-[4px]">
         <div className="flex items-center gap-[8px]">
           <SearchField value={query} onChange={setQuery} placeholder="Filter visible rows..." className="min-w-0 flex-1" />
           <Dropdown label="Priority" value={priority} options={priorityOptions} onChange={setPriority} className="w-[140px]" />
@@ -202,7 +177,7 @@ export default function SA003Notifications() {
           </Thead>
           <tbody>
             {rows.map((a) => (
-              <tr key={a.id} className="border-b border-[#eef0f5] last:border-0">
+              <tr key={a.id} className="border-b border-[#eef0f5] last:border-0 even:bg-[#f7f9fd] hover:bg-[#eef2ff]">
                 <td className={td}>{a.id}</td>
                 <td className={`${td} min-w-0`}>{a.subject}</td>
                 <td className={`${td} text-center`}>
@@ -247,24 +222,24 @@ export default function SA003Notifications() {
           </tbody>
         </TableWrap>
         <div className="mt-auto flex flex-wrap items-center gap-[8px] pt-[6px]">
-          <PrimaryButton icon={CircleCheck} onClick={() => notice.show(`${rows.length} alert(s) acknowledged (demo).`)}>
+          <PrimaryButton onClick={() => notice.show(`${rows.length} alert(s) acknowledged (demo).`)}>
             Acknowledge
           </PrimaryButton>
-          <OutlineButton icon={UserPlus} onClick={() => notice.show("Assign owner opened (demo).")}>
+          <OutlineButton onClick={() => notice.show("Assign owner opened (demo).")}>
             Assign owner
           </OutlineButton>
-          <OutlineButton icon={TriangleAlert} onClick={() => notice.show("Escalation raised (demo).")}>
+          <OutlineButton onClick={() => notice.show("Escalation raised (demo).")}>
             Escalate
           </OutlineButton>
-          <OutlineButton icon={History} onClick={() => notice.show("View history opened (demo).")}>
+          <OutlineButton onClick={() => notice.show("View history opened (demo).")}>
             View history
           </OutlineButton>
         </div>
       </Panel>
 
-      <div className="grid gap-[10px] sm:grid-cols-2 lg:h-[165px] lg:[grid-template-rows:minmax(0,1fr)] lg:grid-cols-3 lg:gap-0">
-        <Panel title="Create notification" bodyClassName="flex flex-col gap-[8px] pt-[4px]">
-          <div className="grid grid-cols-2 gap-[8px]">
+      <div className="grid gap-[10px] sm:grid-cols-2 lg:min-h-0 lg:flex-[245_1_0] lg:[grid-template-rows:minmax(0,1fr)] lg:grid-cols-3">
+        <Panel title="Create notification" bodyClassName="flex flex-col gap-[6px] pt-[4px]">
+          <div className="grid grid-cols-2 gap-[6px]">
             <FieldBlock label="Audience">
               <Dropdown label="Audience" value={audience} options={audienceOptions} onChange={setAudience} className="w-full" size={12} />
             </FieldBlock>
@@ -284,9 +259,11 @@ export default function SA003Notifications() {
               <Dropdown label="Template" value={template} options={templateOptions} onChange={setTemplate} className="w-full" size={12} />
             </FieldBlock>
           </div>
-          <PrimaryButton icon={Send} onClick={() => notice.show("Notification preview and audience approval requested (demo).")} className="mt-auto">
-            Preview &amp; approve
-          </PrimaryButton>
+          <div className="mt-auto pt-[4px]">
+            <PrimaryButton onClick={() => notice.show("Notification preview and audience approval requested (demo).")}>
+              Preview &amp; approve
+            </PrimaryButton>
+          </div>
         </Panel>
 
         <Panel title="Broadcast & delivery" bodyClassName="flex flex-col gap-[6px] pt-[4px]">
@@ -294,10 +271,10 @@ export default function SA003Notifications() {
           <PanelRow label="Failed delivery" value={<span className="text-[#b42318]">02 • retry queue</span>} />
           <PanelRow label="Recipient selection" value="Authorised audience only" />
           <div className="mt-auto flex flex-wrap gap-[8px] pt-[6px]">
-            <OutlineButton icon={History} onClick={() => notice.show("Delivery history opened (demo).")}>
+            <PrimaryButton onClick={() => notice.show("Delivery history opened (demo).")}>
               Delivery history
-            </OutlineButton>
-            <OutlineButton icon={RefreshCw} onClick={() => notice.show("Retry failed triggered (demo).")}>
+            </PrimaryButton>
+            <OutlineButton onClick={() => notice.show("Retry failed triggered (demo).")}>
               Retry failed
             </OutlineButton>
           </div>
@@ -308,10 +285,13 @@ export default function SA003Notifications() {
           <PanelRow label="Case & task updates" value="Enabled" />
           <PanelRow label="Daily summary" value="Scheduled" />
           <PanelRow label="Escalation" value="Based on SLA" />
-          <PrimaryButton icon={Settings} onClick={() => notice.show("Configure rules opened (demo).")} className="mt-auto">
-            Configure rules
-          </PrimaryButton>
+          <div className="mt-auto pt-[4px]">
+            <PrimaryButton onClick={() => notice.show("Configure rules opened (demo).")}>
+              Configure rules
+            </PrimaryButton>
+          </div>
         </Panel>
+      </div>
       </div>
       {notice.node}
     </SuperAdminFrame>

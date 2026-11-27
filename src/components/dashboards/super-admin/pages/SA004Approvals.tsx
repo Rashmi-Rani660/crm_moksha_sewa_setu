@@ -14,17 +14,16 @@ import { useState } from "react";
 import {
   Bell,
   CircleCheck,
-  FileText,
+  Layers,
   Radio,
   Users,
-  type LucideIcon,
 } from "lucide-react";
 import {
   CentreDropdown,
-  Dropdown,
   KpiRow,
   KpiTile,
   KV,
+  ModuleDropdown,
   PageHead,
   Panel,
   PrimaryButton,
@@ -40,12 +39,6 @@ import {
 
 const tabs = ["All", "Sewa & legal", "Expenses", "Donations", "Procurement", "User access"] as const;
 type Tab = (typeof tabs)[number];
-
-const moduleOptions = [
-  "SA-003 · Notification & Alerts",
-  "SA-004 · Central Approval Centre",
-  "SA-005 · Organisation Setup",
-] as const;
 
 type Category = (typeof tabs)[number];
 
@@ -99,7 +92,6 @@ const workflowActions = ["Submit", "Verify", "Decide", "Notify"] as const;
 export default function SA004Approvals() {
   const notice = useNotice();
   const [tab, setTab] = useState<Tab>("All");
-  const [module, setModule] = useState<(typeof moduleOptions)[number]>(moduleOptions[1]);
   const [selectedId, setSelectedId] = useState("AP-003");
 
   const rows = tab === "All" ? approvals : approvals.filter((a) => a.category === tab);
@@ -109,15 +101,13 @@ export default function SA004Approvals() {
   return (
     <SuperAdminFrame active="central-approvals">
       <PageHead
+        light
         icon={Radio}
         iconTone="blue"
-        title="Central Approval Centre (SA-004)"
-        links={["Super Admin", "FY 2026-27", "Ghaziabad"]}
+        title="Central Approval Centre"
+        links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
       >
-        <span className="inline-flex h-[30px] items-center rounded-[8px] border border-[#f0dca0] bg-[#fff6da] px-[10px] text-[12px] font-bold text-[#8a6a00]">
-          DEMO DATA
-        </span>
-        <Dropdown label="Module" value={module} options={moduleOptions} onChange={setModule} className="w-[250px]" />
+        <ModuleDropdown current="SA-004" />
         <CentreDropdown className="w-[165px]" />
       </PageHead>
 
@@ -126,7 +116,7 @@ export default function SA004Approvals() {
         <KpiTile tone="red" icon={Bell} value="07" label="Critical approvals" sub="Subset of pending" />
         <KpiTile tone="orange" icon={CircleCheck} value="18" label="Approved" sub="This month" />
         <KpiTile tone="purple" icon={Users} value="03" label="Rejected" sub="This month" />
-        <KpiTile tone="sky" icon={Users} value="02" label="Reassigned" sub="Events" />
+        <KpiTile tone="sky" icon={Layers} value="02" label="Reassigned" sub="Events" />
         <KpiTile tone="green" icon={Radio} value="4.6 h" label="Average time" sub="This month" />
       </KpiRow>
 
@@ -136,7 +126,6 @@ export default function SA004Approvals() {
         {/* Approval queue */}
         <Panel
           title="Approval queue"
-          icon={FileText}
           className="lg:min-h-0 lg:flex-[376_1_0]"
           bodyClassName="flex flex-col px-[10px] pt-[8px]"
         >
@@ -153,7 +142,7 @@ export default function SA004Approvals() {
                 <tr
                   key={a.id}
                   onClick={() => setSelectedId(a.id)}
-                  className={`cursor-pointer border-b border-[#eef0f5] last:border-0 hover:bg-[#f7f9ff] ${selectedId === a.id ? "bg-[#eef2ff]" : ""}`}
+                  className={`cursor-pointer border-b border-[#eef0f5] last:border-0 even:bg-[#f7f9fd] hover:bg-[#eef2ff] ${selectedId === a.id ? "ring-1 ring-inset ring-[#1d4fe0]/30" : ""}`}
                 >
                   <td className={`${td} px-[6px] py-[7px] font-semibold`}>{a.id}</td>
                   <td className={`${td} px-[6px] py-[7px]`}>{a.request}</td>
@@ -191,7 +180,6 @@ export default function SA004Approvals() {
 
           <div className="mt-[10px] flex flex-wrap gap-[8px]">
             <PrimaryButton
-              icon={CircleCheck}
               onClick={() => notice.show(`${selectedId}: review opened with evidence (demo).`)}
             >
               Review selected
@@ -216,7 +204,6 @@ export default function SA004Approvals() {
           <Panel
             title="Selected approval"
             note={`• ${selected.id}`}
-            icon={FileText}
             bodyClassName="flex flex-col pt-[3px]"
           >
             <div className="flex flex-col gap-[6px]">
@@ -240,18 +227,14 @@ export default function SA004Approvals() {
             </div>
           </Panel>
 
-          <Panel title="Approval workflow" icon={CircleCheck} bodyClassName="flex flex-col pt-[3px]">
+          <Panel title="Approval workflow" bodyClassName="flex flex-col pt-[3px]">
             <div className="flex flex-col">
-              {workflow.map((w, i) => (
-                <div key={w.n} className="flex items-start gap-[8px] border-b border-[#eef0f5] py-[6px] last:border-0">
-                  <span className="mt-[1px] flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-[#1d4fe0] bg-[#eef2ff] text-[10px] font-bold text-[#1d4fe0]">
-                    {w.n}
+              {workflow.map((w) => (
+                <div key={w.n} className="flex items-baseline justify-between gap-[8px] border-b border-[#eef0f5] py-[6px] leading-tight last:border-0">
+                  <span className="text-[12.8px] font-semibold text-[#0b0c36]">
+                    {w.n} <span className="mx-[2px] text-[#0b0c36]">•</span> {w.step}
                   </span>
-                  <span className="flex min-w-0 flex-1 items-baseline justify-between gap-[8px] leading-tight">
-                    <b className="text-[12.8px] font-bold text-[#0b0c36]">• {w.step}</b>
-                    <span className="shrink-0 text-right text-[11.5px] font-medium text-[#3b4256]">{w.state}</span>
-                  </span>
-                  {i === workflow.length - 1 && null}
+                  <span className="shrink-0 text-right text-[11.5px] font-medium text-[#3b4256]">{w.state}</span>
                 </div>
               ))}
             </div>
@@ -272,7 +255,7 @@ export default function SA004Approvals() {
             </div>
           </Panel>
 
-          <Panel title="Approval controls" icon={CircleCheck} bodyClassName="flex flex-col pt-[3px]">
+          <Panel title="Approval controls" bodyClassName="flex flex-col pt-[3px]">
             <div className="flex flex-col gap-[6px]">
               {controls.map(([k, v]) => (
                 <KV key={k} k={k} v={v} />
