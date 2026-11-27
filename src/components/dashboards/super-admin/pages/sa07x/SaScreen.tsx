@@ -7,7 +7,6 @@
  */
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import {
   Dropdown,
@@ -25,7 +24,7 @@ import {
   useNotice,
   type PillTone,
 } from "@/components/dashboards/super-admin/kit";
-import { screens, screenList } from "./data";
+import { screens } from "./data";
 import type { Action, Bar, Form, Pair, Register, Row, Screen, TableView } from "./types";
 
 /* ------------------------------ small helpers ------------------------------ */
@@ -254,15 +253,12 @@ function FormBody({ form, notice }: { form: Form; notice: (m: string) => void })
 
 export default function SaScreen({ id }: { id: string }) {
   const s: Screen = screens[id];
-  const router = useRouter();
   const notice = useNotice();
   const [tab, setTab] = useState(s.tabs[0]);
   const tabIndex = s.tabs.indexOf(tab);
   const [rows, setRows] = useState<Row[]>(s.main.kind === "register" ? s.main.rows : []);
   const [selected, setSelected] = useState(0);
 
-  const options = screenList.map((x) => x.title);
-  const current = s.title;
   const selRow = s.main.kind === "register" ? rows[selected] : undefined;
 
   const tabView: TableView | undefined = tabIndex > 0 ? s.tabViews[tabIndex - 1] : undefined;
@@ -281,12 +277,9 @@ export default function SaScreen({ id }: { id: string }) {
           <span className="flex h-[30px] shrink-0 items-center rounded-[7px] border border-[#ecd48a] bg-[#fff4d1] px-[12px] pt-px text-[11.5px] font-medium tracking-[0.2px] text-[#8a5300]">DEMO DATA</span>
           <Dropdown
             label="Switch screen"
-            value={current}
-            options={options}
-            onChange={(v) => {
-              const target = screenList.find((x) => x.title === v);
-              if (target && target.id !== s.id) router.push(target.href);
-            }}
+            value={s.title}
+            options={[s.title]}
+            onChange={() => {}}
             className="w-full sm:w-[330px] [&_button]:!font-normal"
             size={13.5}
           />
