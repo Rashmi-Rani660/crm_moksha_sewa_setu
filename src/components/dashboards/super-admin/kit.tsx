@@ -23,18 +23,18 @@ import { siteConfig } from "@/lib/config/site";
 const SB = 210;
 
 /** Super Admin page: sidebar + top bar + the page content and footer. */
-export function SuperAdminFrame({ active, demoNote = false, children }: { active?: string; /** "DEMO DATA — Design reference only" in the footer centre. */ demoNote?: boolean; children: ReactNode }) {
+export function SuperAdminFrame({ active, children }: { active?: string; children: ReactNode }) {
   return (
     <DashboardCanvas role="super-admin" active={active}>
       <Box at={[SB, 60, 1600 - SB, 841]} as="div" fit="fluid" className="flex flex-col lg:px-[18px] lg:pt-[8px]">
         <div className="flex min-h-0 flex-1 flex-col gap-3 lg:gap-[7px]">{children}</div>
-        <PageFooter demoNote={demoNote} />
+        <PageFooter />
       </Box>
     </DashboardCanvas>
   );
 }
 
-function PageFooter({ demoNote }: { demoNote: boolean }) {
+function PageFooter() {
   return (
     <footer className="relative z-10 mt-4 flex flex-col items-center gap-2 border-t border-[#e3e7ef] bg-white px-2 pt-3 text-[13px] font-semibold text-[#1d1f33] sm:flex-row sm:justify-between lg:mt-0 lg:h-[40px] lg:gap-0 lg:pt-0 lg:text-[14px]">
       <p className="whitespace-nowrap">
@@ -42,7 +42,6 @@ function PageFooter({ demoNote }: { demoNote: boolean }) {
         <span className="mx-[12px] inline-block h-[16px] w-[1.5px] translate-y-[3px] bg-[#3a3d55]" />
         <b className="font-bold text-[#0b0c36]">{siteConfig.name} CRM v1.0</b>
       </p>
-      {demoNote && <p className="whitespace-nowrap text-[13px] font-medium text-[#3b4256]">DEMO DATA — Design reference only</p>}
       <p className="flex items-center whitespace-nowrap">
         Designed, Developed &amp; Maintained by
         <EncodencyBadge className="ml-[12px] h-[28px] min-w-[132px] px-2.5" nameClassName="text-[16px]" legalClassName="text-[7px]" sloganClassName="text-[5.5px]" />
