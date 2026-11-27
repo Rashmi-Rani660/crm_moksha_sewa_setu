@@ -184,7 +184,7 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
             <Radio strokeWidth={2.2} className="mt-[6px] h-[24px] w-[24px] shrink-0 text-[#1f4fd0]" aria-hidden />
             <div className="min-w-0">
               <h1 className={`text-[19px] font-medium leading-tight tracking-[-0.2px] lg:whitespace-nowrap lg:text-[21.5px] ${ink}`}>
-                {spec.title} ({spec.code})
+                {spec.title}
               </h1>
               <p className={`mt-[2px] text-[13.8px] ${ink}`}>Super Admin / FY 2026–27 / Ghaziabad</p>
             </div>
@@ -205,7 +205,7 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
               >
                 {siblings.map((s) => (
                   <option key={s.code} value={s.code}>
-                    {s.code} · {s.title}
+                    {s.title}
                   </option>
                 ))}
               </select>
