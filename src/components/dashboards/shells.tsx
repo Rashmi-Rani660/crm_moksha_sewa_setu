@@ -1,12 +1,9 @@
 import {
   Bell,
   BookOpenCheck,
-  Bot,
   CircleCheckBig,
   IndianRupee,
-  MapPinned,
   Radio,
-  Building2,
   CalendarDays,
   ChartColumn,
   CircleHelp,
@@ -15,11 +12,12 @@ import {
   CloudUpload,
   Database,
   FileText,
-  HandHeart,
   House,
   Layers,
   LayoutDashboard,
-  LayoutGrid,
+  List,
+  MapPin,
+  Network,
   Link2,
   ListChecks,
   MailCheck,
@@ -54,12 +52,24 @@ export type Shell = {
   notices: Notice[];
 };
 
-export const slugify = (label: string) =>
-  label
+/**
+ * Menu labels renamed in the SA-021 … SA-050 designs keep their existing URL
+ * (old label and new label open the same page).
+ */
+const slugAlias: Record<string, string> = {
+  "notifications-alerts": "notification-alerts",
+  "ai-automation": "automation-ai",
+  "training-excellence": "knowledge-base",
+};
+
+export const slugify = (label: string) => {
+  const slug = label
     .toLowerCase()
     .replace(/&/g, " ")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+  return slugAlias[slug] ?? slug;
+};
 
 export const homeHref = (role: Role) => `/dashboard/${role}`;
 export const sectionHref = (role: Role, label: string) => `${homeHref(role)}/${slugify(label)}`;
@@ -163,54 +173,62 @@ export const shells: Record<Role, Shell> = {
     ],
   },
   "super-admin": {
+    // SA-021 … SA-050 design sidebar: "Dashboard" is the first row, the
+    // current page is a gold pill with dark text, no submenu chevrons.
     sidebar: {
     width: 210,
     fontSize: 13.6,
-    iconSize: 19,
-    iconX: 31,
-    textX: 53,
-    pill: { x: 8, w: 194, h: 36 },
+    iconSize: 18,
+    iconX: 25,
+    textX: 47,
+    pill: { x: 7, w: 197, h: 27 },
     rowHeight: 26,
-    pillFontSize: 14,
-    diyaShift: 62,
+    pillFontSize: 13.6,
+    pillTextClass: "font-medium text-[#0b0c36]",
+    goldClass: "rounded-[7px] bg-[linear-gradient(90deg,#fdd763_0%,#f2c04e_50%,#e2a438_100%)] shadow-[0_1px_4px_rgba(0,0,0,0.25)]",
+    diyaShift: 0,
     items: [
-      { label: "Super Admin", icon: House, y: 152, pill: "gold" },
-      { label: "Dashboard", icon: LayoutGrid, y: 180 },
-      { label: "Live Operations", icon: Radio, y: 206 },
-      { label: "Notification & Alerts", icon: Bell, y: 232 },
-      { label: "Central Approvals", icon: CircleCheckBig, y: 258 },
-      { label: "Users & Access Control", icon: UsersRound, y: 284 },
-      { label: "Organisation Setup", icon: Building2, y: 310 },
-      { label: "City, Zone & Centres", icon: MapPinned, y: 336 },
-      { label: "Departments & Centres", icon: Layers, y: 362 },
-      { label: "Master Data", icon: Database, y: 388 },
-      { label: "Sewa Operations", icon: HandHeart, y: 414, submenu: true },
-      { label: "Case & Workflow", icon: Workflow, y: 440, submenu: true },
-      { label: "Communication Hub", icon: MessageSquareText, y: 466, submenu: true },
-      { label: "Automation & AI", icon: Bot, y: 492, submenu: true },
-      { label: "Integrations & API", icon: Link2, y: 518 },
-      { label: "Reports & Analytics", icon: ChartColumn, y: 544, submenu: true },
-      { label: "Finance & Donations", icon: IndianRupee, y: 570, submenu: true },
-      { label: "System Security", icon: ShieldCheck, y: 596 },
-      { label: "Backup & Recovery", icon: CloudUpload, y: 622 },
-      { label: "Audit Logs", icon: FileText, y: 648 },
-      { label: "System Settings", icon: Settings, y: 700 },
+      { label: "Dashboard", icon: House, y: 138, pill: "gold" },
+      { label: "Live Operations", icon: Radio, y: 165 },
+      { label: "Notifications & Alerts", icon: Bell, y: 192 },
+      { label: "Central Approvals", icon: CircleCheckBig, y: 219 },
+      { label: "Users & Access Control", icon: UsersRound, y: 246 },
+      { label: "Organisation Setup", icon: Network, y: 273 },
+      { label: "City, Zone & Centres", icon: MapPin, y: 300 },
+      { label: "Departments & Centres", icon: Layers, y: 327 },
+      { label: "Master Data", icon: Layers, y: 354 },
+      { label: "Sewa Operations", icon: FileText, y: 381 },
+      { label: "Case & Workflow", icon: Network, y: 408 },
+      { label: "Communication Hub", icon: MessageSquareText, y: 435 },
+      { label: "AI & Automation", icon: Settings, y: 462 },
+      { label: "Training & Excellence", icon: BookOpenCheck, y: 488 },
+      { label: "Integrations & API", icon: Link2, y: 514 },
+      { label: "Reports & Analytics", icon: ChartColumn, y: 540 },
+      { label: "Finance & Donations", icon: IndianRupee, y: 566 },
+      { label: "System Security", icon: ShieldCheck, y: 592 },
+      { label: "Backup & Recovery", icon: CloudUpload, y: 618 },
+      { label: "Audit Logs", icon: List, y: 644 },
+      { label: "System Settings", icon: Settings, y: 670 },
     ],
   },
     topBar: {
     sidebarWidth: 210,
     menuX: 229,
-    logoX: 297,
-    dividerX: 427,
-    crmX: 449,
-    search: { x: 831, w: 425, placeholder: "Search users, requests, cases, documents, centres...", size: 15.6 },
-    bellX: 1313,
+    logoX: 293,
+    crmBadgeX: 416,
+    dividerX: 481,
+    crmX: 499,
+    search: { x: 958, w: 338, placeholder: "Search requests, cases, users...", size: 14.6 },
+    mic: true,
+    askAi: { x: 1306, w: 70 },
+    bellX: 1390,
     notifications: 12,
-    divider2X: 1372,
-    avatarX: 1394,
-    chevronX: 1568,
+    avatarX: 1431,
+    chevronX: 1572,
     user: { name: "Super Admin", role: "System Administrator" },
-    roleSize: 12.4,
+    roleSize: 10.6,
+    nameSize: 14.6,
+    compactProfile: true,
   },
     extras: ["My Profile", "Notifications"],
     notices: [
@@ -218,7 +236,7 @@ export const shells: Record<Role, Shell> = {
       { text: "07 critical approvals are pending", time: "Today", section: "Central Approvals" },
       { text: "03 user access requests", time: "Today", section: "Users & Access Control" },
       { text: "System backup completed", time: "09:30 AM", section: "Backup & Recovery" },
-      { text: "Automation rule updated – AUTO-015", time: "09:56 AM", section: "Automation & AI" },
+      { text: "Automation rule updated – AUTO-015", time: "09:56 AM", section: "AI & Automation" },
     ],
   },
 };

@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: PageProps<"/dashboard/user/[s
 
 export default function Page({ params }: PageProps<"/dashboard/user/[section]">) {
   return (
-    <Suspense fallback={<main className="min-h-dvh bg-[#f7f8fd]" />}>
+    <Suspense fallback={<main className="min-h-dvh bg-[#f3f6fb]" />}>
       <Section params={params} />
     </Suspense>
   );

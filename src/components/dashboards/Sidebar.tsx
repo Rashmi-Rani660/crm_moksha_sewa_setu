@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import { isHomeItem, homeHref, sectionHref, slugify } from "@/components/dashboards/shells";
 import type { Role } from "@/lib/auth/session";
+import SidebarMotto from "@/components/dashboards/SidebarMotto";
 import { siteConfig } from "@/lib/config/site";
 
 export type NavItem = {
@@ -33,6 +34,10 @@ export type SidebarSpec = {
   rowHeight?: number;
   /** Text size inside a pill (defaults to fontSize + 1.5). */
   pillFontSize?: number;
+  /** Text weight / colour inside the gold pill (defaults to white semibold). */
+  pillTextClass?: string;
+  /** Box / background of the gold pill (defaults to the dashboard gold). */
+  goldClass?: string;
 };
 
 /**
@@ -52,7 +57,7 @@ export default function Sidebar({
   active?: string;
   onNavigate?: () => void;
 }) {
-  const { width, fontSize, iconSize, textX, iconX, pill, items, diyaShift = 0, rowHeight = 32, pillFontSize = spec.fontSize + 1.5 } = spec;
+  const { width, fontSize, iconSize, textX, iconX, pill, items, diyaShift = 0, rowHeight = 32, pillFontSize = spec.fontSize + 1.5, pillTextClass, goldClass } = spec;
   return (
     <aside
       style={{ width }}
@@ -95,8 +100,10 @@ export default function Sidebar({
                   href={href}
                   onClick={onNavigate}
                   aria-current={isCurrent ? "page" : undefined}
-                  className={`relative flex h-full items-center transition-colors ${
-                    kind === "gold"
+                  className={`relative flex h-full items-center transition-colors ${isCurrent && pillTextClass ? "text-[#0b0c36]" : ""} ${
+                    kind === "gold" && goldClass
+                      ? goldClass
+                      : kind === "gold"
                       ? "rounded-[9px] border border-[#ffd668]/70 bg-[linear-gradient(90deg,#fdc006_0%,#f2ad0a_45%,#d99a1b_75%,rgba(160,120,40,0.55)_100%)] shadow-[0_2px_8px_rgba(0,0,0,0.25)]"
                       : kind === "blue"
                         ? "rounded-[10px] bg-[linear-gradient(90deg,#28467a,#223d6c)]"
@@ -111,13 +118,13 @@ export default function Sidebar({
                   <span
                     style={{ left: textX - (kind ? p.x : 0), fontSize: kind ? pillFontSize : fontSize }}
                     className={`absolute whitespace-nowrap pt-px leading-none tracking-[-0.2px] ${
-                      kind ? "font-semibold" : "font-medium"
+                      isCurrent && pillTextClass ? pillTextClass : kind ? "font-semibold" : "font-medium"
                     }`}
                   >
                     {label}
                   </span>
                   {submenu && (
-                    <ChevronRight strokeWidth={2.4} className="absolute right-[1px] h-[12px] w-[12px]" />
+                    <ChevronRight strokeWidth={2.4} className="absolute right-[10px] h-[12px] w-[12px]" />
                   )}
                 </Link>
               </li>
@@ -126,15 +133,9 @@ export default function Sidebar({
         </ul>
       </nav>
 
-      <Image
-        src="/images/sidebar-diya-glow.png"
-        alt=""
-        width={442}
-        height={490}
-        sizes="222px"
-        style={{ bottom: -diyaShift }}
-        className="pointer-events-none absolute left-0 h-auto w-full [mask-image:linear-gradient(transparent,#000_44px)]"
-      />
+      <div style={{ bottom: -diyaShift }} className="absolute inset-x-0">
+        <SidebarMotto />
+      </div>
     </aside>
   );
 }

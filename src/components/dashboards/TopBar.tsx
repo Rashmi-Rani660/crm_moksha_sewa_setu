@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useState, type CSSProperties } from "react";
-import { Bell, ChevronDown, CircleUserRound, LogOut, Menu, Search } from "lucide-react";
+import { Bell, ChevronDown, CircleUserRound, LogOut, Menu, Mic, Search, Send, Sparkles } from "lucide-react";
 import { DESIGN_W, useMenuToggle } from "@/components/dashboards/canvas";
 import { sectionHref, sectionsOf, shells } from "@/components/dashboards/shells";
 import { usePopover } from "@/components/dashboards/usePopover";
@@ -20,11 +20,22 @@ export type TopBarSpec = {
   bellX: number;
   /** Unread notifications shown on the bell. */
   notifications: number;
-  divider2X: number;
+  /** Line before the profile; omitted in the SA-011+ designs. */
+  divider2X?: number;
   avatarX: number;
   chevronX: number;
+  /** Profile name font size (default 18). */
+  nameSize?: number;
+  /** Smaller avatar with the chevron in line after the text (SA-011+ designs). */
+  compactProfile?: boolean;
   user: { name: string; role: string };
   roleSize?: number;
+  /** Blue "CRM" pill after the wordmark (design x). */
+  crmBadgeX?: number;
+  /** Purple "Ask AI" button (design x, width). */
+  askAi?: { x: number; w: number };
+  /** Voice-search mic inside the search box. */
+  mic?: boolean;
 };
 
 export default function TopBar({ spec, role, menuOpen }: { spec: TopBarSpec; role: Role; menuOpen: boolean }) {
@@ -82,6 +93,12 @@ export default function TopBar({ spec, role, menuOpen }: { spec: TopBarSpec; rol
           </svg>
         </Link>
 
+        {spec.crmBadgeX !== undefined && (
+          <span style={x(spec.crmBadgeX)} className="absolute top-[17px] flex h-[22px] items-center rounded-full bg-[linear-gradient(180deg,#3f8cff,#1f62e0)] px-[12px] pt-px text-[12.5px] font-bold leading-none tracking-[0.3px] text-white shadow-[0_2px_5px_rgba(31,98,224,0.35)]">
+            CRM
+          </span>
+        )}
+
         <span style={x(spec.dividerX)} className="absolute top-[10px] h-[36px] w-[1.5px] bg-[#3a3d55]" />
 
         <p style={x(spec.crmX)} className="absolute top-[16px] whitespace-nowrap text-[19.5px] font-semibold leading-none tracking-[-0.2px] text-[#131313]">
@@ -89,17 +106,23 @@ export default function TopBar({ spec, role, menuOpen }: { spec: TopBarSpec; rol
         </p>
 
         <div style={{ ...x(spec.search.x), width: spec.search.w }} className="absolute top-[9px]">
-          <SearchBox role={role} placeholder={spec.search.placeholder} size={spec.search.size ?? 16.5} />
+          <SearchBox role={role} placeholder={spec.search.placeholder} size={spec.search.size ?? 16.5} mic={spec.mic} />
         </div>
+
+        {spec.askAi && (
+          <div style={{ ...x(spec.askAi.x), width: spec.askAi.w }} className="absolute top-[11px]">
+            <AskAi />
+          </div>
+        )}
 
         <div style={x(spec.bellX)} className="absolute top-[12px]">
           <Notifications role={role} count={spec.notifications} />
         </div>
 
-        <span style={x(spec.divider2X)} className="absolute top-[10px] h-[38px] w-[1.5px] bg-[#3a3d55]" />
+        {spec.divider2X !== undefined && <span style={x(spec.divider2X)} className="absolute top-[10px] h-[38px] w-[1.5px] bg-[#3a3d55]" />}
 
         <div style={{ left: spec.avatarX - sb }} className="absolute top-[7px]">
-          <ProfileMenu role={role} user={spec.user} chevron={spec.chevronX - spec.avatarX} roleSize={spec.roleSize ?? 13} />
+          <ProfileMenu role={role} user={spec.user} chevron={spec.chevronX - spec.avatarX} roleSize={spec.roleSize ?? 13} nameSize={spec.nameSize ?? 18} inline={spec.compactProfile} />
         </div>
       </div>
     </header>
@@ -109,7 +132,7 @@ export default function TopBar({ spec, role, menuOpen }: { spec: TopBarSpec; rol
 /* --------------------------------- search --------------------------------- */
 
 /** Finds dashboard sections by name; Enter or click opens the section. */
-function SearchBox({ role, placeholder, size }: { role: Role; placeholder: string; size: number }) {
+function SearchBox({ role, placeholder, size, mic = false }: { role: Role; placeholder: string; size: number; mic?: boolean }) {
   const router = useRouter();
   const listId = useId();
   const { open, setOpen, ref } = usePopover();
@@ -164,6 +187,15 @@ function SearchBox({ role, placeholder, size }: { role: Role; placeholder: strin
           style={{ fontSize: size }}
           className="ml-[11px] h-full min-w-0 flex-1 bg-transparent pt-[3px] font-semibold tracking-[-0.25px] text-[#1b1c38] outline-none placeholder:text-[#272844]"
         />
+        {mic && (
+          <VoiceButton
+            onText={(t) => {
+              setQuery(t);
+              setIndex(0);
+              setOpen(true);
+            }}
+          />
+        )}
       </form>
       {open && q && (
         <ul id={listId} role="listbox" aria-label="Search results" className="absolute inset-x-0 top-[42px] z-50 max-h-[320px] overflow-y-auto rounded-[12px] border border-[#e3e7ef] bg-white p-[6px] shadow-[0_14px_36px_rgba(20,35,90,0.16)]">
@@ -186,6 +218,88 @@ function SearchBox({ role, placeholder, size }: { role: Role; placeholder: strin
             <li className="px-[12px] py-[10px] text-[14px] font-medium text-[#5b6280]">No section matches “{query}”.</li>
           )}
         </ul>
+      )}
+    </div>
+  );
+}
+
+type Recognition = { lang: string; interimResults: boolean; onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void; onend: () => void; onerror: () => void; start: () => void };
+
+/** Voice search: fills the search box using the browser's speech recognition. */
+function VoiceButton({ onText }: { onText: (t: string) => void }) {
+  const [listening, setListening] = useState(false);
+  const [unsupported, setUnsupported] = useState(false);
+  return (
+    <button
+      type="button"
+      aria-label={listening ? "Listening…" : "Search by voice"}
+      title={unsupported ? "Voice search is not supported in this browser" : "Search by voice"}
+      onClick={() => {
+        const w = window as unknown as { SpeechRecognition?: new () => Recognition; webkitSpeechRecognition?: new () => Recognition };
+        const Ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+        if (!Ctor) return setUnsupported(true);
+        const rec = new Ctor();
+        rec.lang = "en-IN";
+        rec.interimResults = false;
+        rec.onresult = (e) => onText(e.results[0][0].transcript);
+        rec.onend = () => setListening(false);
+        rec.onerror = () => setListening(false);
+        setListening(true);
+        rec.start();
+      }}
+      className={`ml-[6px] flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full ${listening ? "bg-[#fde0e0] text-[#e02424]" : unsupported ? "text-[#9aa1b5]" : "text-[#0b0c36] hover:bg-[#eef1f8]"}`}
+    >
+      <Mic strokeWidth={2.4} className={`h-[18px] w-[18px] ${listening ? "animate-pulse" : ""}`} />
+    </button>
+  );
+}
+
+/* ---------------------------------- Ask AI --------------------------------- */
+
+const aiSuggestions = ["Show emergency requests", "Overdue tasks today", "Pending approvals summary"];
+
+function AskAi() {
+  const { open, setOpen, ref } = usePopover();
+  const [q, setQ] = useState("");
+  const [answer, setAnswer] = useState<string | null>(null);
+  const ask = (text: string) => {
+    if (!text.trim()) return;
+    setQ(text);
+    // TODO: connect the AI assistant API.
+    setAnswer("The AI assistant is not connected yet. Your question will be answered here once it is live.");
+  };
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className="flex h-[34px] w-full items-center justify-center gap-[6px] rounded-[9px] bg-[linear-gradient(135deg,#7b2ff7,#5b21d6)] text-[14px] font-semibold text-white shadow-[0_3px_8px_rgba(91,33,214,0.35)] hover:brightness-110"
+      >
+        <Sparkles strokeWidth={2.2} className="h-[16px] w-[16px]" />
+        <span className="pt-px">Ask AI</span>
+      </button>
+      {open && (
+        <div role="dialog" aria-label="Ask AI" className="absolute right-0 top-[42px] z-50 w-[320px] rounded-[12px] border border-[#e3e7ef] bg-white p-[12px] shadow-[0_14px_36px_rgba(20,35,90,0.16)]">
+          <p className="flex items-center gap-[6px] text-[15px] font-bold"><Sparkles strokeWidth={2.2} className="h-[16px] w-[16px] text-[#6d28d9]" />Ask AI</p>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              ask(q);
+            }}
+            className="mt-[8px] flex items-center gap-[6px] rounded-[9px] border border-[#cfd5e2] px-[8px] focus-within:border-[#6d28d9]"
+          >
+            <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask about requests, cases, tasks…" aria-label="Ask AI" className="h-[34px] min-w-0 flex-1 bg-transparent text-[13.5px] font-medium outline-none" />
+            <button type="submit" aria-label="Send" className="text-[#6d28d9]"><Send strokeWidth={2.2} className="h-[16px] w-[16px]" /></button>
+          </form>
+          <div className="mt-[8px] flex flex-wrap gap-[6px]">
+            {aiSuggestions.map((s) => (
+              <button key={s} type="button" onClick={() => ask(s)} className="rounded-full bg-[#f1ebff] px-[10px] py-[3px] text-[12px] font-semibold text-[#5b21b6] hover:bg-[#e6dcff]">{s}</button>
+            ))}
+          </div>
+          {answer && <p className="mt-[10px] rounded-[8px] bg-[#f6f8fd] p-[8px] text-[12.5px] font-medium text-[#3b4256]">{answer}</p>}
+        </div>
       )}
     </div>
   );
@@ -318,12 +432,17 @@ function ProfileMenu({
   user,
   chevron = 0,
   roleSize = 13,
+  nameSize = 18,
+  inline = false,
   compact = false,
 }: {
   role: Role;
   user: TopBarSpec["user"];
   chevron?: number;
   roleSize?: number;
+  nameSize?: number;
+  /** Chevron in line after the text, smaller avatar. */
+  inline?: boolean;
   compact?: boolean;
 }) {
   const { open, setOpen, ref } = usePopover();
@@ -336,20 +455,23 @@ function ProfileMenu({
         aria-expanded={open}
         aria-label={`${user.name}, ${user.role}: account menu`}
         onClick={() => setOpen(!open)}
-        style={compact ? undefined : { width: chevron + 22 }}
+        style={compact || inline ? undefined : { width: chevron + 22 }}
         className="flex h-[44px] items-center text-left"
       >
-        <span className="flex h-[43px] w-[43px] items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#2f95e3,#0d6fbf)] pt-[3px] text-[23px] font-semibold text-white">
+        <span className={`flex shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#2f95e3,#0d6fbf)] font-semibold text-white ${inline ? "h-[32px] w-[32px] pt-[2px] text-[17px]" : "h-[43px] w-[43px] pt-[3px] text-[23px]"}`}>
           {user.name.charAt(0)}
         </span>
         {!compact && (
-          <span className="ml-[11px] min-w-0">
-            <span className="block text-[18px] font-semibold leading-none tracking-[-0.3px] text-[#0b0c36]">{user.name}</span>
-            <span style={{ fontSize: roleSize }} className="mt-[5px] block whitespace-nowrap font-semibold leading-none tracking-[-0.3px] text-[#1f2236]">{user.role}</span>
+          <span className={`min-w-0 ${inline ? "ml-[8px]" : "ml-[11px]"}`}>
+            <span style={{ fontSize: nameSize }} className="block whitespace-nowrap font-semibold leading-none tracking-[-0.3px] text-[#0b0c36]">{user.name}</span>
+            <span style={{ fontSize: roleSize }} className={`${inline ? "mt-[3px]" : "mt-[5px]"} block whitespace-nowrap font-semibold leading-none tracking-[-0.3px] text-[#1f2236]`}>{user.role}</span>
           </span>
         )}
+        {inline && !compact && (
+          <ChevronDown strokeWidth={2.4} aria-hidden className={`ml-[8px] h-[16px] w-[16px] shrink-0 text-[#0b0c36] transition-transform ${open ? "rotate-180" : ""}`} />
+        )}
       </button>
-      {!compact && (
+      {!compact && !inline && (
         <ChevronDown
           strokeWidth={2.4}
           aria-hidden

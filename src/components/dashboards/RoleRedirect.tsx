@@ -14,5 +14,5 @@ export default function RoleRedirect() {
     router.replace(`/dashboard/${session.role}`);
   }, [ready, session, router]);
 
-  return <main className="min-h-dvh bg-[#f7f8fd]" />;
+  return <main className="min-h-dvh bg-[#f3f6fb]" />;
 }

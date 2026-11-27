@@ -245,7 +245,7 @@ export default function SA004Approvals() {
         </div>
 
         <div className="flex min-h-0 flex-col gap-[12px]">
-          <Panel title="Approval Workflow" titleSize={15} bodyClassName="relative flex flex-col gap-[6px] pt-[10px]">
+          <Panel title="Approval Workflow" bodyClassName="relative flex flex-col gap-[6px] pt-[10px]">
             <span className="absolute bottom-[26px] left-[21px] top-[22px] w-[2px] bg-[#cfd5e2]" />
             {workflow.map((w) => (
               <div key={w.title} className={`relative flex items-start gap-[10px] rounded-[8px] px-[2px] py-[5px] ${w.state === "current" ? "bg-[#e7efff]" : ""}`}>
@@ -265,7 +265,7 @@ export default function SA004Approvals() {
             ))}
           </Panel>
 
-          <Panel title="Quick Actions" titleSize={15} bodyClassName="grid grid-cols-2 gap-[8px]">
+          <Panel title="Quick Actions" bodyClassName="grid grid-cols-2 gap-[8px]">
             <QuickBtn icon={CircleCheck} color="#1f9a2b" label="Approve (low risk)" onClick={() => bulk("Approve")} />
             <QuickBtn icon={CircleX} color="#e02424" label="Reject + reason" onClick={() => bulk("Reject")} />
             <QuickBtn icon={ArrowLeftRight} color="#f0a020" label="Reassign / Extend SLA with reason" onClick={() => bulk("Reassign")} wide />

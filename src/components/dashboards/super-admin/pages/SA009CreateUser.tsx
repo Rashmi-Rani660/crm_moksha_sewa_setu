@@ -138,7 +138,7 @@ export default function SA009CreateUser() {
 
       <div className="grid gap-[14px] lg:h-[548px] lg:grid-cols-[750fr_405fr] lg:[grid-template-rows:minmax(0,1fr)]">
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="User Details" icon={UserPlus} titleSize={17} className="lg:h-[244px]" bodyClassName="flex flex-col gap-[9px] pt-[8px]">
+          <Panel title="User Details" icon={UserPlus} className="lg:h-[244px]" bodyClassName="flex flex-col gap-[9px] pt-[8px]">
             <Field label="Select Employee (from HRMS)" required>
               <div className="flex gap-[10px]">
                 <Dropdown label="HRMS employee" value={f.employee} options={employees} onChange={(v) => set("employee", v)} className="min-w-0 flex-1" />
@@ -157,7 +157,7 @@ export default function SA009CreateUser() {
             </div>
           </Panel>
 
-          <Panel title="Access & Role Assignment" icon={UserPlus} titleSize={17} className="lg:h-[128px]" bodyClassName="flex flex-col gap-[12px] pt-[4px] sm:flex-row sm:items-end">
+          <Panel title="Access & Role Assignment" icon={UserPlus} className="lg:h-[128px]" bodyClassName="flex flex-col gap-[12px] pt-[4px] sm:flex-row sm:items-end">
             <div className="min-w-0 flex-1">
               <p className="mb-[5px] text-[12.5px] font-bold">Access Level <span className="text-[#e02424]">*</span></p>
               <div role="radiogroup" aria-label="Access Level" className="grid grid-cols-3 gap-[10px]">
@@ -190,7 +190,7 @@ export default function SA009CreateUser() {
             </Field>
           </Panel>
 
-          <Panel title="Service Centre Access & Permissions" icon={UsersRound} titleSize={17} className="min-h-0 lg:flex-1" bodyClassName="flex flex-col gap-[14px] pt-[4px] sm:flex-row">
+          <Panel title="Service Centre Access & Permissions" icon={UsersRound} className="min-h-0 lg:flex-1" bodyClassName="flex flex-col gap-[14px] pt-[4px] sm:flex-row">
             <div className="sm:w-[245px]">
               <p className="mb-[5px] text-[12.5px] font-bold">Applicable Service Centre(s) <span className="text-[#e02424]">*</span></p>
               <div className="flex flex-col gap-[8px] rounded-[8px] border border-[#e1e5ee] p-[10px]">
@@ -221,14 +221,14 @@ export default function SA009CreateUser() {
         </div>
 
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Account Security" icon={ShieldCheck} titleSize={17} bodyClassName="flex flex-col gap-[9px] pt-[8px]">
+          <Panel title="Account Security" icon={ShieldCheck} bodyClassName="flex flex-col gap-[9px] pt-[8px]">
             <Checkbox checked disabled label="Password + MFA — mandatory / locked" className="!opacity-100" />
             <Checkbox checked={f.forceChange} onChange={(v) => set("forceChange", v)} label="Force Password Change on First Login" />
             <p className="text-[12.5px] font-medium text-[#3b4256]">Reset password on compromise</p>
             <Checkbox checked={f.restrictIp} onChange={(v) => set("restrictIp", v)} label="Restrict Login by IP / Location" />
           </Panel>
 
-          <Panel title="Additional Settings" icon={Settings} titleSize={17} className="min-h-0 lg:flex-1" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
+          <Panel title="Additional Settings" icon={Settings} className="min-h-0 lg:flex-1" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
             <p className="text-[13px] font-medium">Account status: <b>{submitted ? "Pending approval (submitted)" : "Pending approval"}</b></p>
             <div>
               <p className="mb-[6px] text-[12.5px] font-bold">Access Validity</p>

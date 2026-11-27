@@ -120,7 +120,7 @@ export default function SA007Departments() {
       </div>
 
       <div className="grid gap-[12px] lg:h-[540px] lg:grid-cols-[595fr_575fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Department List" icon={Layers} titleSize={17} bodyClassName="flex flex-col pt-[10px]">
+        <Panel title="Department List" icon={Layers} bodyClassName="flex flex-col pt-[10px]">
           <TableWrap>
             <Thead>
               {["Dept. Code", "Department Name", "Department Head", "Users", "Status", "Action"].map((h) => (
@@ -161,7 +161,7 @@ export default function SA007Departments() {
         </Panel>
 
         <div className="flex min-h-0 flex-col gap-[12px]">
-          <Panel title="Organisation Structure" icon={Network} titleSize={17} className="lg:h-[272px]" bodyClassName="flex flex-col items-center pt-[4px]">
+          <Panel title="Organisation Structure" icon={Network} className="lg:h-[272px]" bodyClassName="flex flex-col items-center pt-[4px]">
             <Org bg="#fff1d6" border="#f3d9a4" title="Namo Gange Trust" sub="(Governing Body / Management)" />
             <span className="h-[12px] w-[2px] bg-[#1d4fe0]" />
             <Org bg="#e7f0ff" border="#9cbcf5" title="Moksha Sewa" sub="(Project / Initiative)" />
@@ -187,7 +187,7 @@ export default function SA007Departments() {
           </Panel>
 
           <div className="grid min-h-0 flex-1 gap-[12px] sm:grid-cols-[275fr_290fr]">
-            <Panel title="Selected Department – Details" icon={Layers} titleSize={15} bodyClassName="flex flex-col justify-between pt-[6px]">
+            <Panel title="Selected Department – Details" icon={Layers} bodyClassName="flex flex-col justify-between pt-[6px]">
               {[
                 ["Department Name", sel.name],
                 ["Department Code", sel.code],
@@ -208,7 +208,7 @@ export default function SA007Departments() {
               </div>
             </Panel>
 
-            <Panel title="Department Actions" icon={Cog} titleSize={15} bodyClassName="flex flex-col pt-[4px]">
+            <Panel title="Department Actions" icon={Cog} bodyClassName="flex flex-col pt-[4px]">
               {actions.map((a) => (
                 <button key={a.label} type="button" onClick={() => notice.show(`${a.label} — ${sel.name} (demo).`)} className="flex min-h-[34px] flex-1 items-center gap-[10px] border-b border-[#eef0f5] px-[4px] text-left hover:bg-[#f6f8fd]">
                   <a.icon strokeWidth={2} className="h-[18px] w-[18px] shrink-0 text-[#2f6fe0]" />
