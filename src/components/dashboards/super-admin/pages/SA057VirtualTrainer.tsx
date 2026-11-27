@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { Bell, CircleCheck, Layers, Radio, Users } from "lucide-react";
-import { SuperAdminFrame, Tabs, useNotice } from "@/components/dashboards/super-admin/kit";
+import { SuperAdminFrame, useNotice } from "@/components/dashboards/super-admin/kit";
 import {
   KpiRow,
   KpiTile,
@@ -14,6 +14,7 @@ import {
   Sa51KvList,
   Sa51Lifecycle,
   Sa51Pill,
+  Sa51Tabs,
   sa51TableCell,
   sa51TableHead,
 } from "@/components/dashboards/super-admin/pages/sa51Kit";
@@ -47,18 +48,11 @@ export default function SA057VirtualTrainer() {
         <KpiTile tone="green" icon={Radio} value="Draft" label="Release" sub="Demo snapshot" />
       </KpiRow>
 
-      <Tabs
-        tabs={tabs}
-        value={tab}
-        onChange={(t) => {
-          setTab(t);
-          if (t !== "Configuration") notice.show(`Viewing ${t} (demo snapshot).`);
-        }}
-      />
+      <Sa51Tabs tabs={tabs} value={tab} onChange={setTab} />
 
       <div className="grid min-h-0 flex-1 gap-[10px] lg:grid-cols-[1.85fr_1fr]">
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Virtual trainer configuration" className="lg:flex-[1.55]" bodyClassName="flex flex-col justify-between pt-[6px]">
+          <Panel title="Virtual trainer configuration" className="lg:flex-[1.55]" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
             <div className="overflow-x-auto rounded-[8px] border border-[#e3e7ef]">
               <table className="w-full min-w-max border-collapse">
                 <thead>
@@ -101,7 +95,7 @@ export default function SA057VirtualTrainer() {
         </div>
 
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Virtual trainer · practice sandbox" className="lg:flex-[1.55]" bodyClassName="flex flex-col justify-between pt-[6px]">
+          <Panel title="Virtual trainer · practice sandbox" className="lg:flex-[1.55]" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
             <div className="flex flex-col gap-[8px] text-[12px] leading-[1.4]">
               <div className="rounded-[8px] border border-[#dce4f2] bg-[#f4f7fd] px-[10px] py-[8px] text-[#1a1d36]">
                 <b className="block text-[#0b0c36]">Sewa Sathi</b>
@@ -128,7 +122,7 @@ export default function SA057VirtualTrainer() {
             </div>
           </Panel>
 
-          <Panel title="Trainer release & cost control" className="lg:flex-1" bodyClassName="flex flex-col justify-between pt-[6px]">
+          <Panel title="Trainer release & cost control" className="lg:flex-1" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
             <Sa51KvList
               rows={[
                 ["Voice / text budget", "Separate limits"],

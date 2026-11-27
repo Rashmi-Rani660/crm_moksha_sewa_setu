@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { Bell, CircleCheck, Layers, Radio, Users } from "lucide-react";
-import { SuperAdminFrame, Tabs, useNotice } from "@/components/dashboards/super-admin/kit";
+import { SuperAdminFrame, useNotice } from "@/components/dashboards/super-admin/kit";
 import {
   KpiRow,
   KpiTile,
@@ -15,6 +15,7 @@ import {
   Sa51Lifecycle,
   Sa51Pill,
   Sa51SearchRow,
+  Sa51Tabs,
   sa51TableCell,
   sa51TableHead,
 } from "@/components/dashboards/super-admin/pages/sa51Kit";
@@ -62,18 +63,11 @@ export default function SA060Recognition() {
         <KpiTile tone="green" icon={Radio} value="Consent only" label="Published" sub="Demo snapshot" />
       </KpiRow>
 
-      <Tabs
-        tabs={tabs}
-        value={tab}
-        onChange={(t) => {
-          setTab(t);
-          if (t !== "Recognition") notice.show(`Viewing ${t} (demo snapshot).`);
-        }}
-      />
+      <Sa51Tabs tabs={tabs} value={tab} onChange={setTab} />
 
       <div className="grid min-h-0 flex-1 gap-[10px] lg:grid-cols-[1.85fr_1fr]">
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Recognition register" className="lg:flex-[1.55]" bodyClassName="flex flex-col justify-between pt-[6px]">
+          <Panel title="Recognition register" className="lg:flex-[1.55]" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
             <div>
               <Sa51SearchRow
                 value={q}
@@ -132,7 +126,7 @@ export default function SA060Recognition() {
         </div>
 
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Recognition preview" className="lg:flex-[1.55]" bodyClassName="flex flex-col justify-between pt-[6px]">
+          <Panel title="Recognition preview" className="lg:flex-[1.55]" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
             <div className="rounded-[8px] border border-[#dce4f2] bg-[#f4f7fd] px-[12px] py-[14px] text-center text-[12px] leading-[1.5] text-[#1a1d36]">
               <p className="font-bold tracking-[0.2px] text-[#0b0c36]">SEWA EXCELLENCE</p>
               <p className="mt-[8px]">Certificate of Appreciation</p>

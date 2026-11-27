@@ -4,7 +4,7 @@
 
 import { useState } from "react";
 import { Bell, CircleCheck, Layers, Radio, Users } from "lucide-react";
-import { SuperAdminFrame, Tabs, useNotice } from "@/components/dashboards/super-admin/kit";
+import { SuperAdminFrame, useNotice } from "@/components/dashboards/super-admin/kit";
 import {
   KpiRow,
   KpiTile,
@@ -15,6 +15,7 @@ import {
   Sa51Lifecycle,
   Sa51Pill,
   Sa51SearchRow,
+  Sa51Tabs,
   sa51TableCell,
   sa51TableHead,
 } from "@/components/dashboards/super-admin/pages/sa51Kit";
@@ -65,18 +66,11 @@ export default function SA055CourseManagement() {
         <KpiTile tone="green" icon={Radio} value="Tracked" label="Versions" sub="Demo snapshot" />
       </KpiRow>
 
-      <Tabs
-        tabs={tabs}
-        value={tab}
-        onChange={(t) => {
-          setTab(t);
-          if (t !== "Course library") notice.show(`Viewing ${t} (demo snapshot).`);
-        }}
-      />
+      <Sa51Tabs tabs={tabs} value={tab} onChange={setTab} />
 
       <div className="grid min-h-0 flex-1 gap-[10px] lg:grid-cols-[1.85fr_1fr]">
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Course library" className="lg:flex-[1.55]" bodyClassName="flex flex-col justify-between pt-[6px]">
+          <Panel title="Course library" className="lg:flex-[1.55]" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
             <div>
               <Sa51SearchRow
                 value={q}
@@ -139,7 +133,7 @@ export default function SA055CourseManagement() {
         </div>
 
         <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title={`Course builder · ${selected.id}`} className="lg:flex-[1.55]" bodyClassName="flex flex-col justify-between pt-[6px]">
+          <Panel title={`Course builder · ${selected.id}`} className="lg:flex-[1.55]" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
             <Sa51KvList
               rows={[
                 ["Selected course", selected.title],
@@ -162,7 +156,7 @@ export default function SA055CourseManagement() {
             </div>
           </Panel>
 
-          <Panel title="Publication controls" className="lg:flex-1" bodyClassName="flex flex-col justify-between pt-[6px]">
+          <Panel title="Publication controls" className="lg:flex-1" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
             <Sa51KvList
               rows={[
                 ["Content owner", "Operations Admin"],
