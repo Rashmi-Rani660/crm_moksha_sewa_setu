@@ -62,7 +62,7 @@ export default function SA056RoleTraining() {
                 </thead>
                 <tbody>
                   {planRows.map((r) => (
-                    <tr key={r.course} className="last:[&>td]:border-b-0 hover:bg-[#f8faff]">
+                    <tr key={r.course} className="even:bg-[#f8fafd] last:[&>td]:border-b-0 hover:bg-[#eef4ff]">
                       <td className={sa51TableCell}>{r.course}</td>
                       <td className={sa51TableCell}>{r.audience}</td>
                       <td className={sa51TableCell}>{r.due}</td>
