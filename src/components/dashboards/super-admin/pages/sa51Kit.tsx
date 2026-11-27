@@ -74,7 +74,7 @@ const kpiToneStyles: Record<TileTone, { bg: string; border: string; fg: string }
 
 export function KpiRow({ children }: { cols?: number; children: ReactNode }) {
   return (
-    <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-3 lg:h-[79px] lg:grid-cols-6 lg:gap-[11px]">
+    <div className="grid grid-cols-1 gap-[10px] sm:grid-cols-2 md:grid-cols-3 lg:h-[79px] lg:grid-cols-6 lg:gap-[11px]">
       {children}
     </div>
   );
