@@ -25,7 +25,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import {
-  CentreDropdown,
   KpiRow,
   KpiTile,
   KV,
@@ -141,7 +140,6 @@ export default function SA007Departments() {
         links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
       >
         <ModuleDropdown current="SA-007" />
-        <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={6}>
@@ -185,9 +183,7 @@ export default function SA007Departments() {
                 <TableWrap>
                   <Thead>
                     {["CRM ID", "HRMS ID", "Department", "Admin", "Accounts", "Tasks", "Mode"].map((h) => (
-                      <th key={h} className={`${th} px-[6px] py-[6px] text-[12.5px] ${["Department", "Admin"].includes(h) ? "" : "text-center"}`}>
-                        {h}
-                      </th>
+<th key={h} className={`${th} px-[6px] py-[6px] text-[12.5px]`}>{h}</th>
                     ))}
                   </Thead>
                   <tbody>
@@ -198,7 +194,7 @@ export default function SA007Departments() {
                         className={`cursor-pointer border-b border-[#eef0f5] last:border-0 ${selected === d.crm ? "bg-[#eef2ff]" : "hover:bg-[#f7f9ff]"}`}
                       >
                         <td className={`${td} px-[6px] py-[6px] font-semibold`}>{d.crm}</td>
-                        <td className={`${td} px-[6px] py-[6px] text-center text-[#3b4256]`}>{d.hrms}</td>
+                        <td className={`${td} px-[6px] py-[6px] text-[#3b4256]`}>{d.hrms}</td>
                         <td className={`${td} px-[6px] py-[6px] font-bold`}>
                           <span className="flex items-center gap-[6px]">
                             <d.icon strokeWidth={2} style={{ color: d.color }} className="h-[16px] w-[16px] shrink-0" />
@@ -206,9 +202,9 @@ export default function SA007Departments() {
                           </span>
                         </td>
                         <td className={`${td} px-[6px] py-[6px]`}>{d.admin}</td>
-                        <td className={`${td} px-[6px] py-[6px] text-center font-semibold`}>{d.accounts}</td>
-                        <td className={`${td} px-[6px] py-[6px] text-center font-semibold`}>{d.tasks}</td>
-                        <td className={`${td} px-[6px] py-[6px] text-center`}>
+                        <td className={`${td} px-[6px] py-[6px] font-semibold`}>{d.accounts}</td>
+                        <td className={`${td} px-[6px] py-[6px] font-semibold`}>{d.tasks}</td>
+                        <td className={`${td} px-[6px] py-[6px]`}>
                           <StatusPill className="h-[19px] min-w-[54px] text-[11px]">{d.mode}</StatusPill>
                         </td>
                       </tr>

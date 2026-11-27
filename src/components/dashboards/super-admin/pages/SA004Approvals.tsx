@@ -19,7 +19,6 @@ import {
   Users,
 } from "lucide-react";
 import {
-  CentreDropdown,
   KpiRow,
   KpiTile,
   KV,
@@ -108,7 +107,6 @@ export default function SA004Approvals() {
         links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
       >
         <ModuleDropdown current="SA-004" />
-        <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={6}>
@@ -132,9 +130,7 @@ export default function SA004Approvals() {
           <TableWrap>
             <Thead>
               {["ID", "Request", "Requested by", "Approver", "Amount", "SLA", "Status", "Action"].map((h) => (
-                <th key={h} className={`${th} px-[6px] py-[6px] text-[12.5px] ${["Amount", "SLA", "Status", "Action"].includes(h) ? "text-center" : ""}`}>
-                  {h}
-                </th>
+<th key={h} className={`${th} px-[6px] py-[6px] text-[12.5px]`}>{h}</th>
               ))}
             </Thead>
             <tbody>
@@ -148,12 +144,12 @@ export default function SA004Approvals() {
                   <td className={`${td} px-[6px] py-[7px]`}>{a.request}</td>
                   <td className={`${td} px-[6px] py-[7px]`}>{a.requestedBy}</td>
                   <td className={`${td} px-[6px] py-[7px]`}>{a.approver}</td>
-                  <td className={`${td} px-[6px] py-[7px] text-center font-semibold`}>{a.amount}</td>
-                  <td className={`${td} px-[6px] py-[7px] text-center font-bold`}>{a.sla}</td>
-                  <td className={`${td} px-[6px] py-[7px] text-center`}>
+                  <td className={`${td} px-[6px] py-[7px] font-semibold`}>{a.amount}</td>
+                  <td className={`${td} px-[6px] py-[7px] font-bold`}>{a.sla}</td>
+                  <td className={`${td} px-[6px] py-[7px]`}>
                     <StatusPill className="h-[19px] min-w-[74px] text-[11px]">{a.status}</StatusPill>
                   </td>
-                  <td className={`${td} px-[6px] py-[7px] text-center`}>
+                  <td className={`${td} px-[6px] py-[7px]`}>
                     <button
                       type="button"
                       onClick={(e) => {

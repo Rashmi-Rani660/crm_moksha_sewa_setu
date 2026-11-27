@@ -21,7 +21,6 @@ import {
   Users,
 } from "lucide-react";
 import {
-  CentreDropdown,
   Dropdown,
   KpiRow,
   KpiTile,
@@ -200,7 +199,6 @@ export default function SA008Users() {
         links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
       >
         <ModuleDropdown current="SA-008" />
-        <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={6}>
@@ -241,35 +239,33 @@ export default function SA008Users() {
                 <TableWrap>
                   <Thead>
                     {["CRM ID", "HRMS ID", "Name", "Mobile", "Department", "Level", "Reporting", "Centre", "MFA", "Status", "Last login"].map((h) => (
-                      <th key={h} className={`${th} px-[5px] py-[5px] text-[11.8px] ${["Name", "Department", "Reporting"].includes(h) ? "" : "text-center"}`}>
-                        {h}
-                      </th>
+<th key={h} className={`${th} px-[5px] py-[5px] text-[11.8px]`}>{h}</th>
                     ))}
                   </Thead>
                   <tbody>
                     {rows.map((u) => (
                       <tr key={u.id} className="border-b border-[#eef0f5] last:border-0 hover:bg-[#f7f9ff]">
                         <td className={`${td} px-[5px] py-[5px] font-semibold`}>{u.id}</td>
-                        <td className={`${td} px-[5px] py-[5px] text-center text-[#3b4256]`}>{u.hrms}</td>
+                        <td className={`${td} px-[5px] py-[5px] text-[#3b4256]`}>{u.hrms}</td>
                         <td className={`${td} px-[5px] py-[5px] font-bold`}>{u.name}</td>
-                        <td className={`${td} px-[5px] py-[5px] text-center`}>{u.mobile}</td>
+                        <td className={`${td} px-[5px] py-[5px]`}>{u.mobile}</td>
                         <td className={`${td} px-[5px] py-[5px]`}>{u.dept}</td>
-                        <td className={`${td} px-[5px] py-[5px] text-center`}>
+                        <td className={`${td} px-[5px] py-[5px]`}>
                           <Pill tone={levelTone[u.level]} className="h-[18px] min-w-[74px] text-[10.5px]">
                             {u.level}
                           </Pill>
                         </td>
-                        <td className={`${td} px-[5px] py-[5px] text-center`}>{u.reporting}</td>
-                        <td className={`${td} px-[5px] py-[5px] text-center`}>{u.centre}</td>
-                        <td className={`${td} px-[5px] py-[5px] text-center`}>
+                        <td className={`${td} px-[5px] py-[5px]`}>{u.reporting}</td>
+                        <td className={`${td} px-[5px] py-[5px]`}>{u.centre}</td>
+                        <td className={`${td} px-[5px] py-[5px]`}>
                           <Pill tone="green" className="h-[18px] min-w-[58px] text-[10.5px]">
                             {u.mfa}
                           </Pill>
                         </td>
-                        <td className={`${td} px-[5px] py-[5px] text-center`}>
+                        <td className={`${td} px-[5px] py-[5px]`}>
                           <StatusPill className="h-[18px] min-w-[62px] text-[10.5px]">{u.status}</StatusPill>
                         </td>
-                        <td className={`${td} px-[5px] py-[5px] text-center text-[11.5px]`}>{u.login}</td>
+                        <td className={`${td} px-[5px] py-[5px] text-[11.5px]`}>{u.login}</td>
                       </tr>
                     ))}
                     {!rows.length && (

@@ -16,7 +16,6 @@ import {
   Users,
 } from "lucide-react";
 import {
-  CentreDropdown,
   Dropdown,
   KpiRow,
   KpiTile,
@@ -33,7 +32,6 @@ import {
   td,
   th,
   useNotice,
-  type PillTone,
 } from "@/components/dashboards/super-admin/kit";
 
 type Tab = (typeof tabs)[number];
@@ -79,16 +77,6 @@ const alerts: Alert[] = [
   { id: "ALT-004", subject: "Backup completed", category: "System", priority: "Normal", assigned: "Admin 02", readAck: "Read / Ack", delivery: "Delivered", action: "Review" },
   { id: "ALT-005", subject: "Training reminder", category: "Learning", priority: "Normal", assigned: "Admin 04", readAck: "Unread / —", delivery: "Failed", action: "Retry" },
 ];
-
-const categoryBadgeTone = (category: string): PillTone => {
-  switch (category) {
-    case "Emergency": return "red";
-    case "Approval": return "purple";
-    case "Learning": return "blue";
-    case "System": return "gray";
-    default: return "gray";
-  }
-};
 
 function PanelRow({ label, value, accent }: { label: string; value: ReactNode; accent?: boolean }) {
   return (
@@ -140,7 +128,6 @@ export default function SA003Notifications() {
     <SuperAdminFrame active="notification-alerts">
       <PageHead light icon={Radio} iconTone="blue" title="Notification & Alert Centre" links={["Super Admin", "FY 2026–27", "Ghaziabad"]}>
         <ModuleDropdown current="SA-003" />
-        <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={6}>
@@ -171,45 +158,28 @@ export default function SA003Notifications() {
               "Read / Ack",
               "Delivery",
               "Action",
-            ].map((h, i) => (
-              <th key={h} className={`${th} ${[3, 4, 5, 6, 7].includes(i) ? "text-center" : ""}`}>{h}</th>
+            ].map((h) => (
+              <th key={h} className={th}>{h}</th>
             ))}
           </Thead>
           <tbody>
             {rows.map((a) => (
               <tr key={a.id} className="border-b border-[#eef0f5] last:border-0 even:bg-[#f7f9fd] hover:bg-[#eef2ff]">
                 <td className={td}>{a.id}</td>
-                <td className={`${td} min-w-0`}>{a.subject}</td>
-                <td className={`${td} text-center`}>
-                  <Pill tone={categoryBadgeTone(a.category)} className="w-[88px] text-[11px]">{a.category}</Pill>
-                </td>
-                <td className={`${td} text-center`}>
-                  {a.priority === "Normal" ? (
+                <td className={td}>{a.subject}</td>
+                <td className={td}>{a.category}</td>
+                <td className={td}>{a.priority === "Normal" ? (
                     <span className="font-semibold">{a.priority}</span>
                   ) : (
                     <Pill tone={a.priority === "Critical" ? "red" : "amber"} className="w-[56px] text-[11px] font-bold">{a.priority}</Pill>
                   )}
                 </td>
                 <td className={td}>{a.assigned}</td>
-                <td className={`${td} text-center`}>
-                  {a.readAck.includes("Pending") ? (
-                    <Pill tone="amber" className="w-[108px] text-[11px]">{a.readAck}</Pill>
-                  ) : (
-                    <span className="font-semibold">{a.readAck}</span>
-                  )}
+                <td className={td}>{a.readAck}</td>
+                <td className={td}>
+                  <Pill tone={a.delivery === "Delivered" ? "green" : "red"} className="h-[18px] min-w-[64px] text-[11px] font-bold">{a.delivery}</Pill>
                 </td>
-                <td className={`${td} text-center`}>
-                  <Pill tone={a.delivery === "Delivered" ? "green" : "red"} className="w-[74px] text-[11px] font-bold">{a.delivery}</Pill>
-                </td>
-                <td className={`${td} text-center`}>
-                  <button
-                    type="button"
-                    onClick={() => notice.show(`${a.id}: ${a.action} ${a.action === "Retry" ? "delivery retry requested" : "details opened"} (demo).`)}
-                    className="font-semibold text-[#2320c4] hover:underline"
-                  >
-                    {a.action}
-                  </button>
-                </td>
+                <td className={td}>{a.action}</td>
               </tr>
             ))}
             {empty && (

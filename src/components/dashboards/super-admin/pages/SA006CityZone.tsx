@@ -17,7 +17,6 @@ import {
   Users,
 } from "lucide-react";
 import {
-  CentreDropdown,
   KpiRow,
   KpiTile,
   KV,
@@ -102,7 +101,6 @@ export default function SA006CityZone() {
         links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
       >
         <ModuleDropdown current="SA-006" />
-        <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={6}>
@@ -128,10 +126,8 @@ export default function SA006CityZone() {
               <Panel title="City list" bodyClassName="flex flex-col pt-[6px]">
                 <TableWrap>
                   <Thead>
-                    {["Code", "City", "State / UT", "Zones", "Centres", "PINs", "Status"].map((h, i) => (
-                      <th key={h} className={`${th} px-[6px] py-[6px] text-[12.5px] ${i >= 3 ? "text-center" : ""}`}>
-                        {h}
-                      </th>
+                    {["Code", "City", "State / UT", "Zones", "Centres", "PINs", "Status"].map((h) => (
+<th key={h} className={th}>{h}</th>
                     ))}
                   </Thead>
                   <tbody>
@@ -140,10 +136,10 @@ export default function SA006CityZone() {
                         <td className={`${td} px-[6px] py-[7px] font-semibold`}>{c.code}</td>
                         <td className={`${td} px-[6px] py-[7px] font-bold`}>{c.name}</td>
                         <td className={`${td} px-[6px] py-[7px]`}>{c.state}</td>
-                        <td className={`${td} px-[6px] py-[7px] text-center`}>{c.zones}</td>
-                        <td className={`${td} px-[6px] py-[7px] text-center`}>{c.centres}</td>
-                        <td className={`${td} px-[6px] py-[7px] text-center font-semibold`}>{c.pins}</td>
-                        <td className={`${td} px-[6px] py-[7px] text-center`}>
+                        <td className={`${td} px-[6px] py-[7px]`}>{c.zones}</td>
+                        <td className={`${td} px-[6px] py-[7px]`}>{c.centres}</td>
+                        <td className={`${td} px-[6px] py-[7px] font-semibold`}>{c.pins}</td>
+                        <td className={`${td} px-[6px] py-[7px]`}>
                           <StatusPill className="h-[19px] min-w-[84px] text-[11px]">{c.status}</StatusPill>
                         </td>
                       </tr>

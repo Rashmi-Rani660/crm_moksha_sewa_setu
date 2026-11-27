@@ -16,7 +16,6 @@ import {
   Users,
 } from "lucide-react";
 import {
-  CentreDropdown,
   KpiRow,
   KpiTile,
   KV,
@@ -106,7 +105,6 @@ export default function SA005OrganisationSetup() {
         links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
       >
         <ModuleDropdown current="SA-005" />
-        <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={6}>

@@ -15,7 +15,6 @@ import {
   Users,
 } from "lucide-react";
 import {
-  CentreDropdown,
   Dropdown,
   KpiRow,
   KpiTile,
@@ -120,7 +119,6 @@ export default function SA010RolesPermissions() {
         links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
       >
         <ModuleDropdown current="SA-010" />
-        <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={5}>
@@ -157,24 +155,22 @@ export default function SA010RolesPermissions() {
 
                 <TableWrap className="min-h-0 flex-1 overflow-auto">
                   <Thead>
-                    {["Module", "View", "Create", "Edit", "Approve", "Export", "Assign", "Archive", "Manage"].map((h, i) => (
-                      <th key={h} className={`${th} px-[6px] py-[6px] text-[12px] ${i > 0 ? "text-center" : ""}`}>
-                        {h}
-                      </th>
+                    {["Module", "View", "Create", "Edit", "Approve", "Export", "Assign", "Archive", "Manage"].map((h) => (
+<th key={h} className={`${th} px-[6px] py-[6px] text-[12px]`}>{h}</th>
                     ))}
                   </Thead>
                   <tbody>
                     {rows.map((r) => (
                       <tr key={r.module}>
                         <td className={`${td} px-[6px] py-[6px] font-semibold`}>{r.module}</td>
-                        <td className={`${td} px-[6px] py-[6px] text-center`}><CellValue value={r.view} /></td>
-                        <td className={`${td} px-[6px] py-[6px] text-center`}><CellValue value={r.create} /></td>
-                        <td className={`${td} px-[6px] py-[6px] text-center`}><CellValue value={r.edit} /></td>
-                        <td className={`${td} px-[6px] py-[6px] text-center`}><CellValue value={r.approve} /></td>
-                        <td className={`${td} px-[6px] py-[6px] text-center`}><CellValue value={r.export} /></td>
-                        <td className={`${td} px-[6px] py-[6px] text-center`}><CellValue value={r.assign} /></td>
-                        <td className={`${td} px-[6px] py-[6px] text-center`}><CellValue value={r.archive} /></td>
-                        <td className={`${td} px-[6px] py-[6px] text-center`}><CellValue value={r.manage} /></td>
+                        <td className={`${td} px-[6px] py-[6px]`}><CellValue value={r.view} /></td>
+                        <td className={`${td} px-[6px] py-[6px]`}><CellValue value={r.create} /></td>
+                        <td className={`${td} px-[6px] py-[6px]`}><CellValue value={r.edit} /></td>
+                        <td className={`${td} px-[6px] py-[6px]`}><CellValue value={r.approve} /></td>
+                        <td className={`${td} px-[6px] py-[6px]`}><CellValue value={r.export} /></td>
+                        <td className={`${td} px-[6px] py-[6px]`}><CellValue value={r.assign} /></td>
+                        <td className={`${td} px-[6px] py-[6px]`}><CellValue value={r.archive} /></td>
+                        <td className={`${td} px-[6px] py-[6px]`}><CellValue value={r.manage} /></td>
                       </tr>
                     ))}
                   </tbody>

@@ -16,7 +16,6 @@ import {
   Users,
 } from "lucide-react";
 import {
-  CentreDropdown,
   Dropdown,
   KpiRow,
   KpiTile,
@@ -97,7 +96,6 @@ export default function SA009CreateUser() {
         links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
       >
         <ModuleDropdown current="SA-009" />
-        <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={6}>
@@ -201,20 +199,18 @@ export default function SA009CreateUser() {
               <Panel title="Module permissions" note="• least privilege" bodyClassName="flex flex-col pt-[4px]">
                 <TableWrap>
                   <Thead>
-                    {["Module", "View", "Create", "Edit", "Approve"].map((h, i) => (
-                      <th key={h} className={`${th} px-[6px] py-[5px] text-[12px] ${i > 0 ? "text-center" : ""}`}>
-                        {h}
-                      </th>
+                    {["Module", "View", "Create", "Edit", "Approve"].map((h) => (
+<th key={h} className={`${th} px-[6px] py-[5px] text-[12px]`}>{h}</th>
                     ))}
                   </Thead>
                   <tbody>
                     {permRows.map((r) => (
                       <tr key={r.module}>
                         <td className={`${td} px-[6px] py-[5px] font-semibold`}>{r.module}</td>
-                        <td className={`${td} px-[6px] py-[5px] text-center`}>{r.view}</td>
-                        <td className={`${td} px-[6px] py-[5px] text-center`}>{r.create}</td>
-                        <td className={`${td} px-[6px] py-[5px] text-center`}>{r.edit}</td>
-                        <td className={`${td} px-[6px] py-[5px] text-center`}>{r.approve}</td>
+                        <td className={`${td} px-[6px] py-[5px]`}>{r.view}</td>
+                        <td className={`${td} px-[6px] py-[5px]`}>{r.create}</td>
+                        <td className={`${td} px-[6px] py-[5px]`}>{r.edit}</td>
+                        <td className={`${td} px-[6px] py-[5px]`}>{r.approve}</td>
                       </tr>
                     ))}
                   </tbody>

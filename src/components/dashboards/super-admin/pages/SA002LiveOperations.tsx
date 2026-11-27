@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { Dot } from "@/components/dashboards/ui";
 import {
-  CentreDropdown,
   KpiRow,
   KpiTile,
   KV,
@@ -158,7 +157,6 @@ export default function SA002LiveOperations() {
         links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
       >
         <ModuleDropdown current="SA-002" />
-        <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={6}>

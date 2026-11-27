@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { Donut } from "@/components/dashboards/ui";
 import {
-  CentreDropdown,
   KpiRow,
   KpiTile,
   ModuleDropdown,
@@ -172,7 +171,6 @@ export default function SA001Dashboard() {
     <SuperAdminFrame>
       <PageHead light icon={Radio} iconTone="blue" title="Super Admin Dashboard" links={["Super Admin", fy, "Ghaziabad"]}>
         <ModuleDropdown current="SA-001" className="w-[250px] [&_button]:!font-normal" />
-        <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={8}>
