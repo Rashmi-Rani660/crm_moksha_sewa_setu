@@ -20,9 +20,12 @@ export type TopBarSpec = {
   bellX: number;
   /** Unread notifications shown on the bell. */
   notifications: number;
-  divider2X: number;
+  /** Line before the profile; omitted in the SA-011+ designs. */
+  divider2X?: number;
   avatarX: number;
   chevronX: number;
+  /** Profile name font size (default 18). */
+  nameSize?: number;
   user: { name: string; role: string };
   roleSize?: number;
   /** Blue "CRM" pill after the wordmark (design x). */
@@ -114,10 +117,10 @@ export default function TopBar({ spec, role, menuOpen }: { spec: TopBarSpec; rol
           <Notifications role={role} count={spec.notifications} />
         </div>
 
-        <span style={x(spec.divider2X)} className="absolute top-[10px] h-[38px] w-[1.5px] bg-[#3a3d55]" />
+        {spec.divider2X !== undefined && <span style={x(spec.divider2X)} className="absolute top-[10px] h-[38px] w-[1.5px] bg-[#3a3d55]" />}
 
         <div style={{ left: spec.avatarX - sb }} className="absolute top-[7px]">
-          <ProfileMenu role={role} user={spec.user} chevron={spec.chevronX - spec.avatarX} roleSize={spec.roleSize ?? 13} />
+          <ProfileMenu role={role} user={spec.user} chevron={spec.chevronX - spec.avatarX} roleSize={spec.roleSize ?? 13} nameSize={spec.nameSize ?? 18} />
         </div>
       </div>
     </header>
@@ -427,12 +430,14 @@ function ProfileMenu({
   user,
   chevron = 0,
   roleSize = 13,
+  nameSize = 18,
   compact = false,
 }: {
   role: Role;
   user: TopBarSpec["user"];
   chevron?: number;
   roleSize?: number;
+  nameSize?: number;
   compact?: boolean;
 }) {
   const { open, setOpen, ref } = usePopover();
@@ -453,7 +458,7 @@ function ProfileMenu({
         </span>
         {!compact && (
           <span className="ml-[11px] min-w-0">
-            <span className="block text-[18px] font-semibold leading-none tracking-[-0.3px] text-[#0b0c36]">{user.name}</span>
+            <span style={{ fontSize: nameSize }} className="block whitespace-nowrap font-semibold leading-none tracking-[-0.3px] text-[#0b0c36]">{user.name}</span>
             <span style={{ fontSize: roleSize }} className="mt-[5px] block whitespace-nowrap font-semibold leading-none tracking-[-0.3px] text-[#1f2236]">{user.role}</span>
           </span>
         )}
