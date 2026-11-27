@@ -41,21 +41,32 @@ export const saRoutes = {
   ruleBuilder: `${B}/automation-ai/rule-builder`,
   smartAssignment: `${B}/automation-ai/smart-assignment`,
   aiConfiguration: `${B}/automation-ai/ai-configuration`,
+  aiCostUsage: `${B}/automation-ai/ai-cost-usage`,
+  communicationHub: `${B}/communication-hub`,
+  communicationTemplates: `${B}/communication-hub/templates`,
+  aiSmartSearch: `${B}/automation-ai/smart-search`,
+  trainingAcademy: `${B}/training-excellence`,
+  courseManagement: `${B}/training-excellence/courses`,
+  roleTraining: `${B}/training-excellence/role-assignment`,
+  virtualTrainer: `${B}/training-excellence/virtual-trainer`,
+  assessments: `${B}/training-excellence/assessments`,
+  performance: `${B}/training-excellence/performance`,
+  excellence: `${B}/training-excellence/recognition`,
   audit: `${B}/audit-logs`,
 } as const;
 
 /** SA-011 … SA-020 screens, in the order of the design's screen picker. */
 export const screenPicker1120 = [
-  { code: "SA-011", title: "Reporting Hierarchy", href: saRoutes.hierarchy },
-  { code: "SA-012", title: "Master Data Management", href: saRoutes.masterData },
-  { code: "SA-013", title: "Central Leads & Requests Management", href: saRoutes.leads },
-  { code: "SA-014", title: "Sewa Request Details & Verification", href: saRoutes.requestDetails },
-  { code: "SA-015", title: "Case Management", href: saRoutes.cases },
-  { code: "SA-016", title: "Complete Case Details – 360° View", href: saRoutes.caseDetails },
-  { code: "SA-017", title: "Task Management", href: saRoutes.tasks },
-  { code: "SA-018", title: "Create & Assign Task", href: saRoutes.createTask },
-  { code: "SA-019", title: "Task Templates & Workflow Builder", href: saRoutes.workflows },
-  { code: "SA-020", title: "SLA & Escalation Management", href: saRoutes.sla },
+  { code: "SA-011", title: "Reporting Hierarchy", href: saRoutes.hierarchy , section: "departments-centres" },
+  { code: "SA-012", title: "Master Data Management", href: saRoutes.masterData , section: "master-data" },
+  { code: "SA-013", title: "Central Leads & Requests Management", href: saRoutes.leads , section: "sewa-operations" },
+  { code: "SA-014", title: "Sewa Request Details & Verification", href: saRoutes.requestDetails , section: "sewa-operations" },
+  { code: "SA-015", title: "Case Management", href: saRoutes.cases , section: "case-workflow" },
+  { code: "SA-016", title: "Complete Case Details – 360° View", href: saRoutes.caseDetails , section: "case-workflow" },
+  { code: "SA-017", title: "Task Management", href: saRoutes.tasks , section: "case-workflow" },
+  { code: "SA-018", title: "Create & Assign Task", href: saRoutes.createTask , section: "case-workflow" },
+  { code: "SA-019", title: "Task Templates & Workflow Builder", href: saRoutes.workflows , section: "case-workflow" },
+  { code: "SA-020", title: "SLA & Escalation Management", href: saRoutes.sla , section: "case-workflow" },
 ] as const;
 
 /** SA-041 … SA-050 screens; the picker lists only the screens of the open section (finance / ai). */
@@ -70,6 +81,16 @@ export const screenPicker = [
   { group: "book-031-040", code: "SA-038", title: "Calendar & Meetings", href: saRoutes.calendarMeetings },
   { group: "book-031-040", code: "SA-039", title: "Finance Command Centre", href: saRoutes.financeCommand },
   { group: "book-031-040", code: "SA-040", title: "Donations & Donor Management", href: saRoutes.donorManagement },
+  { group: "finance", code: "SA-041", title: "Donation Receipts & Reconciliation", href: saRoutes.donationReceipts },
+  { group: "finance", code: "SA-042", title: "Case Expenses & Reimbursement", href: saRoutes.caseExpenses },
+  { group: "finance", code: "SA-043", title: "Financial Approvals & Budget Control", href: saRoutes.budgetControl },
+  { group: "finance", code: "SA-044", title: "CSR & Partnership Management", href: saRoutes.csrPartnerships },
+  { group: "finance", code: "SA-045", title: "Fund Utilisation & Transparency", href: saRoutes.fundUtilisation },
+  { group: "ai", code: "SA-046", title: "AI & Automation Dashboard", href: saRoutes.aiDashboard },
+  { group: "ai", code: "SA-047", title: "Automatic / Manual / Approval Controls", href: saRoutes.aiControls },
+  { group: "ai", code: "SA-048", title: "Automation Rule Builder", href: saRoutes.ruleBuilder },
+  { group: "ai", code: "SA-049", title: "AI Smart Assignment Management", href: saRoutes.smartAssignment },
+  { group: "ai", code: "SA-050", title: "AI Configuration & Quality Testing", href: saRoutes.aiConfiguration },
 ] as const;
 
 export type ScreenCode = (typeof screenPicker)[number]["code"] | string;

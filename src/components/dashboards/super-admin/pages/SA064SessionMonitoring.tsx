@@ -3,7 +3,6 @@
 /** SA-064 — Login & Active Session Monitoring. Demo data. */
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Bell, CircleCheck, Network, Radio, UsersRound } from "lucide-react";
 import {
   KpiRow,
@@ -13,7 +12,7 @@ import {
   PrimaryButton,
   SuperAdminFrame,
 } from "@/components/dashboards/super-admin/kit";
-import { SECURITY_ROUTES } from "@/components/dashboards/super-admin/pages/SA063SecurityCommand";
+import { ScreenSwitch, securityScreens } from "@/components/dashboards/super-admin/screen-switch";
 
 type TabId = "overview" | "records" | "review" | "activity" | "reports";
 type SessionStatus = "Active" | "Review" | "Revoked";
@@ -66,7 +65,6 @@ const STATUS_BADGE: Record<SessionStatus, string> = {
 };
 
 export default function SA064SessionMonitoring() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState("SES-004");
@@ -89,29 +87,12 @@ export default function SA064SessionMonitoring() {
     <SuperAdminFrame active="system-security">
       <div className="space-y-2.5">
         <PageHead
+          light
           title="Login & Active Session Monitoring"
           links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
         >
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-amber-700 uppercase">
-              DEMO DATA
-            </span>
-            <select
-              aria-label="Select security module"
-              value="SA-064"
-              onChange={(e) => {
-                const target = SECURITY_ROUTES[e.target.value];
-                if (target) router.push(target);
-              }}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-xs focus:border-blue-500 focus:outline-none"
-            >
-              <option value="SA-063">Security Command Centre</option>
-              <option value="SA-064">Login &amp; Active Session Monitoring</option>
-              <option value="SA-065">Device &amp; Access Management</option>
-              <option value="SA-066">Security Alerts &amp; Incident Management</option>
-              <option value="SA-067">Data Access &amp; Export Control</option>
-              <option value="SA-068">Consent &amp; Privacy Management</option>
-            </select>
+            <ScreenSwitch current="SA-064" screens={securityScreens} />
           </div>
         </PageHead>
 
