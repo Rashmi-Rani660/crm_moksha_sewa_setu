@@ -6,8 +6,8 @@ import { findSection, sectionsOf } from "@/components/dashboards/shells";
 
 type Props = { params: Promise<{ section: string }> };
 
-/** Sections with their own page folder (SA-002 … SA-050) are not generated here. */
-const ownPages = new Set(["live-operations", "notification-alerts", "central-approvals", "organisation-setup", "city-zone-centres", "departments-centres", "users-access-control", "master-data", "sewa-operations", "case-workflow", "automation-ai", "finance-donations"]);
+/** Sections with their own page folder (SA-002 … SA-050, SA-071 … SA-082) are not generated here. */
+const ownPages = new Set(["live-operations", "notification-alerts", "central-approvals", "organisation-setup", "city-zone-centres", "departments-centres", "users-access-control", "master-data", "sewa-operations", "case-workflow", "automation-ai", "finance-donations", "backup-recovery", "integrations-api", "audit-logs", "system-security", "system-settings", "reports-analytics"]);
 
 export function generateStaticParams() {
   return sectionsOf("super-admin")

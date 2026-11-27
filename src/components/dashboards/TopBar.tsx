@@ -20,9 +20,14 @@ export type TopBarSpec = {
   bellX: number;
   /** Unread notifications shown on the bell. */
   notifications: number;
-  divider2X: number;
+  /** Line before the profile; omitted in the SA-011+ designs. */
+  divider2X?: number;
   avatarX: number;
   chevronX: number;
+  /** Profile name font size (default 18). */
+  nameSize?: number;
+  /** Smaller avatar with the chevron in line after the text (SA-011+ designs). */
+  compactProfile?: boolean;
   user: { name: string; role: string };
   roleSize?: number;
   /** Blue "CRM" pill after the wordmark (design x). */
@@ -114,10 +119,10 @@ export default function TopBar({ spec, role, menuOpen }: { spec: TopBarSpec; rol
           <Notifications role={role} count={spec.notifications} />
         </div>
 
-        <span style={x(spec.divider2X)} className="absolute top-[10px] h-[38px] w-[1.5px] bg-[#3a3d55]" />
+        {spec.divider2X !== undefined && <span style={x(spec.divider2X)} className="absolute top-[10px] h-[38px] w-[1.5px] bg-[#3a3d55]" />}
 
         <div style={{ left: spec.avatarX - sb }} className="absolute top-[7px]">
-          <ProfileMenu role={role} user={spec.user} chevron={spec.chevronX - spec.avatarX} roleSize={spec.roleSize ?? 13} />
+          <ProfileMenu role={role} user={spec.user} chevron={spec.chevronX - spec.avatarX} roleSize={spec.roleSize ?? 13} nameSize={spec.nameSize ?? 18} inline={spec.compactProfile} />
         </div>
       </div>
     </header>
@@ -427,12 +432,17 @@ function ProfileMenu({
   user,
   chevron = 0,
   roleSize = 13,
+  nameSize = 18,
+  inline = false,
   compact = false,
 }: {
   role: Role;
   user: TopBarSpec["user"];
   chevron?: number;
   roleSize?: number;
+  nameSize?: number;
+  /** Chevron in line after the text, smaller avatar. */
+  inline?: boolean;
   compact?: boolean;
 }) {
   const { open, setOpen, ref } = usePopover();
@@ -445,20 +455,23 @@ function ProfileMenu({
         aria-expanded={open}
         aria-label={`${user.name}, ${user.role}: account menu`}
         onClick={() => setOpen(!open)}
-        style={compact ? undefined : { width: chevron + 22 }}
+        style={compact || inline ? undefined : { width: chevron + 22 }}
         className="flex h-[44px] items-center text-left"
       >
-        <span className="flex h-[43px] w-[43px] items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#2f95e3,#0d6fbf)] pt-[3px] text-[23px] font-semibold text-white">
+        <span className={`flex shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#2f95e3,#0d6fbf)] font-semibold text-white ${inline ? "h-[32px] w-[32px] pt-[2px] text-[17px]" : "h-[43px] w-[43px] pt-[3px] text-[23px]"}`}>
           {user.name.charAt(0)}
         </span>
         {!compact && (
-          <span className="ml-[11px] min-w-0">
-            <span className="block text-[18px] font-semibold leading-none tracking-[-0.3px] text-[#0b0c36]">{user.name}</span>
-            <span style={{ fontSize: roleSize }} className="mt-[5px] block whitespace-nowrap font-semibold leading-none tracking-[-0.3px] text-[#1f2236]">{user.role}</span>
+          <span className={`min-w-0 ${inline ? "ml-[8px]" : "ml-[11px]"}`}>
+            <span style={{ fontSize: nameSize }} className="block whitespace-nowrap font-semibold leading-none tracking-[-0.3px] text-[#0b0c36]">{user.name}</span>
+            <span style={{ fontSize: roleSize }} className={`${inline ? "mt-[3px]" : "mt-[5px]"} block whitespace-nowrap font-semibold leading-none tracking-[-0.3px] text-[#1f2236]`}>{user.role}</span>
           </span>
         )}
+        {inline && !compact && (
+          <ChevronDown strokeWidth={2.4} aria-hidden className={`ml-[8px] h-[16px] w-[16px] shrink-0 text-[#0b0c36] transition-transform ${open ? "rotate-180" : ""}`} />
+        )}
       </button>
-      {!compact && (
+      {!compact && !inline && (
         <ChevronDown
           strokeWidth={2.4}
           aria-hidden
