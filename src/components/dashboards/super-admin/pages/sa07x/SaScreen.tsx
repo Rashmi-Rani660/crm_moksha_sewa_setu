@@ -24,6 +24,7 @@ import {
   useNotice,
   type PillTone,
 } from "@/components/dashboards/super-admin/kit";
+import { ScreenSwitch, sectionScreens } from "@/components/dashboards/super-admin/screen-switch";
 import { screens } from "./data";
 import type { Action, Bar, Form, Pair, Register, Row, Screen, TableView } from "./types";
 
@@ -275,14 +276,7 @@ export default function SaScreen({ id }: { id: string }) {
         </div>
         <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:flex-nowrap">
           <span className="flex h-[30px] shrink-0 items-center rounded-[7px] border border-[#ecd48a] bg-[#fff4d1] px-[12px] pt-px text-[11.5px] font-medium tracking-[0.2px] text-[#8a5300]">DEMO DATA</span>
-          <Dropdown
-            label="Switch screen"
-            value={s.title}
-            options={[s.title]}
-            onChange={() => {}}
-            className="w-full sm:w-[330px] [&_button]:!font-normal"
-            size={13.5}
-          />
+          <ScreenSwitch current={s.id} screens={sectionScreens(s.active)} />
         </div>
       </div>
 

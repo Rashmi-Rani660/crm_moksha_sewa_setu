@@ -61,6 +61,11 @@ export const screenPicker1120 = [
   { code: "SA-012", title: "Master Data Management", href: saRoutes.masterData , section: "master-data" },
   { code: "SA-013", title: "Central Leads & Requests Management", href: saRoutes.leads , section: "sewa-operations" },
   { code: "SA-014", title: "Sewa Request Details & Verification", href: saRoutes.requestDetails , section: "sewa-operations" },
+  { code: "SA-021", title: "Staff & Volunteer Live Monitoring", href: `${B}/sewa-operations/live-monitoring`, section: "sewa-operations" },
+  { code: "SA-022", title: "Volunteer Management", href: `${B}/sewa-operations/volunteers`, section: "sewa-operations" },
+  { code: "SA-023", title: "Fleet & Logistics", href: `${B}/sewa-operations/fleet-logistics`, section: "sewa-operations" },
+  { code: "SA-024", title: "Service Network Management", href: `${B}/sewa-operations/service-network`, section: "sewa-operations" },
+  { code: "SA-025", title: "Inventory & Material Management", href: `${B}/sewa-operations/inventory`, section: "sewa-operations" },
   { code: "SA-015", title: "Case Management", href: saRoutes.cases , section: "case-workflow" },
   { code: "SA-016", title: "Complete Case Details – 360° View", href: saRoutes.caseDetails , section: "case-workflow" },
   { code: "SA-017", title: "Task Management", href: saRoutes.tasks , section: "case-workflow" },
@@ -71,6 +76,11 @@ export const screenPicker1120 = [
 
 /** SA-041 … SA-050 screens; the picker lists only the screens of the open section (finance / ai). */
 export const screenPicker = [
+  { group: "book-031-040", code: "SA-026", title: "Unified Communication Dashboard", href: `${B}/communication-hub/unified-dashboard` },
+  { group: "book-031-040", code: "SA-027", title: "Official Email Workspace", href: `${B}/communication-hub/email-workspace` },
+  { group: "book-031-040", code: "SA-028", title: "Email Account & Assignment Management", href: `${B}/communication-hub/email-accounts` },
+  { group: "book-031-040", code: "SA-029", title: "WhatsApp Business Desk", href: `${B}/communication-hub/whatsapp-desk` },
+  { group: "book-031-040", code: "SA-030", title: "WhatsApp Assignment & Chat Monitoring", href: `${B}/communication-hub/whatsapp-monitoring` },
   { group: "book-031-040", code: "SA-031", title: "AI Inbound Calling Centre", href: saRoutes.inboundCall },
   { group: "book-031-040", code: "SA-032", title: "AI Outbound Calling Centre", href: saRoutes.outboundCall },
   { group: "book-031-040", code: "SA-033", title: "Call Recordings, Transcripts & History", href: saRoutes.callRecordings },
