@@ -41,6 +41,17 @@ export const saRoutes = {
   ruleBuilder: `${B}/automation-ai/rule-builder`,
   smartAssignment: `${B}/automation-ai/smart-assignment`,
   aiConfiguration: `${B}/automation-ai/ai-configuration`,
+  aiCostUsage: `${B}/automation-ai/ai-cost-usage`,
+  communicationHub: `${B}/communication-hub`,
+  communicationTemplates: `${B}/communication-hub/templates`,
+  aiSmartSearch: `${B}/automation-ai/smart-search`,
+  trainingAcademy: `${B}/training-excellence`,
+  courseManagement: `${B}/training-excellence/courses`,
+  roleTraining: `${B}/training-excellence/role-assignment`,
+  virtualTrainer: `${B}/training-excellence/virtual-trainer`,
+  assessments: `${B}/training-excellence/assessments`,
+  performance: `${B}/training-excellence/performance`,
+  excellence: `${B}/training-excellence/recognition`,
   audit: `${B}/audit-logs`,
 } as const;
 
