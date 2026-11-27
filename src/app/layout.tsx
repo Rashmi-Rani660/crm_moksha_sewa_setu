@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Hind, Poppins, Source_Serif_4 } from "next/font/google";
 import { siteConfig } from "@/lib/config/site";
 import "./globals.css";
@@ -29,8 +29,7 @@ export const metadata: Metadata = {
   description: siteConfig.description,
 };
 
-export const viewport: Viewport = {
-  width: "device-width",
+export const viewport = {
   initialScale: 1,
   themeColor: "#d3e8fc",
 };
@@ -43,7 +42,7 @@ export const viewport: Viewport = {
  */
 const viewportScript = `(function(){var d=document.documentElement;function f(){d.style.setProperty('--vw',d.clientWidth||innerWidth);d.style.setProperty('--vh',innerHeight)}f();addEventListener('resize',f);if(window.ResizeObserver)new ResizeObserver(f).observe(d)})();`;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
