@@ -33,18 +33,18 @@ export const saRoutes = {
   audit: `${B}/audit-logs`,
 } as const;
 
-/** SA-041 … SA-050 screens, in the order of the design's screen picker. */
+/** SA-041 … SA-050 screens; the picker lists only the screens of the open section (finance / ai). */
 export const screenPicker = [
-  { code: "SA-041", title: "Donation Receipts & Reconciliation", href: saRoutes.donationReceipts },
-  { code: "SA-042", title: "Case Expenses & Reimbursement", href: saRoutes.caseExpenses },
-  { code: "SA-043", title: "Financial Approvals & Budget Control", href: saRoutes.budgetControl },
-  { code: "SA-044", title: "CSR & Partnership Management", href: saRoutes.csrPartnerships },
-  { code: "SA-045", title: "Fund Utilisation & Transparency", href: saRoutes.fundUtilisation },
-  { code: "SA-046", title: "AI & Automation Dashboard", href: saRoutes.aiDashboard },
-  { code: "SA-047", title: "Automatic / Manual / Approval Controls", href: saRoutes.aiControls },
-  { code: "SA-048", title: "Automation Rule Builder", href: saRoutes.ruleBuilder },
-  { code: "SA-049", title: "AI Smart Assignment Management", href: saRoutes.smartAssignment },
-  { code: "SA-050", title: "AI Configuration & Quality Testing", href: saRoutes.aiConfiguration },
+  { group: "finance", code: "SA-041", title: "Donation Receipts & Reconciliation", href: saRoutes.donationReceipts },
+  { group: "finance", code: "SA-042", title: "Case Expenses & Reimbursement", href: saRoutes.caseExpenses },
+  { group: "finance", code: "SA-043", title: "Financial Approvals & Budget Control", href: saRoutes.budgetControl },
+  { group: "finance", code: "SA-044", title: "CSR & Partnership Management", href: saRoutes.csrPartnerships },
+  { group: "finance", code: "SA-045", title: "Fund Utilisation & Transparency", href: saRoutes.fundUtilisation },
+  { group: "ai", code: "SA-046", title: "AI & Automation Dashboard", href: saRoutes.aiDashboard },
+  { group: "ai", code: "SA-047", title: "Automatic / Manual / Approval Controls", href: saRoutes.aiControls },
+  { group: "ai", code: "SA-048", title: "Automation Rule Builder", href: saRoutes.ruleBuilder },
+  { group: "ai", code: "SA-049", title: "AI Smart Assignment Management", href: saRoutes.smartAssignment },
+  { group: "ai", code: "SA-050", title: "AI Configuration & Quality Testing", href: saRoutes.aiConfiguration },
 ] as const;
 
 export type ScreenCode = (typeof screenPicker)[number]["code"];

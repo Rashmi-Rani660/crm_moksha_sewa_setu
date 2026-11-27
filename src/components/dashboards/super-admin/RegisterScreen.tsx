@@ -161,6 +161,8 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
   const { register, side, lower } = spec;
   const total = register.columns.reduce((a, c) => a + c.w, 0);
   const query = q.trim().toLowerCase();
+  const group = screenPicker.find((s) => s.code === spec.code)?.group;
+  const siblings = screenPicker.filter((s) => s.group === group);
   const rows = query ? register.rows.filter((r) => r.some((c) => c.toLowerCase().includes(query))) : register.rows;
 
   return (
@@ -186,12 +188,12 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
               <select
                 value={spec.code}
                 onChange={(e) => {
-                  const next = screenPicker.find((s) => s.code === e.target.value);
+                  const next = siblings.find((s) => s.code === e.target.value);
                   if (next) router.push(next.href);
                 }}
                 className={`h-full w-full cursor-pointer appearance-none truncate rounded-[6px] border border-[#c9d2e0] bg-white pl-[12px] pr-[30px] pt-px text-[14px] shadow-[0_1px_2px_rgba(20,45,90,0.06)] outline-none focus:border-[#5b7fe0] ${ink}`}
               >
-                {screenPicker.map((s) => (
+                {siblings.map((s) => (
                   <option key={s.code} value={s.code}>
                     {s.code} · {s.title}
                   </option>
