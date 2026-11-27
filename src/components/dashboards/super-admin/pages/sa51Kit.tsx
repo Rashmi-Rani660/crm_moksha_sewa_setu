@@ -26,7 +26,7 @@ export function Sa51Header({
   return (
     <div className="flex flex-col gap-3 lg:h-[44px] lg:flex-row lg:items-start lg:gap-[12px]">
       <div className="flex min-w-0 items-start gap-[8px]">
-        <Radio strokeWidth={2.2} className="mt-[4px] h-[24px] w-[24px] shrink-0 text-[#1f4fd0]" aria-hidden />
+        {/* <Radio strokeWidth={2.2} className="mt-[4px] h-[24px] w-[24px] shrink-0 text-[#1f4fd0]" aria-hidden /> */}
         <div className="min-w-0">
           <h1 className="text-[19px] font-medium leading-tight tracking-[-0.2px] text-[#1a1d36] lg:whitespace-nowrap lg:text-[21.5px]">
             {title}
