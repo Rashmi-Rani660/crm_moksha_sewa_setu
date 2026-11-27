@@ -21,7 +21,7 @@ export const ink = "text-[#1a1d36]";
 /* ---------------------------------- shell ---------------------------------- */
 
 export type Kpi = { value: string; label: string };
-type Picker = readonly { code: string; title: string; href: string }[];
+type Picker = readonly { code: string; title: string; href: string; section?: string }[];
 
 const kpiIcons: LucideIcon[] = [Radio, Bell, CircleCheck, Users, Network, MapPin];
 const kpiTones = [
@@ -56,6 +56,8 @@ export function Screen({
   children: ReactNode;
 }) {
   const router = useRouter();
+  // only the screens of the open sidebar section
+  const siblings = picker.filter((s) => !s.section || s.section === active);
   return (
     <SuperAdminFrame active={active}>
       <div className="flex min-h-0 flex-1 flex-col gap-3 lg:gap-0">
@@ -79,12 +81,12 @@ export function Screen({
               <select
                 value={code}
                 onChange={(e) => {
-                  const next = picker.find((s) => s.code === e.target.value);
+                  const next = siblings.find((s) => s.code === e.target.value);
                   if (next) router.push(next.href);
                 }}
                 className={`h-full w-full cursor-pointer appearance-none truncate rounded-[6px] border border-[#c9d2e0] bg-white pl-[12px] pr-[30px] pt-px text-[13.3px] shadow-[0_1px_2px_rgba(20,45,90,0.06)] outline-none focus:border-[#5b7fe0] ${ink}`}
               >
-                {picker.map((s) => (
+                {siblings.map((s) => (
                   <option key={s.code} value={s.code}>
                     {s.title}
                   </option>

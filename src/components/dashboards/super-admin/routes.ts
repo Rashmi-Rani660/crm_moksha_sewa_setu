@@ -35,16 +35,16 @@ export const saRoutes = {
 
 /** SA-011 … SA-020 screens, in the order of the design's screen picker. */
 export const screenPicker1120 = [
-  { code: "SA-011", title: "Reporting Hierarchy", href: saRoutes.hierarchy },
-  { code: "SA-012", title: "Master Data Management", href: saRoutes.masterData },
-  { code: "SA-013", title: "Central Leads & Requests Management", href: saRoutes.leads },
-  { code: "SA-014", title: "Sewa Request Details & Verification", href: saRoutes.requestDetails },
-  { code: "SA-015", title: "Case Management", href: saRoutes.cases },
-  { code: "SA-016", title: "Complete Case Details – 360° View", href: saRoutes.caseDetails },
-  { code: "SA-017", title: "Task Management", href: saRoutes.tasks },
-  { code: "SA-018", title: "Create & Assign Task", href: saRoutes.createTask },
-  { code: "SA-019", title: "Task Templates & Workflow Builder", href: saRoutes.workflows },
-  { code: "SA-020", title: "SLA & Escalation Management", href: saRoutes.sla },
+  { code: "SA-011", title: "Reporting Hierarchy", href: saRoutes.hierarchy , section: "departments-centres" },
+  { code: "SA-012", title: "Master Data Management", href: saRoutes.masterData , section: "master-data" },
+  { code: "SA-013", title: "Central Leads & Requests Management", href: saRoutes.leads , section: "sewa-operations" },
+  { code: "SA-014", title: "Sewa Request Details & Verification", href: saRoutes.requestDetails , section: "sewa-operations" },
+  { code: "SA-015", title: "Case Management", href: saRoutes.cases , section: "case-workflow" },
+  { code: "SA-016", title: "Complete Case Details – 360° View", href: saRoutes.caseDetails , section: "case-workflow" },
+  { code: "SA-017", title: "Task Management", href: saRoutes.tasks , section: "case-workflow" },
+  { code: "SA-018", title: "Create & Assign Task", href: saRoutes.createTask , section: "case-workflow" },
+  { code: "SA-019", title: "Task Templates & Workflow Builder", href: saRoutes.workflows , section: "case-workflow" },
+  { code: "SA-020", title: "SLA & Escalation Management", href: saRoutes.sla , section: "case-workflow" },
 ] as const;
 
 /** SA-041 … SA-050 screens; the picker lists only the screens of the open section (finance / ai). */
