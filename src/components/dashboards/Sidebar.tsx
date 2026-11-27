@@ -102,9 +102,16 @@ export default function Sidebar({
                 pathname &&
                   (pathname === href ||
                     pathname.startsWith(`${href}/`) ||
-                    (slug === "ai-automation" && pathname.startsWith(`/dashboard/${role}/automation-ai`))),
+                    (slug === "automation-ai" && pathname.startsWith(`/dashboard/${role}/automation-ai`)) ||
+                    (slug === "knowledge-base" && pathname.startsWith(`/dashboard/${role}/training-excellence`))),
               );
-            const current = pathMatch || (active ? slug === active || (slug === "ai-automation" && active === "automation-ai") : item.pill === "gold");
+            const current =
+              pathMatch ||
+              (active
+                ? slug === active ||
+                  (slug === "automation-ai" && (active === "ai-automation" || active === "automation-ai")) ||
+                  (slug === "knowledge-base" && active === "training-excellence")
+                : item.pill === "gold");
             const kind = current ? "gold" : item.pill === "blue" ? "blue" : undefined;
             const p = box ?? pill;
             const h = kind ? p.h : rowHeight;

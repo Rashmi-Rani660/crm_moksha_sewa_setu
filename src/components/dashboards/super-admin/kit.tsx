@@ -26,7 +26,7 @@ const SB = 210;
 export function SuperAdminFrame({ active, children }: { active?: string; children: ReactNode }) {
   return (
     <DashboardCanvas role="super-admin" active={active}>
-      <Box at={[SB, 60, 1600 - SB, 841]} as="div" fit="fluid" className="flex flex-col lg:px-[18px] lg:pt-[8px]">
+      <Box at={[SB, 60, 1600 - SB, 841]} as="div" fit="fluid" className="flex flex-col lg:px-[18px] lg:pb-[6px] lg:pt-[8px]">
         <div className="flex min-h-0 flex-1 flex-col gap-3 lg:gap-[7px]">{children}</div>
         <PageFooter />
       </Box>

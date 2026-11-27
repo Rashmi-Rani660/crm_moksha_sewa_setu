@@ -79,6 +79,7 @@ export const screenPicker = [
   { group: "book-031-040", code: "SA-036", title: "Social Media & Google Ads Leads", href: saRoutes.socialLeads },
   { group: "book-031-040", code: "SA-037", title: "Internal Team Workspace", href: saRoutes.teamWorkspace },
   { group: "book-031-040", code: "SA-038", title: "Calendar & Meetings", href: saRoutes.calendarMeetings },
+  { group: "book-031-040", code: "SA-052", title: "Notification & Communication Templates", href: saRoutes.communicationTemplates },
   { group: "book-031-040", code: "SA-039", title: "Finance Command Centre", href: saRoutes.financeCommand },
   { group: "book-031-040", code: "SA-040", title: "Donations & Donor Management", href: saRoutes.donorManagement },
   { group: "finance", code: "SA-041", title: "Donation Receipts & Reconciliation", href: saRoutes.donationReceipts },
@@ -91,6 +92,17 @@ export const screenPicker = [
   { group: "ai", code: "SA-048", title: "Automation Rule Builder", href: saRoutes.ruleBuilder },
   { group: "ai", code: "SA-049", title: "AI Smart Assignment Management", href: saRoutes.smartAssignment },
   { group: "ai", code: "SA-050", title: "AI Configuration & Quality Testing", href: saRoutes.aiConfiguration },
+  { group: "ai", code: "SA-051", title: "AI Cost & Usage Control", href: saRoutes.aiCostUsage },
+  { group: "ai", code: "SA-053", title: "AI Universal Smart Search", href: saRoutes.aiSmartSearch },
+  { group: "training", code: "SA-054", title: "AI Training Academy Dashboard", href: saRoutes.trainingAcademy },
+  { group: "training", code: "SA-055", title: "Course & Training Module Management", href: saRoutes.courseManagement },
+  { group: "training", code: "SA-056", title: "Role-wise Training Assignment", href: saRoutes.roleTraining },
+  { group: "training", code: "SA-057", title: "AI Virtual Trainer Configuration", href: saRoutes.virtualTrainer },
+  { group: "training", code: "SA-058", title: "Assessment & Certification", href: saRoutes.assessments },
+  { group: "training", code: "SA-059", title: "Admin & User Performance", href: saRoutes.performance },
+  { group: "training", code: "SA-060", title: "Sewa Excellence & Recognition", href: saRoutes.excellence },
+  { group: "training", code: "SA-061", title: "Knowledge Base & SOP Management", href: `${B}/knowledge-base` },
+  { group: "training", code: "SA-062", title: "Complaints & Grievances", href: `${B}/knowledge-base/complaints` },
 ] as const;
 
 export type ScreenCode = (typeof screenPicker)[number]["code"] | string;

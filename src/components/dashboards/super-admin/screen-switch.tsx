@@ -8,6 +8,13 @@ import { Dropdown } from "@/components/dashboards/super-admin/kit";
 const B = "/dashboard/super-admin";
 
 export const knowledgeScreens = [
+  { code: "SA-054", title: "AI Training Academy Dashboard", href: `${B}/training-excellence` },
+  { code: "SA-055", title: "Course & Training Module Management", href: `${B}/training-excellence/courses` },
+  { code: "SA-056", title: "Role-wise Training Assignment", href: `${B}/training-excellence/role-assignment` },
+  { code: "SA-057", title: "AI Virtual Trainer Configuration", href: `${B}/training-excellence/virtual-trainer` },
+  { code: "SA-058", title: "Assessment & Certification", href: `${B}/training-excellence/assessments` },
+  { code: "SA-059", title: "Admin & User Performance", href: `${B}/training-excellence/performance` },
+  { code: "SA-060", title: "Sewa Excellence & Recognition", href: `${B}/training-excellence/recognition` },
   { code: "SA-061", title: "Knowledge Base & SOP Management", href: `${B}/knowledge-base` },
   { code: "SA-062", title: "Complaints & Grievances", href: `${B}/knowledge-base/complaints` },
 ];
