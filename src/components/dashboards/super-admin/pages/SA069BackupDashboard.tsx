@@ -67,7 +67,7 @@ export default function SA069BackupDashboard() {
     <SuperAdminFrame active="backup-recovery">
       <div className="space-y-2.5">
         <PageHead
-          title="Backup & Recovery Dashboard (SA-069)"
+          title="Backup & Recovery Dashboard"
           links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
         >
           <div className="flex flex-wrap items-center gap-2">
@@ -84,8 +84,8 @@ export default function SA069BackupDashboard() {
               }}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-xs focus:border-blue-500 focus:outline-none"
             >
-              <option value="SA-069">SA-069 · Backup &amp; Recovery Dashboard</option>
-              <option value="SA-070">SA-070 · Backup Schedule &amp; Restoration</option>
+              <option value="SA-069">Backup &amp; Recovery Dashboard</option>
+              <option value="SA-070">Backup Schedule &amp; Restoration</option>
             </select>
           </div>
         </PageHead>
@@ -215,10 +215,10 @@ export default function SA069BackupDashboard() {
             </Panel>
           </div>
 
-          <div className="space-y-2.5 lg:col-span-4">
+          <div className="space-y-2 lg:col-span-4">
             <Panel title="Recovery readiness · actual vs target">
-              <div className="space-y-2">
-                <div className="divide-y divide-slate-100 text-[13px]">
+              <div className="space-y-1.5">
+                <div className="divide-y divide-slate-100 text-xs">
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-500">Actual recovery point</span>
                     <span className="font-semibold text-slate-800">8 min · demo</span>
@@ -302,3 +302,4 @@ export default function SA069BackupDashboard() {
     </SuperAdminFrame>
   );
 }
+

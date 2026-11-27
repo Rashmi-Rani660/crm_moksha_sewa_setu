@@ -86,7 +86,7 @@ export default function SA067ExportControl() {
     <SuperAdminFrame active="system-security">
       <div className="space-y-2.5">
         <PageHead
-          title="Data Access & Export Control (SA-067)"
+          title="Data Access & Export Control"
           links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
         >
           <div className="flex flex-wrap items-center gap-2">
@@ -102,12 +102,12 @@ export default function SA067ExportControl() {
               }}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-xs focus:border-blue-500 focus:outline-none"
             >
-              <option value="SA-063">SA-063 · Security Command Centre</option>
-              <option value="SA-064">SA-064 · Login &amp; Active Session Monitoring</option>
-              <option value="SA-065">SA-065 · Device &amp; Access Management</option>
-              <option value="SA-066">SA-066 · Security Alerts &amp; Incident Management</option>
-              <option value="SA-067">SA-067 · Data Access &amp; Export Control</option>
-              <option value="SA-068">SA-068 · Consent &amp; Privacy Management</option>
+              <option value="SA-063">Security Command Centre</option>
+              <option value="SA-064">Login &amp; Active Session Monitoring</option>
+              <option value="SA-065">Device &amp; Access Management</option>
+              <option value="SA-066">Security Alerts &amp; Incident Management</option>
+              <option value="SA-067">Data Access &amp; Export Control</option>
+              <option value="SA-068">Consent &amp; Privacy Management</option>
             </select>
           </div>
         </PageHead>
@@ -308,3 +308,4 @@ export default function SA067ExportControl() {
     </SuperAdminFrame>
   );
 }
+

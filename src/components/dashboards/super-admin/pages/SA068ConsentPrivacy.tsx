@@ -84,7 +84,7 @@ export default function SA068ConsentPrivacy() {
     <SuperAdminFrame active="system-security">
       <div className="space-y-2.5">
         <PageHead
-          title="Consent & Privacy Management (SA-068)"
+          title="Consent & Privacy Management"
           links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
         >
           <div className="flex flex-wrap items-center gap-2">
@@ -100,12 +100,12 @@ export default function SA068ConsentPrivacy() {
               }}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-xs focus:border-blue-500 focus:outline-none"
             >
-              <option value="SA-063">SA-063 · Security Command Centre</option>
-              <option value="SA-064">SA-064 · Login &amp; Active Session Monitoring</option>
-              <option value="SA-065">SA-065 · Device &amp; Access Management</option>
-              <option value="SA-066">SA-066 · Security Alerts &amp; Incident Management</option>
-              <option value="SA-067">SA-067 · Data Access &amp; Export Control</option>
-              <option value="SA-068">SA-068 · Consent &amp; Privacy Management</option>
+              <option value="SA-063">Security Command Centre</option>
+              <option value="SA-064">Login &amp; Active Session Monitoring</option>
+              <option value="SA-065">Device &amp; Access Management</option>
+              <option value="SA-066">Security Alerts &amp; Incident Management</option>
+              <option value="SA-067">Data Access &amp; Export Control</option>
+              <option value="SA-068">Consent &amp; Privacy Management</option>
             </select>
           </div>
         </PageHead>
@@ -253,10 +253,10 @@ export default function SA068ConsentPrivacy() {
             </Panel>
           </div>
 
-          <div className="space-y-2.5 lg:col-span-4">
+          <div className="space-y-2 lg:col-span-4">
             <Panel title={`Selected consent · ${selected.id}`}>
-              <div className="space-y-2">
-                <div className="divide-y divide-slate-100 text-[13px]">
+              <div className="space-y-1.5">
+                <div className="divide-y divide-slate-100 text-xs">
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-500">Purpose</span>
                     <span className="font-semibold text-slate-800">{selected.purpose}</span>
@@ -325,3 +325,4 @@ export default function SA068ConsentPrivacy() {
     </SuperAdminFrame>
   );
 }
+

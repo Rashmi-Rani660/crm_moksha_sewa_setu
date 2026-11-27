@@ -162,7 +162,7 @@ export default function SA062Complaints() {
     <SuperAdminFrame active="knowledge-base">
       <div className="space-y-2.5">
         <PageHead
-          title="Complaints & Grievances (SA-062)"
+          title="Complaints & Grievances"
           links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
         >
           <div className="flex flex-wrap items-center gap-2">
@@ -180,10 +180,10 @@ export default function SA062Complaints() {
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-xs focus:border-blue-500 focus:outline-none"
             >
               <option value="SA-061">
-                SA-061 · Knowledge Base &amp; SOP Management
+                Knowledge Base &amp; SOP Management
               </option>
               <option value="SA-062">
-                SA-062 · Complaints &amp; Grievances
+                Complaints &amp; Grievances
               </option>
             </select>
           </div>
@@ -403,3 +403,4 @@ export default function SA062Complaints() {
     </SuperAdminFrame>
   );
 }
+

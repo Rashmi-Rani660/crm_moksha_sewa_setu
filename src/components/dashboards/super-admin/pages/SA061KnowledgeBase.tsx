@@ -3,6 +3,7 @@
 /** SA-061 — Knowledge Base & SOP Management. Demo data. */
 
 import { Fragment, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   Bell,
@@ -158,6 +159,7 @@ const STATUS_BADGE_CLASS: Record<SopStatus, string> = {
 };
 
 export default function SA061KnowledgeBase() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string>("SOP-002");
@@ -182,7 +184,7 @@ export default function SA061KnowledgeBase() {
     <SuperAdminFrame active="knowledge-base">
       <div className="space-y-2.5">
       <PageHead
-        title="Knowledge Base & SOP Management (SA-061)"
+        title="Knowledge Base & SOP Management"
         links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
       >
         <div className="flex flex-wrap items-center gap-2">
@@ -191,11 +193,19 @@ export default function SA061KnowledgeBase() {
           </span>
           <select
             aria-label="Select module"
-            defaultValue="SA-061"
+            value="SA-061"
+            onChange={(e) => {
+              if (e.target.value === "SA-062") {
+                router.push("/dashboard/super-admin/knowledge-base/complaints");
+              }
+            }}
             className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-xs focus:border-blue-500 focus:outline-none"
           >
             <option value="SA-061">
-              SA-061 · Knowledge Base &amp; SOP Management
+              Knowledge Base &amp; SOP Management
+            </option>
+            <option value="SA-062">
+              Complaints &amp; Grievances
             </option>
           </select>
         </div>

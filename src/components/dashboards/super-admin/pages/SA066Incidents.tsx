@@ -95,7 +95,7 @@ export default function SA066Incidents() {
     <SuperAdminFrame active="system-security">
       <div className="space-y-2.5">
         <PageHead
-          title="Security Alerts & Incident Management (SA-066)"
+          title="Security Alerts & Incident Management"
           links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
         >
           <div className="flex flex-wrap items-center gap-2">
@@ -111,12 +111,12 @@ export default function SA066Incidents() {
               }}
               className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-xs focus:border-blue-500 focus:outline-none"
             >
-              <option value="SA-063">SA-063 · Security Command Centre</option>
-              <option value="SA-064">SA-064 · Login &amp; Active Session Monitoring</option>
-              <option value="SA-065">SA-065 · Device &amp; Access Management</option>
-              <option value="SA-066">SA-066 · Security Alerts &amp; Incident Management</option>
-              <option value="SA-067">SA-067 · Data Access &amp; Export Control</option>
-              <option value="SA-068">SA-068 · Consent &amp; Privacy Management</option>
+              <option value="SA-063">Security Command Centre</option>
+              <option value="SA-064">Login &amp; Active Session Monitoring</option>
+              <option value="SA-065">Device &amp; Access Management</option>
+              <option value="SA-066">Security Alerts &amp; Incident Management</option>
+              <option value="SA-067">Data Access &amp; Export Control</option>
+              <option value="SA-068">Consent &amp; Privacy Management</option>
             </select>
           </div>
         </PageHead>
@@ -250,45 +250,45 @@ export default function SA066Incidents() {
             </Panel>
           </div>
 
-          <div className="space-y-2.5 lg:col-span-4">
+          <div className="space-y-2 lg:col-span-4">
             <Panel title={`Selected incident · ${selected.id}`}>
-              <div className="space-y-2">
-                <div className="divide-y divide-slate-100 text-[13px]">
-                  <div className="flex items-center justify-between py-1.5">
+              <div className="space-y-1.5">
+                <div className="divide-y divide-slate-100 text-xs">
+                  <div className="flex items-center justify-between py-1">
                     <span className="text-slate-500">Detected</span>
                     <span className="font-semibold text-slate-800">{selected.detected}</span>
                   </div>
-                  <div className="flex items-center justify-between py-1.5">
+                  <div className="flex items-center justify-between py-1">
                     <span className="text-slate-500">Affected scope</span>
                     <span className="font-semibold text-slate-800">{selected.affectedScope}</span>
                   </div>
-                  <div className="flex items-center justify-between py-1.5">
+                  <div className="flex items-center justify-between py-1">
                     <span className="text-slate-500">Owner</span>
                     <span className="font-semibold text-slate-800">{selected.owner}</span>
                   </div>
-                  <div className="flex items-center justify-between py-1.5">
+                  <div className="flex items-center justify-between py-1">
                     <span className="text-slate-500">Evidence</span>
                     <span className="font-semibold text-slate-800">{selected.evidence}</span>
                   </div>
-                  <div className="flex items-center justify-between py-1.5">
+                  <div className="flex items-center justify-between py-1">
                     <span className="text-slate-500">Next action</span>
                     <span className="font-semibold text-slate-800">{selected.nextAction}</span>
                   </div>
-                  <div className="flex items-center justify-between py-1.5">
+                  <div className="flex items-center justify-between py-1">
                     <span className="text-slate-500">Notification</span>
                     <span className="font-semibold text-slate-800">{selected.notification}</span>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 pt-1">
+                <div className="flex flex-wrap items-center gap-2 pt-0.5">
                   <PrimaryButton>Open incident</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Escalate</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">Escalate</button>
                 </div>
-                <div className="divide-y divide-slate-100 border-t border-slate-100 pt-1 text-[13px]">
-                  <div className="flex items-center justify-between py-1.5">
+                <div className="divide-y divide-slate-100 border-t border-slate-100 pt-0.5 text-xs">
+                  <div className="flex items-center justify-between py-1">
                     <span className="text-slate-500">Age at snapshot</span>
                     <span className="font-semibold text-slate-800">{selected.age}</span>
                   </div>
-                  <div className="flex items-center justify-between py-1.5">
+                  <div className="flex items-center justify-between py-1">
                     <span className="text-slate-500">Response target</span>
                     <span className="font-semibold text-slate-800">{selected.responseTarget}</span>
                   </div>
@@ -297,32 +297,32 @@ export default function SA066Incidents() {
             </Panel>
 
             <Panel title="Incident severity & response">
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <p className="text-[11px] font-medium text-slate-500">
                   Open incidents · 4 demo records
                 </p>
-                <div className="grid grid-cols-3 items-end gap-4 pt-1">
+                <div className="grid grid-cols-3 items-end gap-4">
                   {SEVERITY_BARS.map((bar) => (
-                    <div key={bar.label} className="flex flex-col items-center gap-1">
+                    <div key={bar.label} className="flex flex-col items-center gap-0.5">
                       <span className="text-[11px] font-semibold text-slate-700">{bar.value}</span>
-                      <div className={`w-full rounded-t-md bg-blue-600 ${bar.height}`} />
+                      <div className={`w-full rounded-t-md bg-blue-600 ${bar.height === "h-10" ? "h-7" : "h-4"}`} />
                       <span className="text-[11px] text-slate-500">{bar.label}</span>
                     </div>
                   ))}
                 </div>
-                <div className="divide-y divide-slate-100 border-t border-slate-100 pt-1 text-[13px]">
-                  <div className="flex items-center justify-between py-1.5">
+                <div className="divide-y divide-slate-100 border-t border-slate-100 pt-0.5 text-xs">
+                  <div className="flex items-center justify-between py-1">
                     <span className="text-slate-600">Critical queue</span>
                     <span className="font-semibold text-slate-800">02 · review immediately</span>
                   </div>
-                  <div className="flex items-center justify-between py-1.5">
+                  <div className="flex items-center justify-between py-1">
                     <span className="text-slate-600">Notifications</span>
                     <span className="font-semibold text-slate-800">Assess applicable obligations</span>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 pt-1">
+                <div className="flex flex-wrap items-center gap-2 pt-0.5">
                   <PrimaryButton>Response timers</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Evidence vault</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">Evidence vault</button>
                 </div>
               </div>
             </Panel>
@@ -332,3 +332,4 @@ export default function SA066Incidents() {
     </SuperAdminFrame>
   );
 }
+
