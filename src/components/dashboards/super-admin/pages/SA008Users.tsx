@@ -2,47 +2,41 @@
 
 /**
  * SA-008 — Admin & User Management.
- * Notes (design brief 08): exactly three access levels (designation is not an
- * access level); mobile numbers are masked and records are fictional; no
- * direct deletion; MFA enforced, scope reviews, session revocation and HRMS
- * exit hand-over. Volunteers are managed separately.
+ * Rebuild matched to the SA-008 reference design: 6 KPI tiles, 5 tabs, the
+ * admin & user register (wide table + action buttons) and a bottom row
+ * (access & security, account lifecycle, user scope). Exactly three access
+ * levels (designation is not an access level); mobile numbers are masked and
+ * records are fictional; no direct deletion; MFA enforced, scope reviews,
+ * session revocation and HRMS exit hand-over. Volunteers are managed
+ * separately. Demo data only.
  */
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { saRoutes } from "@/components/dashboards/super-admin/routes";
 import { useMemo, useState } from "react";
 import {
-  ChevronRight,
+  Bell,
   CircleCheck,
-  Eye,
-  FileText,
-  KeyRound,
-  Lock,
-  MoreVertical,
-  Pencil,
-  Plus,
-  RefreshCw,
-  ShieldCheck,
-  UserCog,
-  UserPlus,
-  UsersRound,
-  Zap,
-  type LucideIcon,
+  Layers,
+  Radio,
+  Users,
 } from "lucide-react";
 import {
-  Checkbox,
+  CentreDropdown,
   Dropdown,
   KpiRow,
   KpiTile,
+  KV,
+  ModuleDropdown,
   PageHead,
   Pager,
   Panel,
   Pill,
+  PrimaryButton,
   SearchField,
   StatusPill,
   SuperAdminFrame,
   TableWrap,
+  Tabs,
   Thead,
   td,
   th,
@@ -51,72 +45,132 @@ import {
 
 export const CREATE_USER_HREF = "/dashboard/super-admin/users-access-control/create";
 
+const tabs = ["User list", "Permissions", "Account security", "Activity logs", "HRMS sync"] as const;
+type Tab = (typeof tabs)[number];
+
 type Role = "Super Admin" | "Admin" | "User";
-type DemoUser = { id: string; name: string; mobile: string; role: Role; centre: string; dept: string; status: "Active" | "Inactive"; login: string };
 
-const departments = ["Operations & Sewa", "CSR & Partnerships", "Finance & Donations", "Communication & Outreach", "Volunteer Management", "IT, Automation & CRM", "Admin & Support Services"];
+type DemoUser = {
+  id: string;
+  hrms: string;
+  name: string;
+  mobile: string;
+  dept: string;
+  level: Role;
+  reporting: string;
+  centre: string;
+  mfa: string;
+  status: "Active" | "Inactive";
+  login: string;
+};
 
-/** First eight rows as designed; the rest are generated fictional accounts (2 Super Admin, 12 Admin, 172 User, 24 inactive). */
-const firstLogins = ["24 Nov, 10:12 AM", "24 Nov, 09:56 AM", "24 Nov, 09:40 AM", "24 Nov, 09:27 AM", "23 Nov, 06:12 PM", "23 Nov, 05:48 PM", "23 Nov, 04:20 PM", "20 Nov, 11:05 AM"];
+const departments = [
+  "Operations & Sewa",
+  "CSR & Partnerships",
+  "Finance & Donations",
+  "Communication & Outreach",
+  "Volunteer Management",
+  "IT, Automation & CRM",
+  "Admin & Support Services",
+];
+
+const firstLogins = [
+  "24 Nov, 10:12 AM",
+  "24 Nov, 09:56 AM",
+  "24 Nov, 09:40 AM",
+  "24 Nov, 09:27 AM",
+  "23 Nov, 06:12 PM",
+  "23 Nov, 05:48 PM",
+  "23 Nov, 04:20 PM",
+  "20 Nov, 11:05 AM",
+];
+
+/** First eight rows as designed; the rest generated fictional (1 Super Admin, 12 Admin, 173 User, 24 inactive). */
 const users: DemoUser[] = Array.from({ length: 186 }, (_, i) => {
   const n = i + 1;
-  const role: Role = n === 1 || n === 93 ? "Super Admin" : n <= 3 || (n % 15 === 0 && n <= 150) ? "Admin" : "User";
-  const inactive = n % 8 === 0 || n === 185; // 24 inactive
+  const level: Role = n === 1 ? "Super Admin" : n <= 13 || (n % 16 === 0 && n <= 160) ? "Admin" : "User";
+  const inactive = n % 8 === 0 || n === 185;
   const day = 23 - Math.floor(i / 12);
-  const login = i < 8 ? firstLogins[i] : `${Math.max(day, 1)} Nov, ${String(((i * 7) % 12) + 1).padStart(2, "0")}:${String((i * 13) % 60).padStart(2, "0")} ${i % 2 ? "AM" : "PM"}`;
+  const login =
+    i < 8
+      ? firstLogins[i]
+      : `${Math.max(day, 1)} Nov, ${String(((i * 7) % 12) + 1).padStart(2, "0")}:${String((i * 13) % 60).padStart(2, "0")} ${i % 2 ? "AM" : "PM"}`;
+  const reporting = level === "Super Admin" ? "—" : level === "Admin" ? "Super Admin 01" : `Admin ${String((i % 12) + 1).padStart(2, "0")}`;
   return {
     id: `MS-U${String(n).padStart(4, "0")}`,
+    hrms: `HR-E${String(1000 + n)}`,
     name: `Demo User ${String(n).padStart(2, "0")}`,
-    mobile: `+91 XXXXX XX${String(n % 100).padStart(2, "0")}`,
-    role,
-    centre: "Ghaziabad",
+    mobile: `+91 •••••• ${String(n % 10000).padStart(4, "0")}`,
     dept: departments[i % departments.length],
+    level,
+    reporting,
+    centre: "Ghaziabad",
+    mfa: "Required",
     status: inactive ? "Inactive" : "Active",
     login,
   };
 });
 
-const tabs = ["User List", "Roles & Permissions", "Access Control", "User Activity Logs", "Account Security"] as const;
-const centres = ["All Centres", "Ghaziabad"] as const;
-const deptOptions = ["All Departments", ...departments] as const;
-const roles = ["All Roles", "Super Admin", "Admin", "User"] as const;
+const levels = ["All access levels", "Super Admin", "Admin", "User"] as const;
 const statuses = ["All Status", "Active", "Inactive"] as const;
 const PER_PAGE = 8;
 
-const roleTone = { "Super Admin": "purple", Admin: "blue", User: "gray" } as const;
+const levelTone = { "Super Admin": "purple", Admin: "blue", User: "gray" } as const;
 
-const quick: { icon: LucideIcon; label: string; href?: string; color: string }[] = [
-  { icon: UserPlus, label: "Create New User", href: CREATE_USER_HREF, color: "#2f6fe0" },
-  { icon: UserCog, label: "Manage Roles & Permissions", href: "/dashboard/super-admin/users-access-control/roles", color: "#2f6fe0" },
-  { icon: UsersRound, label: "Assign / Change User Role", href: "/dashboard/super-admin/users-access-control/roles", color: "#2f6fe0" },
-  { icon: CircleCheck, label: "Deactivate / Activate User", color: "#1f9a2b" },
-  { icon: KeyRound, label: "Reset Password", color: "#1f9a2b" },
-  { icon: FileText, label: "View User Activity Logs", color: "#2f6fe0" },
+const accessSecurity: readonly (readonly [string, string])[] = [
+  ["Pending access requests", "03"],
+  ["Active sessions", "48"],
+  ["MFA", "Mandatory"],
+  ["HRMS exit revocation", "Enforced"],
+] as const;
+
+const lifecycle: readonly (readonly [string, string])[] = [
+  ["New account approval", "Independent review"],
+  ["Role change", "Audited"],
+  ["Suspension", "Reason required"],
+  ["Exit handover", "Revoke access"],
+] as const;
+
+const scope: readonly (readonly [string, string])[] = [
+  ["Super Admin", "Organisation control"],
+  ["Admin", "Teams / centres"],
+  ["User", "Assigned work"],
+  ["Volunteers", "Separate app"],
+] as const;
+
+const activityLog = [
+  { time: "10:12", text: "MS-U0001 signed in · new device verified", tone: "green" as const },
+  { time: "09:56", text: "MS-U0004 role changed User → Admin · approved", tone: "blue" as const },
+  { time: "09:40", text: "MS-U0008 account suspended · reason recorded", tone: "amber" as const },
+  { time: "09:12", text: "HRMS sync · 2 accounts flagged for exit", tone: "purple" as const },
 ];
+
+const hrmsRows: readonly (readonly [string, string])[] = [
+  ["Last sync", "Today · 10:20"],
+  ["Employees matched", "186 / 186"],
+  ["New joiners pending", "02"],
+  ["Exit revocations", "01 pending"],
+  ["Sync mode", "Scheduled · hourly"],
+] as const;
 
 export default function SA008Users() {
   const notice = useNotice();
-  const router = useRouter();
-  const [tab, setTab] = useState<(typeof tabs)[number]>("User List");
+  const [tab, setTab] = useState<Tab>("User list");
   const [query, setQuery] = useState("");
-  const [centre, setCentre] = useState<(typeof centres)[number]>("All Centres");
-  const [dept, setDept] = useState<(typeof deptOptions)[number]>("All Departments");
-  const [role, setRole] = useState<(typeof roles)[number]>("All Roles");
+  const [level, setLevel] = useState<(typeof levels)[number]>("All access levels");
   const [status, setStatus] = useState<(typeof statuses)[number]>("All Status");
   const [page, setPage] = useState(1);
-  const [picked, setPicked] = useState<ReadonlySet<string>>(new Set());
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return users.filter(
       (u) =>
-        (centre === "All Centres" || u.centre === centre) &&
-        (dept === "All Departments" || u.dept === dept) &&
-        (role === "All Roles" || u.role === role) &&
+        (level === "All access levels" || u.level === level) &&
         (status === "All Status" || u.status === status) &&
-        (!q || `${u.id} ${u.name} ${u.mobile}`.toLowerCase().includes(q)),
+        (!q || `${u.id} ${u.hrms} ${u.name} ${u.mobile}`.toLowerCase().includes(q)),
     );
-  }, [query, centre, dept, role, status]);
+  }, [query, level, status]);
+
   const pages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const current = Math.min(page, pages);
   const rows = filtered.slice((current - 1) * PER_PAGE, current * PER_PAGE);
@@ -124,164 +178,224 @@ export default function SA008Users() {
     set(v);
     setPage(1);
   };
-  const allPicked = rows.length > 0 && rows.every((r) => picked.has(r.id));
+
+  const showRegister = tab === "User list" || tab === "Permissions" || tab === "Activity logs";
+  const showAccess = tab === "User list" || tab === "Account security" || tab === "Permissions";
+  const showLifecycle = tab === "User list" || tab === "Account security";
+  const showScope = tab === "User list" || tab === "Permissions";
+  const showActivity = tab === "Activity logs";
+  const showHrms = tab === "HRMS sync";
+
+  const mainPanel = showRegister;
+  const bottomRow = showAccess || showLifecycle || showScope || showActivity || showHrms;
+  const bottomCount = [showAccess, showLifecycle, showScope, showActivity, showHrms].filter(Boolean).length;
 
   return (
     <SuperAdminFrame active="users-access-control">
-      <PageHead icon={UsersRound} title="Admin & User Management" links={["User Management", "Roles & Permissions", "Access Control", "User Activity", "Account Security"]} />
+      <PageHead
+        light
+        icon={Radio}
+        iconTone="blue"
+        title="Admin & User Management"
+        links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
+      >
+        <ModuleDropdown current="SA-008" />
+        <CentreDropdown className="w-[165px]" />
+      </PageHead>
 
       <KpiRow cols={6}>
-        <KpiTile tone="blue" icon={UsersRound} value="186" label="Total users" />
-        <KpiTile tone="green" icon={CircleCheck} value="162" label="Active users" />
-        <KpiTile tone="orange" icon={UserPlus} value="24" label="Inactive users" />
-        <KpiTile tone="purple" icon={ShieldCheck} value="03" label="Access levels" />
-        <KpiTile tone="red" icon={Lock} value="03" label="Access Issues" />
-        <KpiTile tone="sky" icon={KeyRound} value="256" label="Permission Sets" />
+        <KpiTile tone="blue" icon={Radio} value="186" label="Total accounts" sub="All levels" />
+        <KpiTile tone="green" icon={Bell} value="162" label="Active" sub="Enabled" />
+        <KpiTile tone="orange" icon={CircleCheck} value="24" label="Inactive" sub="Suspended" />
+        <KpiTile tone="purple" icon={Users} value="01" label="Super Admin" sub="Org-wide" />
+        <KpiTile tone="sky" icon={Layers} value="12" label="Admin" sub="Departments" />
+        <KpiTile tone="green" icon={Radio} value="173" label="User" sub="Assigned work" />
       </KpiRow>
 
-      <div className="flex flex-wrap items-center gap-[10px] lg:h-[38px] lg:flex-nowrap">
-        <div role="tablist" className="flex gap-[8px] overflow-x-auto">
-          {tabs.map((t) => (
-            <button
-              key={t}
-              type="button"
-              role="tab"
-              aria-selected={tab === t}
-              onClick={() => (t === "Roles & Permissions" ? router.push(saRoutes.roles) : t === "Access Control" ? router.push(saRoutes.hierarchy) : setTab(t))}
-              className={`flex h-[38px] shrink-0 items-center gap-[6px] whitespace-nowrap rounded-[9px] border px-[18px] pt-px text-[14px] font-semibold shadow-[0_2px_6px_rgba(30,50,110,0.06)] ${
-                tab === t ? "border-[#1d4fe0] bg-[#1d4fe0] text-white" : "border-[#e1e5ee] bg-white hover:bg-[#f4f6fc]"
-              }`}
-            >
-              {t === "User List" && <Plus strokeWidth={2.4} className="h-[15px] w-[15px]" />}
-              {t}
-            </button>
-          ))}
-        </div>
-        <Link href={CREATE_USER_HREF} className="flex h-[38px] shrink-0 items-center gap-[7px] rounded-[8px] bg-[#1d4fe0] px-[18px] text-[14px] font-semibold text-white shadow-[0_3px_8px_rgba(29,79,224,0.3)] hover:bg-[#1840c0] lg:ml-auto">
-          <Plus strokeWidth={2.4} className="h-[16px] w-[16px]" />
-          <span className="pt-px">Add New User</span>
-        </Link>
-      </div>
+      <Tabs tabs={tabs} value={tab} onChange={setTab} />
 
-      <div className="flex flex-wrap items-center gap-[10px] lg:h-[34px] lg:flex-nowrap">
-        <SearchField value={query} onChange={filter(setQuery)} placeholder="Search by Name, Mobile, User ID..." className="w-full lg:w-[310px]" />
-        <Dropdown label="Centre" value={centre} options={centres} onChange={filter(setCentre)} className="w-[132px]" />
-        <Dropdown label="Department" value={dept} options={deptOptions} onChange={filter(setDept)} className="w-[150px]" />
-        <Dropdown label="Role" value={role} options={roles} onChange={filter(setRole)} className="w-[120px]" />
-        <Dropdown label="Status" value={status} options={statuses} onChange={filter(setStatus)} className="w-[120px]" />
-        <button
-          type="button"
-          aria-label="Reset filters"
-          onClick={() => {
-            setQuery("");
-            setCentre("All Centres");
-            setDept("All Departments");
-            setRole("All Roles");
-            setStatus("All Status");
-            setPage(1);
-          }}
-          className="flex h-[34px] w-[38px] shrink-0 items-center justify-center rounded-[8px] border-[1.5px] border-[#6d7fe8] bg-[#f3f7ff] text-[#2320c4] hover:bg-[#e9f0ff]"
-        >
-          <RefreshCw strokeWidth={2.3} className="h-[16px] w-[16px]" />
-        </button>
-      </div>
-
-      <div className="grid gap-[12px] lg:h-[500px] lg:grid-cols-[838fr_325fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title={tab === "User List" ? `User List (${filtered.length})` : tab} icon={UsersRound} bodyClassName="flex flex-col pt-[8px]">
-          {tab === "User List" ? (
-            <>
-              <TableWrap>
-                <Thead>
-                  <th className={`${th} w-[30px]`}>
-                    <Checkbox checked={allPicked} label="" onChange={(v) => setPicked(v ? new Set(rows.map((r) => r.id)) : new Set())} />
-                  </th>
-                  {["User ID", "Name", "Mobile No.", "Role", "Centre / Location", "Status", "Last Login", "Action"].map((h) => (
-                    <th key={h} className={`${th} text-center`}>{h}</th>
-                  ))}
-                </Thead>
-                <tbody>
-                  {rows.map((u) => (
-                    <tr key={u.id} className="border-b border-[#eef0f5]">
-                      <td className={td}>
-                        <Checkbox checked={picked.has(u.id)} label="" onChange={() => setPicked((p) => { const n = new Set(p); if (n.has(u.id)) n.delete(u.id); else n.add(u.id); return n; })} />
-                      </td>
-                      <td className={`${td} py-[9px] text-center font-semibold`}>{u.id}</td>
-                      <td className={td}>{u.name}</td>
-                      <td className={`${td} text-center`}>{u.mobile}</td>
-                      <td className={`${td} text-center`}><Pill tone={roleTone[u.role]} className="w-[88px] rounded-[5px]">{u.role}</Pill></td>
-                      <td className={`${td} text-center`}>{u.centre}</td>
-                      <td className={`${td} text-center`}><StatusPill className="w-[70px]">{u.status}</StatusPill></td>
-                      <td className={`${td} text-center`}>{u.login}</td>
-                      <td className={`${td} text-center`}>
-                        <div className="flex items-center justify-center gap-[8px] text-[#1d4fe0]">
-                          <button type="button" aria-label={`View ${u.name}`} onClick={() => notice.show(`${u.id}: profile, effective permissions and sessions (demo).`)}><Eye strokeWidth={2.2} className="h-[17px] w-[17px]" /></button>
-                          <button type="button" aria-label={`Edit ${u.name}`} onClick={() => notice.show(`${u.id}: role changes need independent approval (demo).`)}><Pencil strokeWidth={2.2} className="h-[16px] w-[16px]" /></button>
-                          <button type="button" aria-label={`More for ${u.name}`} onClick={() => notice.show(`${u.id}: deactivate / revoke sessions — no direct deletion (demo).`)} className="text-[#0b0c36]"><MoreVertical strokeWidth={2.2} className="h-[16px] w-[16px]" /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {!rows.length && <tr><td colSpan={9} className="py-6 text-center text-[13px] font-medium text-[#5b6280]">No users match these filters.</td></tr>}
-                </tbody>
-              </TableWrap>
-              <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-[10px]">
-                <p className="text-[12px] font-medium text-[#3b4256]">
-                  Showing {filtered.length ? (current - 1) * PER_PAGE + 1 : 0}–{(current - 1) * PER_PAGE + rows.length} of {filtered.length} demo accounts
-                </p>
-                <Pager page={current} pages={pages} onChange={setPage} />
+      <div className="flex min-h-0 flex-1 flex-col gap-[10px]">
+        {/* Main — admin & user register */}
+        {mainPanel && (
+          <Panel
+            title="Admin & user register"
+            note={`(${filtered.length})`}
+            className="lg:min-h-0 lg:flex-[376_1_0]"
+            bodyClassName="flex flex-col px-[10px] pt-[8px]"
+            action={
+              <div className="hidden items-center gap-[8px] lg:flex">
+                <SearchField value={query} onChange={filter(setQuery)} placeholder="Search by Name, CRM ID, Mobile..." className="w-[250px]" />
+                <Dropdown label="Access level" value={level} options={levels} onChange={filter(setLevel)} className="w-[160px]" />
+                <Dropdown label="Status" value={status} options={statuses} onChange={filter(setStatus)} className="w-[130px]" />
               </div>
-            </>
-          ) : (
-            <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
-              <ShieldCheck strokeWidth={1.8} className="h-[40px] w-[40px] text-[#2f4fe0]" />
-              <p className="mt-[10px] text-[15px] font-bold">{tab}</p>
-              <p className="mt-[4px] max-w-[420px] text-[13px] font-medium text-[#4a5070]">This view is a placeholder in the design prototype. Its records and actions will appear here once the module is connected.</p>
+            }
+          >
+            <div className="mb-[6px] flex flex-wrap gap-[8px] lg:hidden">
+              <SearchField value={query} onChange={filter(setQuery)} placeholder="Search by Name, CRM ID, Mobile..." className="w-full" />
+              <Dropdown label="Access level" value={level} options={levels} onChange={filter(setLevel)} className="w-[160px]" />
+              <Dropdown label="Status" value={status} options={statuses} onChange={filter(setStatus)} className="w-[130px]" />
             </div>
-          )}
-        </Panel>
 
-        <div className="flex min-h-0 flex-col gap-[12px]">
-          <Panel title="Access Levels (03)" icon={UsersRound} bodyClassName="flex flex-col gap-[8px] pt-[8px]">
-            {[
-              ["Super Admin", "02", "bg-[#f1ebff]"],
-              ["Admin", "12", "bg-[#e7f0ff]"],
-              ["User", "172", "bg-[#e6f6e3]"],
-            ].map(([l, v, bg]) => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => {
-                  setRole(l as (typeof roles)[number]);
-                  setPage(1);
-                  setTab("User List");
-                }}
-                className={`flex h-[38px] items-center justify-between rounded-[8px] px-[14px] text-[14px] font-semibold hover:brightness-95 ${bg}`}
-              >
-                <span>{l}</span>
-                <b>{v}</b>
-              </button>
-            ))}
-          </Panel>
+            {tab === "User list" || tab === "Permissions" ? (
+              <>
+                <TableWrap>
+                  <Thead>
+                    {["CRM ID", "HRMS ID", "Name", "Mobile", "Department", "Level", "Reporting", "Centre", "MFA", "Status", "Last login"].map((h) => (
+                      <th key={h} className={`${th} px-[5px] py-[5px] text-[11.8px] ${["Name", "Department", "Reporting"].includes(h) ? "" : "text-center"}`}>
+                        {h}
+                      </th>
+                    ))}
+                  </Thead>
+                  <tbody>
+                    {rows.map((u) => (
+                      <tr key={u.id} className="border-b border-[#eef0f5] last:border-0 hover:bg-[#f7f9ff]">
+                        <td className={`${td} px-[5px] py-[5px] font-semibold`}>{u.id}</td>
+                        <td className={`${td} px-[5px] py-[5px] text-center text-[#3b4256]`}>{u.hrms}</td>
+                        <td className={`${td} px-[5px] py-[5px] font-bold`}>{u.name}</td>
+                        <td className={`${td} px-[5px] py-[5px] text-center`}>{u.mobile}</td>
+                        <td className={`${td} px-[5px] py-[5px]`}>{u.dept}</td>
+                        <td className={`${td} px-[5px] py-[5px] text-center`}>
+                          <Pill tone={levelTone[u.level]} className="h-[18px] min-w-[74px] text-[10.5px]">
+                            {u.level}
+                          </Pill>
+                        </td>
+                        <td className={`${td} px-[5px] py-[5px] text-center`}>{u.reporting}</td>
+                        <td className={`${td} px-[5px] py-[5px] text-center`}>{u.centre}</td>
+                        <td className={`${td} px-[5px] py-[5px] text-center`}>
+                          <Pill tone="green" className="h-[18px] min-w-[58px] text-[10.5px]">
+                            {u.mfa}
+                          </Pill>
+                        </td>
+                        <td className={`${td} px-[5px] py-[5px] text-center`}>
+                          <StatusPill className="h-[18px] min-w-[62px] text-[10.5px]">{u.status}</StatusPill>
+                        </td>
+                        <td className={`${td} px-[5px] py-[5px] text-center text-[11.5px]`}>{u.login}</td>
+                      </tr>
+                    ))}
+                    {!rows.length && (
+                      <tr>
+                        <td colSpan={11} className="py-6 text-center text-[13px] font-medium text-[#5b6280]">
+                          No users match these filters.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </TableWrap>
 
-          <Panel title="Quick Actions" icon={Zap} className="min-h-0 flex-1" bodyClassName="flex flex-col pt-[4px]">
-            {quick.map((a) => {
-              const body = (
-                <>
-                  <a.icon strokeWidth={2} style={{ color: a.color }} className="h-[18px] w-[18px] shrink-0" />
-                  <span className="flex-1 text-[13px] font-semibold">{a.label}</span>
-                  <ChevronRight strokeWidth={2.4} className="h-[15px] w-[15px]" />
-                </>
-              );
-              const cls = "flex min-h-[32px] flex-1 items-center gap-[10px] border-b border-[#eef0f5] px-[4px] text-left last:border-0 hover:bg-[#f6f8fd]";
-              return a.href ? (
-                <Link key={a.label} href={a.href} className={cls}>{body}</Link>
-              ) : (
-                <button key={a.label} type="button" onClick={() => notice.show(`${a.label} (demo).`)} className={cls}>{body}</button>
-              );
-            })}
+                <div className="mt-auto flex flex-wrap items-center justify-between gap-[8px] pt-[8px]">
+                  <p className="text-[11.5px] font-medium text-[#3b4256]">
+                    Showing {filtered.length ? (current - 1) * PER_PAGE + 1 : 0}–{(current - 1) * PER_PAGE + rows.length} of {filtered.length} · mobiles masked · no direct deletion
+                  </p>
+                  <Pager page={current} pages={pages} onChange={setPage} />
+                </div>
+
+                <div className="mt-[8px] flex flex-wrap gap-[8px] border-t border-[#eef0f5] pt-[8px]">
+                  <Link href={CREATE_USER_HREF}>
+                    <PrimaryButton>Create user</PrimaryButton>
+                  </Link>
+                  <PrimaryButton outline onClick={() => notice.show("Edit access: role changes need independent approval (demo).")}>
+                    Edit access
+                  </PrimaryButton>
+                  <PrimaryButton outline onClick={() => notice.show("Suspend account: reason required, sessions revoked (demo).")}>
+                    Suspend account
+                  </PrimaryButton>
+                  <PrimaryButton outline onClick={() => notice.show("View audit opened (demo).")}>
+                    View audit
+                  </PrimaryButton>
+                </div>
+              </>
+            ) : tab === "Activity logs" ? (
+              <div className="flex flex-col gap-[8px] pt-[4px]">
+                {activityLog.map((a) => (
+                  <div key={a.time + a.text} className="flex items-center gap-[10px] rounded-[8px] border border-[#eef0f5] bg-[#f8faff] px-[12px] py-[8px]">
+                    <Pill tone={a.tone} className="h-[20px] min-w-[48px] text-[11px]">
+                      {a.time}
+                    </Pill>
+                    <span className="min-w-0 flex-1 text-[13px] font-semibold">{a.text}</span>
+                  </div>
+                ))}
+                <p className="pt-[4px] text-[11.5px] font-medium text-[#5b6280]">All security events are retained in the audit trail.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-[6px] pt-[4px]">
+                {hrmsRows.map(([k, v]) => (
+                  <KV key={k} k={k} v={v} className="border-b border-[#eef0f5] py-[5px] last:border-0" />
+                ))}
+                <div className="pt-[8px]">
+                  <PrimaryButton onClick={() => notice.show("HRMS sync started (demo).")}>
+                    Sync now
+                  </PrimaryButton>
+                </div>
+              </div>
+            )}
           </Panel>
-        </div>
+        )}
+
+        {/* Bottom row — access & security, account lifecycle, user scope */}
+        {bottomRow && (
+          <div
+            className={`grid gap-[10px] lg:min-h-0 lg:flex-[230_1_0] ${
+              bottomCount >= 3 ? "lg:grid-cols-3" : bottomCount === 2 ? "lg:grid-cols-2" : "lg:grid-cols-1"
+            } lg:[grid-template-rows:minmax(0,1fr)]`}
+          >
+            {showAccess && (
+              <Panel title="Access & security" bodyClassName="flex flex-col pt-[4px]">
+                <div className="flex flex-col">
+                  {accessSecurity.map(([k, v]) => (
+                    <KV key={k} k={k} v={v} className="border-b border-[#eef0f5] py-[5px] last:border-0" />
+                  ))}
+                </div>
+              </Panel>
+            )}
+
+            {showLifecycle && (
+              <Panel title="Account lifecycle" bodyClassName="flex flex-col pt-[4px]">
+                <div className="flex flex-col">
+                  {lifecycle.map(([k, v]) => (
+                    <KV key={k} k={k} v={v} className="border-b border-[#eef0f5] py-[5px] last:border-0" />
+                  ))}
+                </div>
+              </Panel>
+            )}
+
+            {showScope && (
+              <Panel title="User scope" bodyClassName="flex flex-col pt-[4px]">
+                <div className="flex flex-col">
+                  {scope.map(([k, v]) => (
+                    <KV key={k} k={k} v={v} className="border-b border-[#eef0f5] py-[5px] last:border-0" />
+                  ))}
+                </div>
+              </Panel>
+            )}
+
+            {showActivity && (
+              <Panel title="Security events" bodyClassName="flex flex-col pt-[4px]">
+                <div className="flex flex-col gap-[6px]">
+                  {activityLog.slice(0, 3).map((a) => (
+                    <div key={a.time + a.text} className="text-[12.5px] font-semibold leading-tight">
+                      <Pill tone={a.tone} className="mr-[6px] h-[18px] min-w-[44px] text-[10.5px]">
+                        {a.time}
+                      </Pill>
+                      {a.text}
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+            )}
+
+            {showHrms && (
+              <Panel title="HRMS integration" bodyClassName="flex flex-col pt-[4px]">
+                <div className="flex flex-col">
+                  {hrmsRows.slice(0, 4).map(([k, v]) => (
+                    <KV key={k} k={k} v={v} className="border-b border-[#eef0f5] py-[5px] last:border-0" />
+                  ))}
+                </div>
+              </Panel>
+            )}
+          </div>
+        )}
       </div>
+
       {notice.node}
     </SuperAdminFrame>
   );

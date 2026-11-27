@@ -116,3 +116,19 @@ export const screenPicker = [
 ] as const;
 
 export type ScreenCode = (typeof screenPicker)[number]["code"] | string;
+
+/** Core Super Admin screens (SA-001 … SA-010) for the header module switcher. */
+export const saCoreModules = [
+  { code: "SA-001", label: "Super Admin Dashboard", href: B },
+  { code: "SA-002", label: "Live Operations & Emergency", href: `${B}/live-operations` },
+  { code: "SA-003", label: "Notification & Alert Centre", href: `${B}/notification-alerts` },
+  { code: "SA-004", label: "Central Approval Centre", href: `${B}/central-approvals` },
+  { code: "SA-005", label: "Organisation Setup", href: `${B}/organisation-setup` },
+  { code: "SA-006", label: "City, Zone & Service Centres", href: `${B}/city-zone-centres` },
+  { code: "SA-007", label: "Department Management", href: `${B}/departments-centres` },
+  { code: "SA-008", label: "Admin & User Management", href: `${B}/users-access-control` },
+  { code: "SA-009", label: "Create User & Assign Access", href: `${B}/users-access-control/create` },
+  { code: "SA-010", label: "Roles & Permission Matrix", href: `${B}/users-access-control/roles` },
+] as const;
+
+export type CoreModuleCode = (typeof saCoreModules)[number]["code"];

@@ -2,283 +2,287 @@
 
 /**
  * SA-009 — Create User & Assign Access.
- * Notes (design brief 09): HRMS employee fields are read-only; the verified,
- * unique mobile number is the login identifier; MFA is mandatory and cannot be
- * disabled; Super Admin elevation needs independent approval and
- * phishing-resistant MFA; preview effective permissions, assign training and
- * activate only after approval — no self-escalation.
+ * Matched to the SA-009 reference design: 6 KPI tiles, 4 tabs, top row of 3
+ * panels (employee details, access assignment, mandatory account security) and
+ * bottom row (module permissions, activation & training). Demo data only.
  */
 
-import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import {
-  CalendarDays,
-  Crown,
-  FileText,
-  Lock,
-  MapPin,
-  Network,
-  RefreshCw,
-  Settings,
-  ShieldCheck,
-  UserCog,
-  UserPlus,
-  UserRound,
-  UsersRound,
-  type LucideIcon,
+  Bell,
+  CircleCheck,
+  Layers,
+  Radio,
+  Users,
 } from "lucide-react";
 import {
-  Checkbox,
+  CentreDropdown,
   Dropdown,
   KpiRow,
   KpiTile,
+  KV,
+  ModuleDropdown,
   PageHead,
   Panel,
+  Pill,
   PrimaryButton,
   SuperAdminFrame,
+  TableWrap,
+  Tabs,
+  Thead,
+  td,
+  th,
   useNotice,
 } from "@/components/dashboards/super-admin/kit";
 
-const employees = ["DEMO-E0137 — Demo Employee (HRMS)", "DEMO-E0142 — Demo Employee 2 (HRMS)", "DEMO-E0150 — Demo Employee 3 (HRMS)"] as const;
-const designations = ["Operations Executive", "Field Coordinator", "Case Manager", "Accounts Executive"] as const;
-const departments = ["Sewa Operations", "CSR & Partnerships", "Finance & Donations", "Communication & Outreach", "Admin & Support"] as const;
-const tabs: { label: string; icon: LucideIcon }[] = [
-  { label: "Create / Manage User", icon: UserRound },
-  { label: "Access Permissions", icon: FileText },
-  { label: "Centre-wise Access", icon: Network },
-  { label: "User Audit Logs", icon: FileText },
-];
-const levels: { id: "Super Admin" | "Admin" | "User"; sub: string; icon: LucideIcon; color: string }[] = [
-  { id: "Super Admin", sub: "(Full System Access)", icon: Crown, color: "#f0a020" },
-  { id: "Admin", sub: "(Department Access)", icon: UsersRound, color: "#2f6fe0" },
-  { id: "User", sub: "(Limited Access)", icon: UserRound, color: "#f0a020" },
-];
-const modules = [
-  "Sewa Request (Create / Update)",
-  "Communication Hub (SMS / WhatsApp)",
-  "Case & Workflow (Assign / Update)",
-  "Finance & Donations",
-  "Operations (Dispatch / Tracking)",
-  "Master Data (View Only)",
-  "Reports & Analytics (View Only)",
-  "Settings (Restricted)",
-];
-const defaultModules = new Set(["Sewa Request (Create / Update)", "Communication Hub (SMS / WhatsApp)", "Case & Workflow (Assign / Update)", "Operations (Dispatch / Tracking)"]);
+const tabs = ["Create user", "Permission preview", "Centre access", "Audit history"] as const;
+type Tab = (typeof tabs)[number];
 
-const initial = {
-  employee: employees[0] as (typeof employees)[number],
-  designation: designations[0] as (typeof designations)[number],
-  department: departments[0] as (typeof departments)[number],
-  level: "Admin" as (typeof levels)[number]["id"],
-  reporting: "Demo Admin 01",
-  ghaziabad: true,
-  modules: defaultModules as ReadonlySet<string>,
-  forceChange: true,
-  restrictIp: false,
-  validity: "permanent" as "permanent" | "till",
-  tillDate: "",
-  remarks: "",
-};
+const employees = [
+  "E-0004 • Demo employee 04",
+  "E-0005 • Demo employee 05",
+  "E-0006 • Demo employee 06",
+] as const;
+
+const accessLevels = ["User", "Admin", "Super Admin"] as const;
+
+const securityRows: readonly { label: string; value: string; pill?: boolean }[] = [
+  { label: "Mobile verification", value: "Required • locked" },
+  { label: "Password + MFA", value: "Required • locked" },
+  { label: "New device verification", value: "Required • locked" },
+  { label: "Session monitoring", value: "Required", pill: true },
+  { label: "Audit trail", value: "Required", pill: true },
+  { label: "HRMS exit revocation", value: "Required", pill: true },
+];
+
+const permRows: readonly { module: string; view: string; create: string; edit: string; approve: string }[] = [
+  { module: "Sewa requests", view: "Yes", create: "Yes", edit: "Assigned", approve: "No" },
+  { module: "Cases & tasks", view: "Assigned", create: "No", edit: "Assigned", approve: "No" },
+  { module: "Official communication", view: "Assigned", create: "Yes", edit: "Assigned", approve: "No" },
+  { module: "Finance", view: "No", create: "No", edit: "No", approve: "No" },
+  { module: "Reports", view: "Own", create: "No", edit: "No", approve: "No" },
+];
+
+const activation: readonly (readonly [string, string])[] = [
+  ["Role-wise training", "Auto assign"],
+  ["Account invitation", "After approval"],
+  ["Training qualification", "Before sensitive work"],
+  ["Access review", "Scheduled"],
+  ["Remarks", "Required for exceptions"],
+] as const;
+
+const pipeline = ["Draft", "Review", "Activate"] as const;
 
 export default function SA009CreateUser() {
   const notice = useNotice();
-  const [tab, setTab] = useState(0);
-  const [f, setF] = useState(initial);
+  const [tab, setTab] = useState<Tab>("Create user");
+  const [employee, setEmployee] = useState<(typeof employees)[number]>(employees[0]);
+  const [level, setLevel] = useState<(typeof accessLevels)[number]>("User");
   const [submitted, setSubmitted] = useState(false);
-  const set = <K extends keyof typeof initial>(k: K, v: (typeof initial)[K]) => setF((s) => ({ ...s, [k]: v }));
 
-  const submit = () => {
-    if (!f.ghaziabad) return notice.show("Select at least one applicable service centre.");
-    if (!f.modules.size) return notice.show("Select at least one module permission.");
-    if (!f.reporting.trim()) return notice.show("Reporting authority is required.");
-    if (f.validity === "till" && !f.tillDate) return notice.show("Choose the access end date.");
-    if (f.level === "Super Admin" && !window.confirm("Super Admin access needs independent approval and phishing-resistant MFA. Submit for approval?")) return;
-    setSubmitted(true);
-    notice.show("Submitted for access approval — the account activates only after approval (demo).");
-  };
+  const showCreate = tab === "Create user" || tab === "Centre access";
+  const showPerm = tab === "Create user" || tab === "Permission preview";
+  const showActivation = tab === "Create user";
+  const showAudit = tab === "Audit history";
+
+  const fullName = employee.split("• ")[1] ?? "Demo employee 04";
 
   return (
     <SuperAdminFrame active="users-access-control">
       <PageHead
-        icon={UserCog}
+        light
+        icon={Radio}
+        iconTone="blue"
         title="Create User & Assign Access"
-        links={["User Creation & Access Management", "HRMS Integration", "Role Assignment", "Centre-wise Permissions", "Account Security"]}
+        links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
       >
-        <Link href="/dashboard/super-admin/users-access-control" className="text-[13px] font-semibold text-[#2320c4] hover:underline">
-          ← Back to User Management
-        </Link>
+        <ModuleDropdown current="SA-009" />
+        <CentreDropdown className="w-[165px]" />
       </PageHead>
 
       <KpiRow cols={6}>
-        <KpiTile tone="blue" icon={UsersRound} value="–" label="HRMS employees" />
-        <KpiTile tone="green" icon={UserPlus} value="162" label="Active users" />
-        <KpiTile tone="orange" icon={ShieldCheck} value="03" label="Super Admin / Admin / User" />
-        <KpiTile tone="purple" icon={Network} value="07" label="Departments" />
-        <KpiTile tone="red" icon={MapPin} value="01" label="Active centre" />
-        <KpiTile tone="sky" icon={Lock} value="MFA" label="Mandatory" />
+        <KpiTile tone="blue" icon={Radio} value="03" label="Access levels" sub="Fixed architecture" />
+        <KpiTile tone="green" icon={Bell} value="HRMS" label="HRMS source" sub="Read-only" />
+        <KpiTile tone="orange" icon={CircleCheck} value="Verified" label="Mobile" sub="Login identifier" />
+        <KpiTile tone="purple" icon={Users} value="Required" label="MFA" sub="Password + OTP" />
+        <KpiTile tone="sky" icon={Layers} value="Approval" label="Activation" sub="Independent review" />
+        <KpiTile tone="green" icon={Radio} value="Assigned" label="Training" sub="Role-based" />
       </KpiRow>
 
-      <div role="tablist" className="flex gap-[8px] overflow-x-auto lg:h-[38px]">
-        {tabs.map((t, i) => (
-          <button
-            key={t.label}
-            type="button"
-            role="tab"
-            aria-selected={tab === i}
-            onClick={() => setTab(i)}
-            className={`flex h-[38px] shrink-0 items-center gap-[8px] whitespace-nowrap rounded-[9px] border px-[20px] pt-px text-[14px] font-semibold shadow-[0_2px_6px_rgba(30,50,110,0.06)] ${
-              tab === i ? "border-[#1d4fe0] bg-[#1d4fe0] text-white" : "border-[#e1e5ee] bg-white hover:bg-[#f4f6fc]"
-            }`}
-          >
-            <t.icon strokeWidth={2} className="h-[17px] w-[17px]" />
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={tabs} value={tab} onChange={setTab} />
 
-      <div className="grid gap-[14px] lg:h-[548px] lg:grid-cols-[750fr_405fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="User Details" icon={UserPlus} className="lg:h-[244px]" bodyClassName="flex flex-col gap-[9px] pt-[8px]">
-            <Field label="Select Employee (from HRMS)" required>
-              <div className="flex gap-[10px]">
-                <Dropdown label="HRMS employee" value={f.employee} options={employees} onChange={(v) => set("employee", v)} className="min-w-0 flex-1" />
-                <PrimaryButton outline icon={RefreshCw} onClick={() => notice.show("Synced from HRMS — employee fields are read-only (demo).")}>Sync from HRMS</PrimaryButton>
+      <div className="flex min-h-0 flex-1 flex-col gap-[10px]">
+        {/* Top row — 3 panels */}
+        {showCreate && (
+          <div className="grid gap-[10px] lg:min-h-0 lg:flex-[315_1_0] lg:grid-cols-3 lg:[grid-template-rows:minmax(0,1fr)]">
+            <Panel title="Employee details" note="• HRMS read-only" bodyClassName="flex flex-col gap-[6px] pt-[4px]">
+              <div className="grid grid-cols-2 gap-[8px]">
+                <Field label="Employee">
+                  <Dropdown label="Employee" value={employee} options={employees} onChange={setEmployee} className="w-full" size={12} />
+                </Field>
+                <Field label="Full name">
+                  <ReadOnly value={fullName} />
+                </Field>
+                <Field label="Verified mobile">
+                  <ReadOnly value="+91 •••••• 0004" />
+                </Field>
+                <Field label="Official email">
+                  <ReadOnly value="demo04@example.invalid" />
+                </Field>
+                <Field label="Designation">
+                  <ReadOnly value="Operations Executive" />
+                </Field>
+                <Field label="Department">
+                  <ReadOnly value="Operations & Sewa" />
+                </Field>
               </div>
-            </Field>
-            <div className="grid gap-[12px] sm:grid-cols-3">
-              <Field label="Full Name" required><ReadOnly value={f.employee.includes("E0137") ? "Demo Employee" : f.employee.split("— ")[1].replace(" (HRMS)", "")} /></Field>
-              <Field label="Mobile Number" required><ReadOnly value="+91 XXXXX XXXXX" /></Field>
-              <Field label="Email ID"><ReadOnly value="demo@example.com" /></Field>
-            </div>
-            <div className="grid gap-[12px] sm:grid-cols-3">
-              <Field label="Employee ID"><ReadOnly value={f.employee.split(" ")[0]} /></Field>
-              <Field label="Designation" required><Dropdown label="Designation" value={f.designation} options={designations} onChange={(v) => set("designation", v)} className="w-full" /></Field>
-              <Field label="Department" required><Dropdown label="Department" value={f.department} options={departments} onChange={(v) => set("department", v)} className="w-full" /></Field>
-            </div>
-          </Panel>
+              <div className="mt-auto flex flex-wrap gap-[8px] pt-[6px]">
+                <PrimaryButton onClick={() => notice.show("Selected from HRMS — fields are read-only (demo).")}>
+                  Select from HRMS
+                </PrimaryButton>
+                <PrimaryButton outline onClick={() => notice.show("Refreshed from HRMS (demo).")}>
+                  Refresh HRMS
+                </PrimaryButton>
+              </div>
+            </Panel>
 
-          <Panel title="Access & Role Assignment" icon={UserPlus} className="lg:h-[128px]" bodyClassName="flex flex-col gap-[12px] pt-[4px] sm:flex-row sm:items-end">
-            <div className="min-w-0 flex-1">
-              <p className="mb-[5px] text-[12.5px] font-bold">Access Level <span className="text-[#e02424]">*</span></p>
-              <div role="radiogroup" aria-label="Access Level" className="grid grid-cols-3 gap-[10px]">
-                {levels.map((l) => {
-                  const on = f.level === l.id;
-                  return (
-                    <button
-                      key={l.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={on}
-                      onClick={() => set("level", l.id)}
-                      className={`flex min-h-[44px] items-center gap-[8px] rounded-[9px] border-[1.5px] px-[8px] py-[4px] text-left lg:h-[44px] lg:py-0 ${on ? "border-[#1d4fe0] bg-[#eef3ff]" : "border-[#d6dbe6] bg-white hover:bg-[#f6f8fd]"}`}
-                    >
-                      <span className={`flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-full border-[1.5px] ${on ? "border-[#1d4fe0]" : "border-[#5b6280]"}`}>
-                        {on && <span className="h-[7px] w-[7px] rounded-full bg-[#1d4fe0]" />}
-                      </span>
-                      <l.icon strokeWidth={2} style={{ color: l.color }} className="h-[22px] w-[22px] shrink-0" />
-                      <span className="min-w-0 leading-tight">
-                        <b className="block text-[13px]">{l.id}</b>
-                        <span className="block text-[10px] font-medium lg:truncate">{l.sub}</span>
-                      </span>
-                    </button>
-                  );
-                })}
+            <Panel title="Access assignment" bodyClassName="flex flex-col gap-[6px] pt-[4px]">
+              <Field label="Access level">
+                <Dropdown label="Access level" value={level} options={accessLevels} onChange={setLevel} className="w-full" size={12.5} />
+              </Field>
+              <div className="grid grid-cols-2 gap-[8px]">
+                <Field label="Reporting authority">
+                  <ReadOnly value="Admin 01" />
+                </Field>
+                <Field label="Service centre">
+                  <ReadOnly value="Ghaziabad" />
+                </Field>
+                <Field label="Validity / review">
+                  <ReadOnly value="Review 26 Feb 2027" />
+                </Field>
+                <Field label="Activation status">
+                  <ReadOnly value={submitted ? "Submitted" : "Pending approval"} />
+                </Field>
               </div>
-            </div>
-            <Field label="Reporting Authority" required className="sm:w-[225px]">
-              <input value={f.reporting} onChange={(e) => set("reporting", e.target.value)} aria-label="Reporting Authority" className="h-[34px] w-full rounded-[8px] border border-[#cfd5e2] bg-[#f3f5f9] px-[10px] text-[13px] font-medium outline-none focus:border-[#5b6fe0]" />
-            </Field>
-          </Panel>
+              <p className="mt-auto pt-[4px] text-[11.5px] font-medium text-[#3b4256]">
+                Elevated access requires independent approval and passkey.
+              </p>
+            </Panel>
 
-          <Panel title="Service Centre Access & Permissions" icon={UsersRound} className="min-h-0 lg:flex-1" bodyClassName="flex flex-col gap-[14px] pt-[4px] sm:flex-row">
-            <div className="sm:w-[245px]">
-              <p className="mb-[5px] text-[12.5px] font-bold">Applicable Service Centre(s) <span className="text-[#e02424]">*</span></p>
-              <div className="flex flex-col gap-[8px] rounded-[8px] border border-[#e1e5ee] p-[10px]">
-                <Checkbox checked={f.ghaziabad} onChange={(v) => set("ghaziabad", v)} label="Ghaziabad Centre (HO)" />
-                <Checkbox checked={false} disabled label="Delhi – Coming Soon" />
-                <Checkbox checked={false} disabled label="Noida – Coming Soon" />
-              </div>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="mb-[5px] text-[12.5px] font-bold">Module Permissions <span className="text-[#e02424]">*</span> <span className="font-medium">(for selected role)</span></p>
-              <div className="grid grid-cols-1 gap-x-[16px] gap-y-[8px] sm:grid-cols-2">
-                {modules.map((m) => (
-                  <Checkbox
-                    key={m}
-                    checked={f.modules.has(m)}
-                    label={m}
-                    onChange={(v) => {
-                      const n = new Set(f.modules);
-                      if (v) n.add(m);
-                      else n.delete(m);
-                      set("modules", n);
-                    }}
+            <Panel title="Mandatory account security" bodyClassName="flex flex-col pt-[4px]">
+              <div className="flex flex-col">
+                {securityRows.map((r) => (
+                  <KV
+                    key={r.label}
+                    k={r.label}
+                    v={r.pill ? <Pill tone="green" className="h-[18px] text-[10.5px]">{r.value}</Pill> : r.value}
+                    className="py-[4px]"
                   />
                 ))}
               </div>
-            </div>
-          </Panel>
-        </div>
-
-        <div className="flex min-h-0 flex-col gap-[10px]">
-          <Panel title="Account Security" icon={ShieldCheck} bodyClassName="flex flex-col gap-[9px] pt-[8px]">
-            <Checkbox checked disabled label="Password + MFA — mandatory / locked" className="!opacity-100" />
-            <Checkbox checked={f.forceChange} onChange={(v) => set("forceChange", v)} label="Force Password Change on First Login" />
-            <p className="text-[12.5px] font-medium text-[#3b4256]">Reset password on compromise</p>
-            <Checkbox checked={f.restrictIp} onChange={(v) => set("restrictIp", v)} label="Restrict Login by IP / Location" />
-          </Panel>
-
-          <Panel title="Additional Settings" icon={Settings} className="min-h-0 lg:flex-1" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
-            <p className="text-[13px] font-medium">Account status: <b>{submitted ? "Pending approval (submitted)" : "Pending approval"}</b></p>
-            <div>
-              <p className="mb-[6px] text-[12.5px] font-bold">Access Validity</p>
-              <div role="radiogroup" aria-label="Access Validity" className="flex flex-wrap items-center gap-[14px]">
-                <Radio on={f.validity === "permanent"} onClick={() => set("validity", "permanent")} label="Permanent" />
-                <Radio on={f.validity === "till"} onClick={() => set("validity", "till")} label="Till Date" />
-                <label className="flex h-[32px] flex-1 items-center gap-[6px] rounded-[8px] border border-[#cfd5e2] px-[8px]">
-                  <input type="date" value={f.tillDate} disabled={f.validity !== "till"} onChange={(e) => set("tillDate", e.target.value)} aria-label="Access end date" className="min-w-0 flex-1 bg-transparent text-[12.5px] font-medium outline-none disabled:text-[#9aa1b5]" />
-                  <CalendarDays strokeWidth={2} className="h-[16px] w-[16px] shrink-0 text-[#5b6280]" />
-                </label>
+              <p className="mt-[6px] text-[11px] font-medium text-[#3b4256]">
+                Password reset on compromise; no arbitrary periodic expiry.
+              </p>
+              <div className="mt-auto rounded-[8px] border border-[#dce6f7] bg-[#f4f8ff] px-[10px] py-[6px] text-[11.5px] font-semibold text-[#0b0c36]">
+                MFA enforced - independent elevation approval
               </div>
-            </div>
-            <div className="flex min-h-0 flex-1 flex-col">
-              <p className="mb-[6px] text-[12.5px] font-bold">Remarks <span className="font-medium">(Optional)</span></p>
-              <textarea
-                value={f.remarks}
-                onChange={(e) => set("remarks", e.target.value)}
-                placeholder="Enter remarks (e.g., role scope, special access, etc.)"
-                className="min-h-[70px] flex-1 resize-none rounded-[8px] border border-[#cfd5e2] p-[10px] text-[13px] font-medium outline-none placeholder:text-[#5b6280] focus:border-[#5b6fe0]"
-              />
-            </div>
-          </Panel>
-
-          <div className="grid grid-cols-[1fr_2fr] gap-[12px]">
-            <PrimaryButton
-              outline
-              icon={RefreshCw}
-              className="h-[40px]"
-              onClick={() => {
-                setF(initial);
-                setSubmitted(false);
-              }}
-            >
-              Reset
-            </PrimaryButton>
-            <PrimaryButton className="h-[40px]" onClick={submit}>Submit for Access Approval</PrimaryButton>
+            </Panel>
           </div>
-        </div>
+        )}
+
+        {/* Bottom row — module permissions + activation & training */}
+        {(showPerm || showActivation || showAudit) && (
+          <div
+            className={`grid gap-[10px] lg:min-h-0 lg:flex-[260_1_0] ${
+              showPerm && showActivation ? "lg:grid-cols-[54fr_46fr]" : "lg:grid-cols-1"
+            } lg:[grid-template-rows:minmax(0,1fr)]`}
+          >
+            {showPerm && (
+              <Panel title="Module permissions" note="• least privilege" bodyClassName="flex flex-col pt-[4px]">
+                <TableWrap>
+                  <Thead>
+                    {["Module", "View", "Create", "Edit", "Approve"].map((h, i) => (
+                      <th key={h} className={`${th} px-[6px] py-[5px] text-[12px] ${i > 0 ? "text-center" : ""}`}>
+                        {h}
+                      </th>
+                    ))}
+                  </Thead>
+                  <tbody>
+                    {permRows.map((r) => (
+                      <tr key={r.module}>
+                        <td className={`${td} px-[6px] py-[5px] font-semibold`}>{r.module}</td>
+                        <td className={`${td} px-[6px] py-[5px] text-center`}>{r.view}</td>
+                        <td className={`${td} px-[6px] py-[5px] text-center`}>{r.create}</td>
+                        <td className={`${td} px-[6px] py-[5px] text-center`}>{r.edit}</td>
+                        <td className={`${td} px-[6px] py-[5px] text-center`}>{r.approve}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </TableWrap>
+                <div className="mt-auto pt-[6px]">
+                  <PrimaryButton onClick={() => notice.show("Effective access preview opened (demo).")}>
+                    Preview effective access
+                  </PrimaryButton>
+                </div>
+              </Panel>
+            )}
+
+            {showActivation && (
+              <Panel title="Activation & training" bodyClassName="flex flex-col pt-[4px]">
+                <div className="flex flex-col">
+                  {activation.map(([k, v]) => (
+                    <KV key={k} k={k} v={v} className="py-[4px]" />
+                  ))}
+                </div>
+                <div className="mt-auto flex flex-wrap items-center gap-[8px] pt-[8px]">
+                  <PrimaryButton
+                    onClick={() => {
+                      setSubmitted(false);
+                      notice.show("Draft saved (demo).");
+                    }}
+                  >
+                    Save draft
+                  </PrimaryButton>
+                  <PrimaryButton
+                    outline
+                    onClick={() => {
+                      setSubmitted(true);
+                      notice.show("Submitted for independent approval (demo).");
+                    }}
+                  >
+                    Submit for approval
+                  </PrimaryButton>
+                  <div className="ml-auto flex items-center gap-[5px]">
+                    {pipeline.map((p) => (
+                      <Pill key={p} tone="gray" className="h-[20px] px-[8px] text-[11px]">
+                        {p}
+                      </Pill>
+                    ))}
+                  </div>
+                </div>
+              </Panel>
+            )}
+
+            {showAudit && (
+              <Panel title="Audit history" bodyClassName="flex flex-col pt-[4px]">
+                <KV k="10:05" v="Draft created by Super Admin 01" className="py-[5px]" />
+                <KV k="10:12" v="HRMS employee selected • fields locked" className="py-[5px]" />
+                <KV k="10:18" v="Access level assigned • pending approval" className="py-[5px]" />
+              </Panel>
+            )}
+          </div>
+        )}
       </div>
+
       {notice.node}
     </SuperAdminFrame>
   );
 }
 
-function Field({ label, required = false, className = "", children }: { label: string; required?: boolean; className?: string; children: ReactNode }) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className={`min-w-0 ${className}`}>
-      <p className="mb-[4px] text-[12.5px] font-bold">
-        {label} {required && <span className="text-[#e02424]">*</span>}
-      </p>
+    <div className="min-w-0">
+      <p className="mb-[2px] text-[11.5px] font-medium text-[#3b4256]">{label}</p>
       {children}
     </div>
   );
@@ -286,18 +290,11 @@ function Field({ label, required = false, className = "", children }: { label: s
 
 function ReadOnly({ value }: { value: string }) {
   return (
-    <input readOnly value={value} aria-label={value} title="From HRMS (read-only)" className="h-[34px] w-full rounded-[8px] border border-[#d6dbe6] bg-[#f3f5f9] px-[10px] text-[13px] font-medium text-[#3b4256] outline-none" />
+    <input
+      readOnly
+      value={value}
+      aria-label={value}
+      className="h-[30px] w-full rounded-[7px] border border-[#d6dbe6] bg-[#f8fafc] px-[9px] text-[12.5px] font-medium text-[#0b0c36] outline-none"
+    />
   );
 }
-
-function Radio({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
-  return (
-    <button type="button" role="radio" aria-checked={on} onClick={onClick} className="flex items-center gap-[7px] pr-[4px] text-[13px] font-semibold">
-      <span className={`flex h-[15px] w-[15px] items-center justify-center rounded-full border-[1.5px] ${on ? "border-[#1d4fe0]" : "border-[#5b6280]"}`}>
-        {on && <span className="h-[7px] w-[7px] rounded-full bg-[#1d4fe0]" />}
-      </span>
-      {label}
-    </button>
-  );
-}
-
