@@ -166,7 +166,7 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
   const rows = query ? register.rows.filter((r) => r.some((c) => c.toLowerCase().includes(query))) : register.rows;
 
   return (
-    <SuperAdminFrame active={spec.active} demoNote>
+    <SuperAdminFrame active={spec.active}>
       <div className="flex min-h-0 flex-1 flex-col gap-3 lg:gap-0">
         {/* heading */}
         <div className="flex flex-col gap-3 lg:h-[48px] lg:flex-row lg:items-start lg:gap-[12px]">
