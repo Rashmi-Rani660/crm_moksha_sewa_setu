@@ -24,9 +24,9 @@ export function Sa51Header({
   const matchedGroup = screenPicker.find((s) => s.code === code)?.group;
   const siblings = matchedGroup ? screenPicker.filter((s) => s.group === matchedGroup) : screenPicker;
   return (
-    <div className="flex flex-col gap-3 lg:h-[48px] lg:flex-row lg:items-start lg:gap-[12px]">
+    <div className="flex flex-col gap-3 lg:h-[44px] lg:flex-row lg:items-start lg:gap-[12px]">
       <div className="flex min-w-0 items-start gap-[8px]">
-        <Radio strokeWidth={2.2} className="mt-[6px] h-[24px] w-[24px] shrink-0 text-[#1f4fd0]" aria-hidden />
+        {/* <Radio strokeWidth={2.2} className="mt-[4px] h-[24px] w-[24px] shrink-0 text-[#1f4fd0]" aria-hidden /> */}
         <div className="min-w-0">
           <h1 className="text-[19px] font-medium leading-tight tracking-[-0.2px] text-[#1a1d36] lg:whitespace-nowrap lg:text-[21.5px]">
             {title}
@@ -74,7 +74,7 @@ const kpiToneStyles: Record<TileTone, { bg: string; border: string; fg: string }
 
 export function KpiRow({ children }: { cols?: number; children: ReactNode }) {
   return (
-    <div className="grid grid-cols-1 gap-[10px] sm:grid-cols-2 md:grid-cols-3 lg:h-[79px] lg:grid-cols-6 lg:gap-[11px]">
+    <div className="grid grid-cols-1 gap-[10px] sm:grid-cols-2 md:grid-cols-3 lg:h-[70px] lg:grid-cols-6 lg:gap-[10px]">
       {children}
     </div>
   );
@@ -97,7 +97,7 @@ export function KpiTile({
   return (
     <div
       style={{ background: t.bg, borderColor: t.border }}
-      className="flex min-h-[72px] min-w-0 items-center gap-[10px] rounded-[8px] border px-[12px] shadow-[0_1px_3px_rgba(20,45,90,0.06)]"
+      className="flex min-h-[66px] min-w-0 items-center gap-[10px] rounded-[8px] border px-[11px] shadow-[0_1px_3px_rgba(20,45,90,0.06)]"
     >
       <Icon strokeWidth={2} style={{ color: t.fg }} className="h-[30px] w-[30px] shrink-0" aria-hidden />
       <div className="min-w-0 flex-1">
@@ -123,16 +123,16 @@ export function Panel({
   return (
     <section
       aria-label={typeof title === "string" ? title : undefined}
-      className={`flex min-h-0 min-w-0 flex-col overflow-hidden rounded-[8px] border border-[#d6deec] bg-white shadow-[0_1px_3px_rgba(20,45,90,0.05)] ${className}`}
+      className={`flex min-w-0 flex-col overflow-hidden rounded-[8px] border border-[#d6deec] bg-white shadow-[0_1px_3px_rgba(20,45,90,0.05)] ${className}`}
     >
       {title && (
-        <header className="flex items-center px-[14px] pt-[10px]">
-          <h2 className="min-w-0 flex-1 text-[15.5px] font-medium leading-tight tracking-[-0.1px] text-[#1a1d36] lg:truncate">
+        <header className="flex items-center border-b border-[#e4e9f2] bg-[#f4f7fc] px-[14px] py-[7px]">
+          <h2 className="min-w-0 flex-1 text-[15px] font-medium leading-tight tracking-[-0.1px] text-[#1a1d36] lg:truncate">
             {title}
           </h2>
         </header>
       )}
-      <div className={`min-h-0 flex-1 overflow-auto overscroll-contain px-[14px] pb-[11px] pt-[6px] [scrollbar-width:thin] ${bodyClassName}`}>
+      <div className={`min-h-0 flex-1 px-[14px] pb-[9px] pt-[7px] ${bodyClassName}`}>
         {children}
       </div>
     </section>
@@ -159,9 +159,8 @@ export function Sa51Tabs<T extends string>({
             role="tab"
             aria-selected={on}
             onClick={() => onChange(t)}
-            className={`flex h-[28px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] px-[12px] text-[13.5px] font-medium transition-colors lg:flex-1 lg:px-[8px] ${
-              on ? "bg-[#1d4fe0] text-white" : "text-[#1a1d36] hover:bg-[#f1f4fb]"
-            }`}
+            className={`flex h-[28px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] px-[12px] text-[13.5px] font-medium transition-colors lg:flex-1 lg:px-[8px] ${on ? "bg-[#1d4fe0] text-white" : "text-[#1a1d36] hover:bg-[#f1f4fb]"
+              }`}
           >
             <span className="pt-px">{t}</span>
           </button>
@@ -230,11 +229,10 @@ export function Sa51Btn({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex h-[28px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] px-[11px] pt-px text-[13px] font-normal transition-colors ${
-        primary
-          ? "bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] text-white shadow-[0_1px_3px_rgba(9,60,221,0.3)] hover:brightness-110"
-          : "border border-[#a9bddf] bg-white text-[#1e43a8] hover:bg-[#f1f5fd]"
-      } ${className}`}
+      className={`inline-flex h-[28px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] px-[11px] pt-px text-[13px] font-normal transition-colors ${primary
+        ? "bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] text-white shadow-[0_1px_3px_rgba(9,60,221,0.3)] hover:brightness-110"
+        : "border border-[#a9bddf] bg-white text-[#1e43a8] hover:bg-[#f1f5fd]"
+        } ${className}`}
     >
       {children}
     </button>
@@ -255,8 +253,8 @@ export function Sa51SearchRow({
   onExport?: () => void;
 }) {
   return (
-    <div className="mb-[8px] flex items-center gap-[8px]">
-      <label className="flex h-[32px] min-w-0 flex-1 items-center rounded-[6px] border border-[#c9d2e0] bg-white px-[10px] focus-within:border-[#1d4fe0]">
+    <div className="mb-[6px] flex items-center gap-[8px]">
+      <label className="flex h-[29px] min-w-0 flex-1 items-center rounded-[6px] border border-[#c9d2e0] bg-white px-[10px] focus-within:border-[#1d4fe0]">
         <Search strokeWidth={2} className="h-[14px] w-[14px] shrink-0 text-[#5b6280]" />
         <input
           type="search"
@@ -271,7 +269,7 @@ export function Sa51SearchRow({
         <button
           type="button"
           onClick={onFilter}
-          className="h-[32px] shrink-0 rounded-[6px] border border-[#c9d2e0] bg-white px-[12px] text-[13px] font-normal text-[#1a1d36] hover:bg-[#f4f6fb]"
+          className="h-[29px] shrink-0 rounded-[6px] border border-[#c9d2e0] bg-white px-[12px] text-[13px] font-normal text-[#1a1d36] hover:bg-[#f4f6fb]"
         >
           Filter
         </button>
@@ -280,7 +278,7 @@ export function Sa51SearchRow({
         <button
           type="button"
           onClick={onExport}
-          className="h-[32px] shrink-0 rounded-[6px] border border-[#c9d2e0] bg-white px-[12px] text-[13px] font-normal text-[#1a1d36] hover:bg-[#f4f6fb]"
+          className="h-[29px] shrink-0 rounded-[6px] border border-[#c9d2e0] bg-white px-[12px] text-[13px] font-normal text-[#1a1d36] hover:bg-[#f4f6fb]"
         >
           Export
         </button>
@@ -291,9 +289,9 @@ export function Sa51SearchRow({
 
 export function Sa51KvList({ rows }: { rows: readonly [string, ReactNode][] }) {
   return (
-    <div className="flex flex-col gap-[7px]">
+    <div className="flex flex-col">
       {rows.map(([k, v]) => (
-        <div key={k} className="flex items-center justify-between gap-[10px] text-[13.5px] leading-snug text-[#1a1d36]">
+        <div key={k} className="flex items-center justify-between gap-[10px] border-b border-[#e5eaf3] py-[6px] text-[13px] leading-snug text-[#1a1d36]">
           <span className="font-normal text-[#3b4256]">{k}</span>
           <span className="text-right font-normal text-[#1a1d36]">{v}</span>
         </div>
@@ -333,11 +331,10 @@ export function Sa51Lifecycle({
           <Fragment key={step}>
             {i > 0 && <ArrowRight strokeWidth={2} className="h-[13px] w-[13px] shrink-0 text-[#4f74b8]" />}
             <div
-              className={`flex h-[46px] min-w-[110px] flex-1 items-center justify-center rounded-[7px] border px-[8px] text-center text-[13px] font-normal text-[#1a1d36] ${
-                i % 2 === 1
-                  ? "border-[#cde5cb] bg-[#f2fbf1]"
-                  : "border-[#cddcf5] bg-[#f3f8ff]"
-              }`}
+              className={`flex h-[46px] min-w-[110px] flex-1 items-center justify-center rounded-[7px] border px-[8px] text-center text-[13px] font-normal text-[#1a1d36] ${i % 2 === 1
+                ? "border-[#cde5cb] bg-[#f2fbf1]"
+                : "border-[#cddcf5] bg-[#f3f8ff]"
+                }`}
             >
               {step}
             </div>
@@ -349,5 +346,6 @@ export function Sa51Lifecycle({
   );
 }
 
-export const sa51TableHead = "whitespace-nowrap border-b border-[#e3e7ef] bg-[#f3f6fb] px-[10px] py-[7px] text-left text-[12.5px] font-medium text-[#4a5070]";
-export const sa51TableCell = "whitespace-nowrap border-b border-[#eef1f6] px-[10px] py-[7px] text-[13px] font-normal text-[#1a1d36]";
+export const sa51TableHead = "whitespace-nowrap border-b border-[#e3e7ef] bg-[#eff3fa] px-[10px] py-[5px] text-left text-[12.5px] font-medium text-[#4a5070]";
+export const sa51TableRow = "even:bg-[#f8fafd] last:[&>td]:border-b-0 hover:bg-[#eef4ff]";
+export const sa51TableCell = "whitespace-nowrap border-b border-[#eef1f6] px-[10px] py-[5px] text-[13px] font-normal text-[#1a1d36]";

@@ -98,7 +98,7 @@ export default function SA051AiCostUsage() {
                   </thead>
                   <tbody>
                     {filteredRows.map((r) => (
-                      <tr key={r.channel} className="last:[&>td]:border-b-0 hover:bg-[#f8faff]">
+                      <tr key={r.channel} className="even:bg-[#f8fafd] last:[&>td]:border-b-0 hover:bg-[#eef4ff]">
                         <td className={sa51TableCell}>{r.channel}</td>
                         <td className={sa51TableCell}>{r.usage}</td>
                         <td className={sa51TableCell}>{r.cost}</td>
@@ -125,7 +125,7 @@ export default function SA051AiCostUsage() {
             </div>
           </Panel>
 
-          <Panel title="Daily AI cost trend · demo (₹)" className="lg:flex-1" bodyClassName="flex flex-col justify-between pt-[6px]">
+          <Panel title="Daily AI cost trend · demo (₹)" className="lg:flex-1">
             <div className="grid grid-cols-6 items-end gap-[12px] pt-[6px]">
               {dailyTrend.map((d) => {
                 const height = Math.round((d.val / 400) * 64);

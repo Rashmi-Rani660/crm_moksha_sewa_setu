@@ -146,7 +146,7 @@ export default function SA052CommunicationTemplates() {
                       <tr
                         key={r.id}
                         onClick={() => setSelected(r)}
-                        className={`cursor-pointer last:[&>td]:border-b-0 ${selected.id === r.id ? "bg-[#f2f6ff]" : "hover:bg-[#f8faff]"}`}
+                        className={`cursor-pointer last:[&>td]:border-b-0 ${selected.id === r.id ? "bg-[#eef4ff]" : "even:bg-[#f8fafd] hover:bg-[#f2f6ff]"}`}
                       >
                         <td className={sa51TableCell}>{r.id}</td>
                         <td className={sa51TableCell}>{r.channel}</td>

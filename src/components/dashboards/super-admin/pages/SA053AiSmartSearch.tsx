@@ -95,7 +95,7 @@ export default function SA053AiSmartSearch() {
                   </thead>
                   <tbody>
                     {filtered.map((r) => (
-                      <tr key={r.result} className="last:[&>td]:border-b-0 hover:bg-[#f8faff]">
+                      <tr key={r.result} className="even:bg-[#f8fafd] last:[&>td]:border-b-0 hover:bg-[#eef4ff]">
                         <td className={sa51TableCell}>{r.result}</td>
                         <td className={sa51TableCell}>{r.type}</td>
                         <td className={sa51TableCell}>{r.source}</td>
@@ -128,7 +128,7 @@ export default function SA053AiSmartSearch() {
             </div>
           </Panel>
 
-          <Panel title="Search filters & sources" className="lg:flex-1" bodyClassName="flex flex-col justify-between pt-[6px]">
+          <Panel title="Search filters & sources" className="lg:flex-1">
             <div className="flex flex-wrap gap-[6px]">
               {filterChips.map((c) => {
                 const on = chip === c;
@@ -140,11 +140,10 @@ export default function SA053AiSmartSearch() {
                       setChip(c);
                       if (c === "Voice search") notice.show("Voice input requires explicit consent & retention control (demo).");
                     }}
-                    className={`h-[26px] rounded-[7px] px-[10px] text-[12px] font-semibold transition-colors ${
-                      on
-                        ? "bg-[#1d4fe0] text-white shadow-[0_2px_5px_rgba(29,79,224,0.25)]"
-                        : "border border-[#b9c8f0] bg-white text-[#1d4fe0] hover:bg-[#f2f6ff]"
-                    }`}
+                    className={`h-[26px] rounded-[7px] px-[10px] text-[12px] font-semibold transition-colors ${on
+                      ? "bg-[#1d4fe0] text-white shadow-[0_2px_5px_rgba(29,79,224,0.25)]"
+                      : "border border-[#b9c8f0] bg-white text-[#1d4fe0] hover:bg-[#f2f6ff]"
+                      }`}
                   >
                     {c}
                   </button>

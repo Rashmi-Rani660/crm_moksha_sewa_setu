@@ -86,7 +86,7 @@ export default function SA060Recognition() {
                   </thead>
                   <tbody>
                     {rows.map((r) => (
-                      <tr key={r.id} className="last:[&>td]:border-b-0 hover:bg-[#f8faff]">
+                      <tr key={r.id} className="even:bg-[#f8fafd] last:[&>td]:border-b-0 hover:bg-[#eef4ff]">
                         <td className={sa51TableCell}>{r.id}</td>
                         <td className={sa51TableCell}>{r.recipient}</td>
                         <td className={sa51TableCell}>{r.category}</td>

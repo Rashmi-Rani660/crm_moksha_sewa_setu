@@ -88,7 +88,7 @@ export default function SA058Assessments() {
                   </thead>
                   <tbody>
                     {rows.map((r) => (
-                      <tr key={`${r.learner}-${r.course}`} className="last:[&>td]:border-b-0 hover:bg-[#f8faff]">
+                      <tr key={`${r.learner}-${r.course}`} className="even:bg-[#f8fafd] last:[&>td]:border-b-0 hover:bg-[#eef4ff]">
                         <td className={sa51TableCell}>{r.learner}</td>
                         <td className={sa51TableCell}>{r.course}</td>
                         <td className={sa51TableCell}>{r.score}</td>
@@ -116,7 +116,7 @@ export default function SA058Assessments() {
             </div>
           </Panel>
 
-          <Panel title="Assessment outcome · demo" className="lg:flex-1" bodyClassName="flex flex-col justify-between pt-[6px]">
+          <Panel title="Assessment outcome · demo" className="lg:flex-1">
             <Sa51ProgressBar label="Passed · 30 of 42" pct={71.4} />
             <Sa51KvList
               rows={[
