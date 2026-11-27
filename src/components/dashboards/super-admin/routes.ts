@@ -70,6 +70,16 @@ export const screenPicker = [
   { group: "book-031-040", code: "SA-038", title: "Calendar & Meetings", href: saRoutes.calendarMeetings },
   { group: "book-031-040", code: "SA-039", title: "Finance Command Centre", href: saRoutes.financeCommand },
   { group: "book-031-040", code: "SA-040", title: "Donations & Donor Management", href: saRoutes.donorManagement },
+  { group: "finance", code: "SA-041", title: "Donation Receipts & Reconciliation", href: saRoutes.donationReceipts },
+  { group: "finance", code: "SA-042", title: "Case Expenses & Reimbursement", href: saRoutes.caseExpenses },
+  { group: "finance", code: "SA-043", title: "Financial Approvals & Budget Control", href: saRoutes.budgetControl },
+  { group: "finance", code: "SA-044", title: "CSR & Partnership Management", href: saRoutes.csrPartnerships },
+  { group: "finance", code: "SA-045", title: "Fund Utilisation & Transparency", href: saRoutes.fundUtilisation },
+  { group: "ai", code: "SA-046", title: "AI & Automation Dashboard", href: saRoutes.aiDashboard },
+  { group: "ai", code: "SA-047", title: "Automatic / Manual / Approval Controls", href: saRoutes.aiControls },
+  { group: "ai", code: "SA-048", title: "Automation Rule Builder", href: saRoutes.ruleBuilder },
+  { group: "ai", code: "SA-049", title: "AI Smart Assignment Management", href: saRoutes.smartAssignment },
+  { group: "ai", code: "SA-050", title: "AI Configuration & Quality Testing", href: saRoutes.aiConfiguration },
 ] as const;
 
 export type ScreenCode = (typeof screenPicker)[number]["code"] | string;

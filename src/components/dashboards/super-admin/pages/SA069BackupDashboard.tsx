@@ -13,6 +13,7 @@ import {
   PrimaryButton,
   SuperAdminFrame,
 } from "@/components/dashboards/super-admin/kit";
+import { ScreenSwitch, backupScreens } from "@/components/dashboards/super-admin/screen-switch";
 
 type TabId = "overview" | "controls" | "alerts" | "history" | "reports";
 type BackupStatus = "Success" | "Passed";
@@ -67,26 +68,12 @@ export default function SA069BackupDashboard() {
     <SuperAdminFrame active="backup-recovery">
       <div className="space-y-2.5">
         <PageHead
+          light
           title="Backup & Recovery Dashboard"
           links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
         >
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-amber-700 uppercase">
-              DEMO DATA
-            </span>
-            <select
-              aria-label="Select backup module"
-              value="SA-069"
-              onChange={(e) => {
-                if (e.target.value === "SA-070") {
-                  router.push("/dashboard/super-admin/backup-recovery/schedule");
-                }
-              }}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-xs focus:border-blue-500 focus:outline-none"
-            >
-              <option value="SA-069">Backup &amp; Recovery Dashboard</option>
-              <option value="SA-070">Backup Schedule &amp; Restoration</option>
-            </select>
+            <ScreenSwitch current="SA-069" screens={backupScreens} />
           </div>
         </PageHead>
 

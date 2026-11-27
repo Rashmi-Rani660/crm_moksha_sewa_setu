@@ -11,10 +11,10 @@
  * All figures are demo data; the action buttons get wired once the APIs exist.
  */
 
-import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { Bell, ChevronDown, CircleCheck, Network, Radio, Users, type LucideIcon } from "lucide-react";
+import { Bell, CircleCheck, Network, Radio, Users, type LucideIcon } from "lucide-react";
 import { SuperAdminFrame } from "@/components/dashboards/super-admin/kit";
+import { ScreenSwitch } from "@/components/dashboards/super-admin/screen-switch";
 import { screenPicker, type ScreenCode } from "@/components/dashboards/super-admin/routes";
 
 /* ---------------------------------- types ---------------------------------- */
@@ -162,7 +162,6 @@ function Actions({ items, onAct, primary = true }: { items: string[]; onAct: (a:
 /* ---------------------------------- screen --------------------------------- */
 
 export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
-  const router = useRouter();
   const [tab, setTab] = useState(spec.tabs[0]);
   const [q, setQ] = useState("");
 
@@ -190,27 +189,7 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:mt-[4px] lg:flex-nowrap">
-            <span className="flex h-[25px] items-center rounded-[4px] border border-[#ecd8a0] bg-[#fff1c9] px-[9px] pt-px text-[12.6px] font-normal text-[#6b5200]">
-              DEMO DATA
-            </span>
-            <label className="relative block h-[30px] w-full sm:w-[328px]">
-              <span className="sr-only">Open screen</span>
-              <select
-                value={spec.code}
-                onChange={(e) => {
-                  const next = siblings.find((s) => s.code === e.target.value);
-                  if (next) router.push(next.href);
-                }}
-                className={`h-full w-full cursor-pointer appearance-none truncate rounded-[6px] border border-[#c9d2e0] bg-white pl-[12px] pr-[30px] pt-px text-[14px] shadow-[0_1px_2px_rgba(20,45,90,0.06)] outline-none focus:border-[#5b7fe0] ${ink}`}
-              >
-                {siblings.map((s) => (
-                  <option key={s.code} value={s.code}>
-                    {s.title}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown strokeWidth={2.6} className="pointer-events-none absolute right-[9px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#1a1d36]" aria-hidden />
-            </label>
+            <ScreenSwitch current={spec.code} screens={siblings} />
           </div>
         </div>
 

@@ -121,10 +121,13 @@ export function PageHead({
   title,
   links,
   children,
+  light = false,
 }: {
   icon?: LucideIcon;
   iconTone?: TileTone;
   title: string;
+  /** Medium-weight title instead of bold. */
+  light?: boolean;
   links: string[];
   /** Controls on the right (date, centre, buttons). */
   children?: ReactNode;
@@ -139,10 +142,10 @@ export function PageHead({
           </span>
         )}
         <div className="min-w-0">
-          <h1 className="text-[21px] font-bold leading-tight tracking-[-0.5px] text-[#0b0c36] lg:whitespace-nowrap lg:text-[24px] lg:leading-none">
+          <h1 className={`text-[21px] ${light ? "font-medium" : "font-bold"} leading-tight tracking-[-0.5px] text-[#0b0c36] lg:whitespace-nowrap lg:text-[24px] lg:leading-none`}>
             {title}
           </h1>
-          <nav aria-label={`${title} sections`} className="mt-[5px] flex flex-wrap items-center gap-y-1 text-[13px] font-semibold leading-none text-[#141a4a] lg:flex-nowrap lg:text-[14px]">
+          <nav aria-label={`${title} sections`} className={`mt-[5px] flex flex-wrap items-center gap-y-1 text-[13px] ${light ? "font-normal" : "font-semibold"} leading-none text-[#141a4a] lg:flex-nowrap lg:text-[14px]`}>
             {links.map((l, i) => (
               <span key={l} className="flex items-center whitespace-nowrap">
                 {i > 0 && <span className="mx-[10px] h-[13px] w-[1.3px] bg-[#2b2f4a]" />}

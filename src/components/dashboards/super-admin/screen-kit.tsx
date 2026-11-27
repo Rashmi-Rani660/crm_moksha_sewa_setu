@@ -14,7 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Fragment, useState, type CSSProperties, type ReactNode } from "react";
 import { ArrowRight, Bell, ChevronDown, CircleCheck, MapPin, Network, Radio, Users, type LucideIcon } from "lucide-react";
-import { SuperAdminFrame } from "@/components/dashboards/super-admin/kit";
+import { Dropdown, SuperAdminFrame } from "@/components/dashboards/super-admin/kit";
 
 export const ink = "text-[#1a1d36]";
 
@@ -73,27 +73,17 @@ export function Screen({
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:mt-[4px] lg:flex-nowrap">
-            <span className="flex h-[25px] items-center rounded-[4px] border border-[#ecd8a0] bg-[#fff1c9] px-[9px] pt-px text-[12px] font-medium text-[#6b5200]">
-              DEMO DATA
-            </span>
-            <label className="relative block h-[30px] w-full sm:w-[304px]">
-              <span className="sr-only">Open screen</span>
-              <select
-                value={code}
-                onChange={(e) => {
-                  const next = siblings.find((s) => s.code === e.target.value);
-                  if (next) router.push(next.href);
-                }}
-                className={`h-full w-full cursor-pointer appearance-none truncate rounded-[6px] border border-[#c9d2e0] bg-white pl-[12px] pr-[30px] pt-px text-[13.3px] shadow-[0_1px_2px_rgba(20,45,90,0.06)] outline-none focus:border-[#5b7fe0] ${ink}`}
-              >
-                {siblings.map((s) => (
-                  <option key={s.code} value={s.code}>
-                    {s.title}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown strokeWidth={2.6} className="pointer-events-none absolute right-[9px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#1a1d36]" aria-hidden />
-            </label>
+            <Dropdown
+              label="Switch screen"
+              value={siblings.find((s) => s.code === code)?.title ?? title}
+              options={siblings.map((s) => s.title)}
+              onChange={(t) => {
+                const next = siblings.find((s) => s.title === t);
+                if (next && next.code !== code) router.push(next.href);
+              }}
+              className="w-full sm:w-[330px] [&_button]:!font-normal"
+              size={13.5}
+            />
           </div>
         </div>
 
