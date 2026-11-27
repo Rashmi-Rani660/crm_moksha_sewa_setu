@@ -94,7 +94,7 @@ export default function SA054TrainingAcademy() {
                   </thead>
                   <tbody>
                     {rows.map((r) => (
-                      <tr key={r.track} className="last:[&>td]:border-b-0 hover:bg-[#f8faff]">
+                      <tr key={r.track} className="even:bg-[#f8fafd] last:[&>td]:border-b-0 hover:bg-[#eef4ff]">
                         <td className={sa51TableCell}>{r.track}</td>
                         <td className={sa51TableCell}>{r.assigned}</td>
                         <td className={sa51TableCell}>{r.qualified}</td>

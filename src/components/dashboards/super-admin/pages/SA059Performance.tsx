@@ -95,7 +95,7 @@ export default function SA059Performance() {
                   </thead>
                   <tbody>
                     {rows.map((r) => (
-                      <tr key={r.emp} className="last:[&>td]:border-b-0 hover:bg-[#f8faff]">
+                      <tr key={r.emp} className="even:bg-[#f8fafd] last:[&>td]:border-b-0 hover:bg-[#eef4ff]">
                         <td className={sa51TableCell}>{r.emp}</td>
                         <td className={sa51TableCell}>{r.level}</td>
                         <td className={sa51TableCell}>{r.dept}</td>

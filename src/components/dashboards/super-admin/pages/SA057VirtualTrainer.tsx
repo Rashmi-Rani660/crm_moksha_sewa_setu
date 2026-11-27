@@ -64,7 +64,7 @@ export default function SA057VirtualTrainer() {
                 </thead>
                 <tbody>
                   {configRows.map((r) => (
-                    <tr key={r.config} className="last:[&>td]:border-b-0 hover:bg-[#f8faff]">
+                    <tr key={r.config} className="even:bg-[#f8fafd] last:[&>td]:border-b-0 hover:bg-[#eef4ff]">
                       <td className={sa51TableCell}>{r.config}</td>
                       <td className={sa51TableCell}>{r.value}</td>
                       <td className={sa51TableCell}><Sa51Pill>{r.validation}</Sa51Pill></td>
