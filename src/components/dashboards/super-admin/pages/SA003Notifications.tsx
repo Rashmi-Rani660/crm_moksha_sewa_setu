@@ -2,290 +2,298 @@
 
 /**
  * SA-003 — Notification & Alert Centre.
- * Notes (design brief 03): read and acknowledgement are separate states;
- * record recipient, owner, escalation, delivery, retries and audit; critical
- * alerts cannot be disabled; broadcasts need a preview and audience approval;
- * SMS is outgoing only.
+ * Matches the reference image: 6 KPI tiles, 7 tabs, notification queue
+ * table with filter bar and action row, then create notification /
+ * broadcast & delivery / alert preferences panels. Demo data only.
  */
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Bell,
-  CalendarCheck,
   CircleCheck,
-  FileText,
-  HandCoins,
-  IndianRupee,
-  Megaphone,
-  MoreVertical,
-  Send,
-  Settings,
-  TriangleAlert,
-  UserPlus,
+  Layers,
+  Radio,
   Users,
-  UsersRound,
-  type LucideIcon,
 } from "lucide-react";
-import { WhatsAppIcon } from "@/components/dashboards/ui";
 import {
   CentreDropdown,
-  Checkbox,
-  DateChip,
   Dropdown,
   KpiRow,
   KpiTile,
+  ModuleDropdown,
   PageHead,
   Panel,
   Pill,
   PrimaryButton,
   SearchField,
-  StatusPill,
   SuperAdminFrame,
   TableWrap,
+  Tabs,
   Thead,
-  Toggle,
-  ViewLink,
   td,
   th,
   useNotice,
   type PillTone,
 } from "@/components/dashboards/super-admin/kit";
 
-type Category = "Emergency" | "Case Update" | "Team" | "Donation" | "System";
+type Tab = (typeof tabs)[number];
+const tabs = [
+  "All alerts",
+  "Emergency",
+  "Operations",
+  "Security",
+  "Approvals",
+  "System",
+  "Announcements",
+] as const;
 
-const categories: { label: string; icon: LucideIcon; color: string; count: string; match?: Category[]; red?: boolean }[] = [
-  { label: "All Alerts", icon: Bell, color: "#1d4fe0", count: "37" },
-  { label: "Emergency / Critical", icon: TriangleAlert, color: "#e02424", count: "03", match: ["Emergency"], red: true },
-  { label: "Case & Sewa Updates", icon: HandCoins, color: "#f0a020", count: "10", match: ["Case Update"] },
-  { label: "Task & Assignment", icon: FileText, color: "#2f6fe0", count: "08", match: [] },
-  { label: "Approvals & Requests", icon: CircleCheck, color: "#1f9a2b", count: "04", match: [] },
-  { label: "Team & Operations", icon: UserPlus, color: "#7a3fe0", count: "05", match: ["Team"] },
-  { label: "Finance & Donations", icon: IndianRupee, color: "#f0a020", count: "02", match: ["Donation"] },
-  { label: "System & Technical", icon: Settings, color: "#2f6fe0", count: "02", match: ["System"] },
-  { label: "Announcements", icon: Megaphone, color: "#f0a020", count: "03", match: [] },
-];
+const tabFilter: Partial<Record<Tab, string[]>> = {
+  Emergency: ["Emergency"],
+  Operations: ["Learning"],
+  Security: ["Security"],
+  Approvals: ["Approval"],
+  System: ["System"],
+  Announcements: ["Announcement"],
+};
 
-type Alert = { id: string; icon: LucideIcon; color: string; subject: string; bold?: string; detail: string; category: Category; priority: string; received: string; status: string };
+const priorityOptions = ["All priorities", "Critical", "High", "Normal"] as const;
+
+const audienceOptions = ["Department / centre / access level", "All admins", "Selected centre"] as const;
+const scheduleOptions = ["Now / scheduled", "Now", "Schedule later"] as const;
+const templateOptions = ["Approved template", "Emergency alert", "Case update", "Announcement"] as const;
+
+type Alert = {
+  id: string;
+  subject: string;
+  category: string;
+  priority: "Critical" | "High" | "Normal";
+  assigned: string;
+  readAck: string;
+  delivery: "Delivered" | "Failed";
+  action: "Review" | "Retry";
+};
 const alerts: Alert[] = [
-  { id: "ALT-02671", icon: TriangleAlert, color: "#e02424", bold: "Emergency:", subject: "Body at Ghaziabad Hospital", detail: "Immediate field team deployment required.", category: "Emergency", priority: "High", received: "24 Nov, 10:24 AM", status: "Open" },
-  { id: "ALT-02666", icon: FileText, color: "#2f6fe0", subject: "Sewa Request Verified – SR-02666", detail: "Case is verified and assigned to Field Team-02.", category: "Case Update", priority: "Medium", received: "24 Nov, 09:56 AM", status: "In Progress" },
-  { id: "ALT-02659", icon: UsersRound, color: "#2f6fe0", subject: "Volunteer Onboarded – VOL-0034", detail: "New volunteer joined (Ghaziabad Centre).", category: "Team", priority: "Normal", received: "24 Nov, 09:30 AM", status: "Completed" },
-  { id: "ALT-02654", icon: IndianRupee, color: "#f0a020", subject: "Donation Received – ₹ 25,000", detail: "Online donation (REF: DON-1145) – to be acknowledged.", category: "Donation", priority: "Normal", received: "24 Nov, 08:58 AM", status: "Open" },
-  { id: "ALT-02651", icon: Settings, color: "#2f6fe0", subject: "System Backup Completed", detail: "Daily backup completed successfully (100%).", category: "System", priority: "Normal", received: "24 Nov, 02:00 AM", status: "Completed" },
+  { id: "ALT-001", subject: "Emergency case MS-26-1100", category: "Emergency", priority: "Critical", assigned: "Admin 01", readAck: "Unread / Pending", delivery: "Delivered", action: "Review" },
+  { id: "ALT-002", subject: "WhatsApp sync delayed", category: "System", priority: "High", assigned: "Admin 02", readAck: "Read / Pending", delivery: "Delivered", action: "Review" },
+  { id: "ALT-003", subject: "Expense approval due", category: "Approval", priority: "High", assigned: "Admin 03", readAck: "Read / Ack", delivery: "Delivered", action: "Review" },
+  { id: "ALT-004", subject: "Backup completed", category: "System", priority: "Normal", assigned: "Admin 02", readAck: "Read / Ack", delivery: "Delivered", action: "Review" },
+  { id: "ALT-005", subject: "Training reminder", category: "Learning", priority: "Normal", assigned: "Admin 04", readAck: "Unread / —", delivery: "Failed", action: "Retry" },
 ];
 
-const categoryTone: Record<Category, PillTone> = { Emergency: "red", "Case Update": "blue", Team: "purple", Donation: "amber", System: "blue" };
+const categoryBadgeTone = (category: string): PillTone => {
+  switch (category) {
+    case "Emergency": return "red";
+    case "Approval": return "purple";
+    case "Learning": return "blue";
+    case "System": return "gray";
+    default: return "gray";
+  }
+};
 
-const priorities = ["All Priority", "High", "Medium", "Normal"] as const;
-const statuses = ["All Status", "Open", "In Progress", "Completed"] as const;
-const ranges = ["Last 7 Days", "Today", "Last 30 Days"] as const;
-
-export default function SA003Notifications() {
-  const notice = useNotice();
-  const [cat, setCat] = useState(0);
-  const [query, setQuery] = useState("");
-  const [priority, setPriority] = useState<(typeof priorities)[number]>("All Priority");
-  const [status, setStatus] = useState<(typeof statuses)[number]>("All Status");
-  const [range, setRange] = useState<(typeof ranges)[number]>("Last 7 Days");
-  const [picked, setPicked] = useState<ReadonlySet<string>>(new Set());
-  const [channels, setChannels] = useState({ whatsapp: false, email: true, sms: false, inapp: false });
-  const [settings, setSettings] = useState({ cases: true, approvals: true, summary: true });
-
-  const q = query.trim().toLowerCase();
-  const match = categories[cat].match;
-  const rows = alerts.filter(
-    (a) =>
-      (!match || match.includes(a.category)) &&
-      (priority === "All Priority" || a.priority === priority) &&
-      (status === "All Status" || a.status === status) &&
-      (!q || `${a.id} ${a.subject} ${a.detail}`.toLowerCase().includes(q)),
-  );
-  const allPicked = rows.length > 0 && rows.every((r) => picked.has(r.id));
-  const toggle = (id: string) =>
-    setPicked((p) => {
-      const n = new Set(p);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
-      return n;
-    });
-
+function PanelRow({ label, value, accent }: { label: string; value: ReactNode; accent?: boolean }) {
   return (
-    <SuperAdminFrame active="notification-alerts">
-      <PageHead
-        icon={Bell}
-        iconTone="orange"
-        title="Notification & Alert Centre"
-        links={["Real-time Alerts", "System Notifications", "Announcements", "Team Updates", "Communication Triggers"]}
-      >
-        <DateChip className="w-[200px]" />
-        <CentreDropdown className="w-[180px]" />
-        <PrimaryButton icon={UserPlus} onClick={() => notice.show("New notification: choose audience, then preview before sending (demo).")}>
-          Create Notification
-        </PrimaryButton>
-      </PageHead>
-
-      <KpiRow cols={6}>
-        <KpiTile tone="red" icon={TriangleAlert} value="03" label="Critical Alerts" badge={{ text: "Immediate Action", tone: "solidRed" }} />
-        <KpiTile tone="orange" icon={Bell} value="07" label="High Priority" badge={{ text: "Action Required", tone: "yellow" }} />
-        <KpiTile tone="blue" icon={Bell} value="14" label="General Notifications" badge={{ text: "For Information", tone: "blue" }} />
-        <KpiTile tone="green" icon={Megaphone} value="05" label="Announcements" badge={{ text: "Active", tone: "green" }} />
-        <KpiTile tone="purple" icon={CalendarCheck} value="06" label="Scheduled Alerts" badge={{ text: "Upcoming", tone: "purple" }} />
-        <KpiTile tone="sky" icon={Settings} value="02" label="System Alerts" badge={{ text: "Operational", tone: "blue" }} />
-      </KpiRow>
-
-      <div className="grid gap-[10px] lg:h-[400px] lg:grid-cols-[232fr_937fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Alert Categories" bodyClassName="flex flex-col gap-[2px] pt-[8px]">
-          {categories.map((c, i) => (
-            <button
-              key={c.label}
-              type="button"
-              aria-pressed={cat === i}
-              onClick={() => setCat(i)}
-              className={`flex min-h-[34px] flex-1 items-center gap-[10px] rounded-[8px] px-[8px] text-left text-[13.5px] font-semibold ${cat === i ? "bg-[#e7efff]" : "hover:bg-[#f4f6fc]"}`}
-            >
-              <c.icon strokeWidth={2} style={{ color: c.color }} className="h-[20px] w-[20px] shrink-0" />
-              <span className="flex-1">{c.label}</span>
-              <Pill tone={c.red ? "solidRed" : i === 0 ? "solidBlue" : "gray"} className="w-[34px] text-[12px] font-bold">
-                {c.count}
-              </Pill>
-            </button>
-          ))}
-        </Panel>
-
-        <Panel
-          title={`Recent Notifications & Alerts (${match ? rows.length : 37})`}
-          action={
-            <div className="hidden items-center gap-[8px] lg:flex">
-              <SearchField value={query} onChange={setQuery} placeholder="Search by Alert ID, Case ID, Subject..." className="w-[230px]" />
-              <Dropdown label="Priority" value={priority} options={priorities} onChange={setPriority} className="w-[112px]" />
-              <Dropdown label="Status" value={status} options={statuses} onChange={setStatus} className="w-[112px]" />
-              <Dropdown label="Period" value={range} options={ranges} onChange={setRange} className="w-[112px]" />
-            </div>
-          }
-          bodyClassName="flex flex-col pt-[8px]"
-        >
-          <div className="mb-2 flex flex-wrap gap-2 lg:hidden">
-            <SearchField value={query} onChange={setQuery} placeholder="Search by Alert ID, Case ID, Subject..." className="w-full" />
-            <Dropdown label="Priority" value={priority} options={priorities} onChange={setPriority} className="w-[120px]" />
-            <Dropdown label="Status" value={status} options={statuses} onChange={setStatus} className="w-[120px]" />
-            <Dropdown label="Period" value={range} options={ranges} onChange={setRange} className="w-[120px]" />
-          </div>
-          <TableWrap>
-            <Thead>
-              <th className={`${th} w-[30px]`}>
-                <Checkbox
-                  checked={allPicked}
-                  label=""
-                  onChange={(v) => setPicked(v ? new Set(rows.map((r) => r.id)) : new Set())}
-                />
-              </th>
-              {["Alert ID", "Subject / Message", "Category", "Priority", "Received On", "Status", "Action"].map((h) => (
-                <th key={h} className={`${th} ${["Category", "Priority", "Status", "Action"].includes(h) ? "text-center" : ""}`}>{h}</th>
-              ))}
-            </Thead>
-            <tbody>
-              {rows.map((a) => (
-                <tr key={a.id} className="border-b border-[#eef0f5]">
-                  <td className={td}><Checkbox checked={picked.has(a.id)} onChange={() => toggle(a.id)} label="" /></td>
-                  <td className={`${td} font-semibold`}>{a.id}</td>
-                  <td className={`${td} py-[7px]`}>
-                    <div className="flex items-center gap-[10px]">
-                      <a.icon strokeWidth={2} style={{ color: a.color }} className="h-[22px] w-[22px] shrink-0" />
-                      <div className="leading-tight">
-                        <p className="text-[13px] font-bold">{a.bold && <span>{a.bold} </span>}<span className={a.bold ? "font-semibold" : ""}>{a.subject}</span></p>
-                        <p className="text-[11.8px] font-medium text-[#3b4256]">{a.detail}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className={`${td} text-center`}><Pill tone={categoryTone[a.category]} className="w-[90px]">{a.category}</Pill></td>
-                  <td className={`${td} text-center`}><StatusPill className="w-[64px]">{a.priority}</StatusPill></td>
-                  <td className={td}>{a.received}</td>
-                  <td className={`${td} text-center`}>
-                    <Pill tone={a.status === "Open" ? "red" : a.status === "In Progress" ? "green" : "gray"} className="w-[84px]">{a.status}</Pill>
-                  </td>
-                  <td className={`${td} text-center`}>
-                    <div className="flex items-center justify-center gap-[6px]">
-                      <button type="button" onClick={() => notice.show(`${a.id}: delivery, acknowledgement and retries shown in View (demo).`)} className="h-[26px] rounded-[7px] border-[1.5px] border-[#2f4fe0] px-[14px] text-[12.5px] font-semibold text-[#1d3fc4] hover:bg-[#f1f4ff]">
-                        View
-                      </button>
-                      <button type="button" aria-label={`More actions for ${a.id}`} onClick={() => notice.show(`${a.id}: acknowledge / escalate / assign owner (demo).`)} className="rounded p-[2px] hover:bg-[#f1f4fb]">
-                        <MoreVertical strokeWidth={2.2} className="h-[16px] w-[16px]" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {!rows.length && (
-                <tr>
-                  <td colSpan={8} className="py-6 text-center text-[13px] font-medium text-[#5b6280]">No alerts match these filters.</td>
-                </tr>
-              )}
-            </tbody>
-          </TableWrap>
-          <p className="mt-auto pt-[8px] text-[12px] font-medium text-[#3b4256]">Delivery, acknowledgement, escalation and retry details are available in View.</p>
-        </Panel>
-      </div>
-
-      <div className="grid gap-[10px] lg:h-[178px] lg:grid-cols-[405fr_380fr_370fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Create New Notification" icon={CalendarCheck} bodyClassName="grid grid-cols-2 gap-[10px] sm:grid-cols-4">
-          {[
-            [Users, "Team Alert", "#2f6fe0"],
-            [Megaphone, "Announcement", "#f0a020"],
-            [CalendarCheck, "Reminder", "#7a3fe0"],
-            [Settings, "System Alert", "#2f6fe0"],
-          ].map(([Icon, l, c]) => {
-            const I = Icon as LucideIcon;
-            return (
-              <button key={l as string} type="button" onClick={() => notice.show(`${l}: compose, choose audience and preview (demo).`)} className="flex min-h-[90px] flex-col items-center justify-center gap-[8px] rounded-[10px] border border-[#e1e5ee] bg-white shadow-[0_2px_6px_rgba(30,50,110,0.08)] hover:bg-[#f7f9ff]">
-                <I strokeWidth={1.9} style={{ color: c as string }} className="h-[30px] w-[30px]" />
-                <span className="text-[13.5px] font-semibold">{l as string}</span>
-              </button>
-            );
-          })}
-        </Panel>
-
-        <Panel title="Quick Broadcast" icon={Send} bodyClassName="flex items-center gap-[16px]">
-          <div className="flex flex-col gap-[9px] rounded-[10px] border border-[#e1e5ee] px-[12px] py-[10px]">
-            <Checkbox checked={channels.whatsapp} onChange={(v) => setChannels({ ...channels, whatsapp: v })} label={<span className="flex items-center gap-[6px]"><WhatsAppIcon size={16} />WhatsApp Message</span>} />
-            <Checkbox checked={channels.email} onChange={(v) => setChannels({ ...channels, email: v })} label={<span className="flex items-center gap-[6px]"><Bell strokeWidth={2} className="h-[15px] w-[15px] text-[#2f6fe0]" />Email Notification</span>} />
-            <Checkbox checked={channels.sms} onChange={(v) => setChannels({ ...channels, sms: v })} label={<span className="flex items-center gap-[6px]"><span className="rounded bg-[#f0a020] px-[3px] text-[9px] font-bold text-white">SMS</span>Outgoing SMS</span>} />
-            <Checkbox checked={channels.inapp} onChange={(v) => setChannels({ ...channels, inapp: v })} label={<span className="flex items-center gap-[6px]"><Bell strokeWidth={2} className="h-[15px] w-[15px] text-[#f0a020]" />In-App Notification</span>} />
-          </div>
-          <PrimaryButton
-            icon={Send}
-            className="h-[38px] px-[18px]"
-            onClick={() => {
-              const n = Object.values(channels).filter(Boolean).length;
-              if (!n) return notice.show("Choose at least one channel.");
-              if (window.confirm(`Preview and send this broadcast on ${n} channel(s)? Audience approval is required.`)) notice.show("Broadcast sent for audience approval (demo).");
-            }}
-          >
-            Send Broadcast
-          </PrimaryButton>
-        </Panel>
-
-        <Panel title="Notification Settings" icon={Settings} action={<ViewLink to="System Settings" />} bodyClassName="flex flex-col justify-between">
-          <SettingRow label="Emergency Alerts (24×7)" locked />
-          <SettingRow label="Case & Task Updates" value={settings.cases} onChange={(v) => setSettings({ ...settings, cases: v })} />
-          <SettingRow label="Approval Notifications" value={settings.approvals} onChange={(v) => setSettings({ ...settings, approvals: v })} />
-          <SettingRow label="Daily Summary Report" value={settings.summary} onChange={(v) => setSettings({ ...settings, summary: v })} />
-          <SettingRow label="System & Backup Alerts" locked />
-        </Panel>
-      </div>
-      {notice.node}
-    </SuperAdminFrame>
+    <div className="flex items-start justify-between gap-[10px] border-b border-[#eef0f5] pb-[5px] text-[12px] font-semibold leading-tight last:border-b-0 last:pb-0">
+      <span className="shrink-0 whitespace-nowrap text-[#1a1d36]">{label}</span>
+      <span className={`text-right ${accent ? "text-[#b42318]" : "text-[#1a1d36]"}`}>{value}</span>
+    </div>
   );
 }
 
-function SettingRow({ label, value, onChange, locked = false }: { label: string; value?: boolean; onChange?: (v: boolean) => void; locked?: boolean }) {
+function FieldBlock({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex items-center gap-[10px] text-[13.5px] font-semibold">
-      <Checkbox checked={locked || !!value} disabled={locked} onChange={onChange} label={label} className="flex-1" />
-      {locked ? (
-        <Pill tone="green" className="h-[18px] text-[11px]" >Locked</Pill>
-      ) : (
-        <Toggle checked={!!value} onChange={(v) => onChange?.(v)} label={label} />
-      )}
+    <div className="flex flex-col gap-[3px]">
+      <span className="text-[11px] font-semibold text-[#3b4256]">{label}</span>
+      {children}
     </div>
+  );
+}
+
+function OutlineButton({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="flex h-[34px] shrink-0 items-center gap-[6px] rounded-[7px] border-[1.5px] border-[#2f4fe0] bg-white px-[14px] text-[13px] font-semibold text-[#1d3fc4] hover:bg-[#f1f4ff]">
+      <span className="pt-px">{children}</span>
+    </button>
+  );
+}
+
+export default function SA003Notifications() {
+  const notice = useNotice();
+  const [tab, setTab] = useState<Tab>("All alerts");
+  const [query, setQuery] = useState("");
+  const [priority, setPriority] = useState<(typeof priorityOptions)[number]>("All priorities");
+  const [audience, setAudience] = useState<(typeof audienceOptions)[number]>(audienceOptions[0]);
+  const [subject, setSubject] = useState("");
+  const [schedule, setSchedule] = useState<(typeof scheduleOptions)[number]>(scheduleOptions[0]);
+  const [template, setTemplate] = useState<(typeof templateOptions)[number]>(templateOptions[0]);
+
+  const q = query.trim().toLowerCase();
+  const cats = tabFilter[tab];
+  const rows = alerts.filter(
+    (a) =>
+      (!cats || cats.includes(a.category)) &&
+      (priority === "All priorities" || a.priority === priority) &&
+      (!q || `${a.id} ${a.subject} ${a.category} ${a.assigned}`.toLowerCase().includes(q)),
+  );
+  const empty = rows.length === 0;
+
+  return (
+    <SuperAdminFrame active="notification-alerts">
+      <PageHead light icon={Radio} iconTone="blue" title="Notification & Alert Centre" links={["Super Admin", "FY 2026–27", "Ghaziabad"]}>
+        <ModuleDropdown current="SA-003" />
+        <CentreDropdown className="w-[165px]" />
+      </PageHead>
+
+      <KpiRow cols={6}>
+        <KpiTile tone="blue" icon={Radio} value="37" label="All alerts" sub="Selected period" />
+        <KpiTile tone="red" icon={Bell} value="03" label="Critical" sub="Immediate" />
+        <KpiTile tone="orange" icon={CircleCheck} value="07" label="High priority" sub="Open" />
+        <KpiTile tone="purple" icon={Users} value="14" label="Unread" sub="Review" />
+        <KpiTile tone="sky" icon={Layers} value="06" label="Scheduled" sub="Upcoming" />
+        <KpiTile tone="red" icon={Radio} value="02" label="Failed delivery" sub="Retry" />
+      </KpiRow>
+
+      <Tabs tabs={tabs} value={tab} onChange={setTab} />
+
+      <div className="flex min-h-0 flex-1 flex-col gap-[10px]">
+      <Panel title="Notification queue" className="lg:min-h-0 lg:flex-[330_1_0]" bodyClassName="flex flex-col gap-[8px] pt-[4px]">
+        <div className="flex items-center gap-[8px]">
+          <SearchField value={query} onChange={setQuery} placeholder="Filter visible rows..." className="min-w-0 flex-1" />
+          <Dropdown label="Priority" value={priority} options={priorityOptions} onChange={setPriority} className="w-[140px]" />
+        </div>
+        <TableWrap className="min-h-0 flex-1 overflow-auto">
+          <Thead>
+            {[
+              "Alert ID",
+              "Subject",
+              "Category",
+              "Priority",
+              "Assigned to",
+              "Read / Ack",
+              "Delivery",
+              "Action",
+            ].map((h, i) => (
+              <th key={h} className={`${th} ${[3, 4, 5, 6, 7].includes(i) ? "text-center" : ""}`}>{h}</th>
+            ))}
+          </Thead>
+          <tbody>
+            {rows.map((a) => (
+              <tr key={a.id} className="border-b border-[#eef0f5] last:border-0 even:bg-[#f7f9fd] hover:bg-[#eef2ff]">
+                <td className={td}>{a.id}</td>
+                <td className={`${td} min-w-0`}>{a.subject}</td>
+                <td className={`${td} text-center`}>
+                  <Pill tone={categoryBadgeTone(a.category)} className="w-[88px] text-[11px]">{a.category}</Pill>
+                </td>
+                <td className={`${td} text-center`}>
+                  {a.priority === "Normal" ? (
+                    <span className="font-semibold">{a.priority}</span>
+                  ) : (
+                    <Pill tone={a.priority === "Critical" ? "red" : "amber"} className="w-[56px] text-[11px] font-bold">{a.priority}</Pill>
+                  )}
+                </td>
+                <td className={td}>{a.assigned}</td>
+                <td className={`${td} text-center`}>
+                  {a.readAck.includes("Pending") ? (
+                    <Pill tone="amber" className="w-[108px] text-[11px]">{a.readAck}</Pill>
+                  ) : (
+                    <span className="font-semibold">{a.readAck}</span>
+                  )}
+                </td>
+                <td className={`${td} text-center`}>
+                  <Pill tone={a.delivery === "Delivered" ? "green" : "red"} className="w-[74px] text-[11px] font-bold">{a.delivery}</Pill>
+                </td>
+                <td className={`${td} text-center`}>
+                  <button
+                    type="button"
+                    onClick={() => notice.show(`${a.id}: ${a.action} ${a.action === "Retry" ? "delivery retry requested" : "details opened"} (demo).`)}
+                    className="font-semibold text-[#2320c4] hover:underline"
+                  >
+                    {a.action}
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {empty && (
+              <tr>
+                <td colSpan={8} className="py-6 text-center text-[13px] font-medium text-[#5b6280]">
+                  No notifications match the selected tab and filters.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </TableWrap>
+        <div className="mt-auto flex flex-wrap items-center gap-[8px] pt-[6px]">
+          <PrimaryButton onClick={() => notice.show(`${rows.length} alert(s) acknowledged (demo).`)}>
+            Acknowledge
+          </PrimaryButton>
+          <OutlineButton onClick={() => notice.show("Assign owner opened (demo).")}>
+            Assign owner
+          </OutlineButton>
+          <OutlineButton onClick={() => notice.show("Escalation raised (demo).")}>
+            Escalate
+          </OutlineButton>
+          <OutlineButton onClick={() => notice.show("View history opened (demo).")}>
+            View history
+          </OutlineButton>
+        </div>
+      </Panel>
+
+      <div className="grid gap-[10px] sm:grid-cols-2 lg:min-h-0 lg:flex-[245_1_0] lg:[grid-template-rows:minmax(0,1fr)] lg:grid-cols-3">
+        <Panel title="Create notification" bodyClassName="flex flex-col gap-[6px] pt-[4px]">
+          <div className="grid grid-cols-2 gap-[6px]">
+            <FieldBlock label="Audience">
+              <Dropdown label="Audience" value={audience} options={audienceOptions} onChange={setAudience} className="w-full" size={12} />
+            </FieldBlock>
+            <FieldBlock label="Subject">
+              <input
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Enter subject"
+                className="h-[34px] w-full rounded-[8px] border border-[#d6dbe6] bg-white px-[10px] text-[13px] font-medium outline-none placeholder:text-[#4a5070] focus:border-[#5b6fe0]"
+              />
+            </FieldBlock>
+            <FieldBlock label="Schedule">
+              <Dropdown label="Schedule" value={schedule} options={scheduleOptions} onChange={setSchedule} className="w-full" size={12} />
+            </FieldBlock>
+            <FieldBlock label="Template">
+              <Dropdown label="Template" value={template} options={templateOptions} onChange={setTemplate} className="w-full" size={12} />
+            </FieldBlock>
+          </div>
+          <div className="mt-auto pt-[4px]">
+            <PrimaryButton onClick={() => notice.show("Notification preview and audience approval requested (demo).")}>
+              Preview &amp; approve
+            </PrimaryButton>
+          </div>
+        </Panel>
+
+        <Panel title="Broadcast & delivery" bodyClassName="flex flex-col gap-[6px] pt-[4px]">
+          <PanelRow label="Channels" value="Email / WhatsApp / outbound SMS / in-app" />
+          <PanelRow label="Failed delivery" value={<span className="text-[#b42318]">02 • retry queue</span>} />
+          <PanelRow label="Recipient selection" value="Authorised audience only" />
+          <div className="mt-auto flex flex-wrap gap-[8px] pt-[6px]">
+            <PrimaryButton onClick={() => notice.show("Delivery history opened (demo).")}>
+              Delivery history
+            </PrimaryButton>
+            <OutlineButton onClick={() => notice.show("Retry failed triggered (demo).")}>
+              Retry failed
+            </OutlineButton>
+          </div>
+        </Panel>
+
+        <Panel title="Alert preferences" bodyClassName="flex flex-col gap-[6px] pt-[4px]">
+          <PanelRow label="Emergency / security" value={<span>Mandatory • <b className="text-[#1c6b1f]">locked</b></span>} />
+          <PanelRow label="Case & task updates" value="Enabled" />
+          <PanelRow label="Daily summary" value="Scheduled" />
+          <PanelRow label="Escalation" value="Based on SLA" />
+          <div className="mt-auto pt-[4px]">
+            <PrimaryButton onClick={() => notice.show("Configure rules opened (demo).")}>
+              Configure rules
+            </PrimaryButton>
+          </div>
+        </Panel>
+      </div>
+      </div>
+      {notice.node}
+    </SuperAdminFrame>
   );
 }

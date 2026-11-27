@@ -1,236 +1,314 @@
 "use client";
 
 /**
- * SA-007 — Organisation & Department Management.
- * Notes (design brief 07): HRMS is the source of truth for departments and
- * employees; CRM access and reporting are configured separately and only by
- * authorised scopes. Linked departments are never deleted — move active cases,
- * tasks and access before archiving.
+ * SA-007 — Department Management.
+ * Rebuild matched to the SA-007 reference design: 6 KPI tiles, 5 tabs, a top
+ * row (department register + selected department) and a bottom row (reporting
+ * & permissions, automation & training). HRMS is the source of truth for
+ * departments and employees; CRM access and reporting are configured
+ * separately and only by authorised scopes. Linked departments are never
+ * deleted — move active cases, tasks and access before archiving. Demo data.
  */
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { saRoutes } from "@/components/dashboards/super-admin/routes";
 import {
-  ChevronRight,
+  Bell,
+  Building2,
+  CircleCheck,
   Cog,
-  Eye,
-  HandHeart,
-  Headset,
-  IndianRupee,
   Layers,
-  MapPin,
-  Megaphone,
-  Monitor,
-  MoreVertical,
   Network,
-  Pencil,
-  Plus,
+  Radio,
   ShieldCheck,
-  UserPlus,
+  Users,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import {
-  Dropdown,
+  CentreDropdown,
   KpiRow,
   KpiTile,
+  KV,
+  ModuleDropdown,
   PageHead,
-  Pager,
   Panel,
   PrimaryButton,
-  SearchField,
   StatusPill,
   SuperAdminFrame,
   TableWrap,
+  Tabs,
   Thead,
   td,
   th,
   useNotice,
 } from "@/components/dashboards/super-admin/kit";
 
-type Dept = { code: string; name: string; head: string; users: number; status: string; icon: LucideIcon; color: string; short: string[]; bg: string; border: string };
+const tabs = ["Departments", "Assigned admins", "Team structure", "Role mapping", "HRMS sync"] as const;
+type Tab = (typeof tabs)[number];
+
+type Dept = {
+  crm: string;
+  hrms: string;
+  name: string;
+  admin: string;
+  accounts: string;
+  tasks: string;
+  mode: string;
+  status: string;
+  icon: LucideIcon;
+  color: string;
+};
+
 const depts: Dept[] = [
-  { code: "DPT-01", name: "Operations & Sewa", head: "Demo Admin 01", users: 46, status: "Active", icon: Cog, color: "#f0a020", short: ["Operations", "& Sewa"], bg: "#fff1d6", border: "#f3d9a4" },
-  { code: "DPT-02", name: "CSR & Partnerships", head: "Demo Admin 02", users: 22, status: "Active", icon: HandHeart, color: "#7a3fe0", short: ["CSR &", "Partnerships"], bg: "#f1ebff", border: "#d9ccfa" },
-  { code: "DPT-03", name: "Finance & Donations", head: "Demo Admin 03", users: 24, status: "Active", icon: IndianRupee, color: "#1f9a2b", short: ["Finance", "& Donations"], bg: "#e8f7e6", border: "#bfe3bb" },
-  { code: "DPT-04", name: "Communication & Outreach", head: "Demo Admin 04", users: 30, status: "Active", icon: Megaphone, color: "#2f6fe0", short: ["Communication", "& Outreach"], bg: "#e7f0ff", border: "#c9dafa" },
-  { code: "DPT-05", name: "Volunteer Management", head: "Demo Admin 05", users: 28, status: "Active", icon: UsersRound, color: "#d6336c", short: ["Volunteer", "Management"], bg: "#fde8ef", border: "#f5c6d6" },
-  { code: "DPT-06", name: "IT, Automation & CRM", head: "Demo Admin 06", users: 18, status: "In Progress", icon: Monitor, color: "#0f9f8f", short: ["IT & CRM"], bg: "#e2f6f3", border: "#b6e4dc" },
-  { code: "DPT-07", name: "Admin & Support Services", head: "Demo Admin 07", users: 18, status: "Active", icon: Headset, color: "#7a3fe0", short: ["Admin &", "Support"], bg: "#f1ebff", border: "#d9ccfa" },
+  { crm: "DPT-01", hrms: "HR-101", name: "Operations & Sewa", admin: "Demo Admin 01", accounts: "46", tasks: "12", mode: "Auto", status: "Active", icon: Cog, color: "#f0a020" },
+  { crm: "DPT-02", hrms: "HR-102", name: "CSR & Partnerships", admin: "Demo Admin 02", accounts: "22", tasks: "05", mode: "Manual", status: "Active", icon: UsersRound, color: "#7a3fe0" },
+  { crm: "DPT-03", hrms: "HR-103", name: "Finance & Donations", admin: "Demo Admin 03", accounts: "24", tasks: "08", mode: "Auto", status: "Active", icon: CircleCheck, color: "#1f9a2b" },
+  { crm: "DPT-04", hrms: "HR-104", name: "Communication & Outreach", admin: "Demo Admin 04", accounts: "30", tasks: "06", mode: "Auto", status: "Active", icon: Layers, color: "#2f6fe0" },
+  { crm: "DPT-05", hrms: "HR-105", name: "Volunteer Management", admin: "Demo Admin 05", accounts: "28", tasks: "04", mode: "Manual", status: "Active", icon: UsersRound, color: "#d6336c" },
+  { crm: "DPT-06", hrms: "HR-106", name: "IT, Automation & CRM", admin: "Demo Admin 06", accounts: "18", tasks: "03", mode: "Auto", status: "In Progress", icon: Network, color: "#0f9f8f" },
+  { crm: "DPT-07", hrms: "HR-107", name: "Admin & Support Services", admin: "Demo Admin 07", accounts: "18", tasks: "02", mode: "Auto", status: "Active", icon: ShieldCheck, color: "#7a3fe0" },
 ];
 
-const tabs = ["Departments (07)", "Department Heads", "Team Structure", "Role Mapping"] as const;
-const statusList = ["All Status", "Active", "In Progress"] as const;
+const detailRows: Record<string, readonly (readonly [string, string])[]> = {
+  "DPT-01": [
+    ["HRMS source", "HR-101 · Synced"],
+    ["Admin", "Demo Admin 01"],
+    ["Reports to", "Super Admin"],
+    ["Account scope", "Department + centre"],
+    ["Open tasks", "12"],
+    ["SLA", "96%"],
+    ["Training", "92%"],
+    ["Budget", "₹2.4 L · demo"],
+  ],
+};
 
-const actions: { icon: LucideIcon; label: string }[] = [
-  { icon: Pencil, label: "Edit Department" },
-  { icon: UsersRound, label: "Manage Department Users" },
-  { icon: Network, label: "Assign / Change Department Head" },
-  { icon: ShieldCheck, label: "Department Role & Permissions" },
-];
+const reporting: readonly (readonly [string, string])[] = [
+  ["Department", "Operations & Sewa"],
+  ["Access level", "Admin"],
+  ["Module permissions", "Sewa, Cases, Finance"],
+  ["Location scope", "Ghaziabad centre"],
+] as const;
 
-export default function SA007Departments() {
-  const notice = useNotice();
-  const router = useRouter();
-  const [tab, setTab] = useState<(typeof tabs)[number]>("Departments (07)");
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<(typeof statusList)[number]>("All Status");
-  const [selected, setSelected] = useState("DPT-01");
-  const [page, setPage] = useState(1);
+const automation: readonly (readonly [string, string])[] = [
+  ["Assignment mode", "Auto + manual override"],
+  ["Training", "92% complete"],
+  ["Pending work", "05 items"],
+  ["Deactivation", "Archive after handover"],
+] as const;
 
-  const q = query.trim().toLowerCase();
-  const rows = depts.filter((d) => (status === "All Status" || d.status === status) && (!q || `${d.code} ${d.name} ${d.head} ${d.status}`.toLowerCase().includes(q)));
-  const sel = depts.find((d) => d.code === selected) ?? depts[0];
-
+function Bar({ pct, color = "#2f6fe0" }: { pct: number; color?: string }) {
   return (
-    <SuperAdminFrame active="departments-centres">
-      <PageHead icon={UsersRound} title="Organisation & Department Management" links={["Department Setup", "Team Structure", "Department Heads", "Resource Allocation", "Role Mapping"]}>
-        <PrimaryButton icon={Plus} onClick={() => notice.show("Departments are created in HRMS; CRM access is mapped here (demo).")}>Add Department</PrimaryButton>
-      </PageHead>
-
-      <KpiRow cols={6}>
-        <KpiTile tone="blue" icon={Layers} value="07" label="Total Departments" />
-        <KpiTile tone="green" icon={UsersRound} value="186" label="Total users" />
-        <KpiTile tone="orange" icon={UserPlus} value="162" label="Active users" />
-        <KpiTile tone="purple" icon={Network} value="07" label="Department Heads" />
-        <KpiTile tone="red" icon={UsersRound} value="18" label="Volunteers" />
-        <KpiTile tone="sky" icon={MapPin} value="01" label="Active centre" />
-      </KpiRow>
-
-      <div className="flex flex-wrap items-center gap-[10px] lg:h-[38px] lg:flex-nowrap">
-        <div role="tablist" className="flex gap-[8px] overflow-x-auto">
-          {tabs.map((t) => (
-            <button
-              key={t}
-              type="button"
-              role="tab"
-              aria-selected={tab === t}
-              onClick={() => (t === "Team Structure" || t === "Department Heads" ? router.push(saRoutes.hierarchy) : t === "Role Mapping" ? router.push(saRoutes.roles) : setTab(t))}
-              className={`flex h-[38px] shrink-0 items-center whitespace-nowrap rounded-[9px] border px-[20px] pt-px text-[14px] font-semibold shadow-[0_2px_6px_rgba(30,50,110,0.06)] ${
-                tab === t ? "border-[#1d4fe0] bg-[#1d4fe0] text-white" : "border-[#e1e5ee] bg-white hover:bg-[#f4f6fc]"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-        <SearchField value={query} onChange={setQuery} placeholder="Search by Department, Head, Status..." className="w-full lg:ml-auto lg:w-[330px]" />
-        <Dropdown label="Status" value={status} options={statusList} onChange={setStatus} className="w-[170px]" />
-      </div>
-
-      <div className="grid gap-[12px] lg:h-[540px] lg:grid-cols-[595fr_575fr] lg:[grid-template-rows:minmax(0,1fr)]">
-        <Panel title="Department List" icon={Layers} bodyClassName="flex flex-col pt-[10px]">
-          <TableWrap>
-            <Thead>
-              {["Dept. Code", "Department Name", "Department Head", "Users", "Status", "Action"].map((h) => (
-                <th key={h} className={`${th} ${h === "Department Name" || h === "Department Head" ? "" : "text-center"}`}>{h}</th>
-              ))}
-            </Thead>
-            <tbody>
-              {rows.map((d) => (
-                <tr
-                  key={d.code}
-                  onClick={() => setSelected(d.code)}
-                  aria-selected={d.code === selected}
-                  className={`cursor-pointer border-b border-[#eef0f5] ${d.code === selected ? "bg-[#f1f5ff]" : "hover:bg-[#f8faff]"}`}
-                >
-                  <td className={`${td} py-[11px]`}>
-                    <span className="flex items-center gap-[8px] font-semibold"><d.icon strokeWidth={2} style={{ color: d.color }} className="h-[22px] w-[22px]" />{d.code}</span>
-                  </td>
-                  <td className={`${td} whitespace-normal font-semibold leading-tight`}>{d.name}</td>
-                  <td className={td}>{d.head}</td>
-                  <td className={`${td} text-center font-semibold`}>{d.users}</td>
-                  <td className={`${td} text-center`}><StatusPill className="w-[86px]">{d.status}</StatusPill></td>
-                  <td className={`${td} text-center`}>
-                    <div className="flex items-center justify-center gap-[8px] text-[#1d4fe0]" onClick={(e) => e.stopPropagation()}>
-                      <button type="button" aria-label={`View ${d.name}`} onClick={() => setSelected(d.code)}><Eye strokeWidth={2.2} className="h-[17px] w-[17px]" /></button>
-                      <button type="button" aria-label={`Edit ${d.name}`} onClick={() => notice.show(`${d.name}: CRM-specific settings only; HRMS fields are read-only (demo).`)}><Pencil strokeWidth={2.2} className="h-[16px] w-[16px]" /></button>
-                      <button type="button" aria-label={`More for ${d.name}`} onClick={() => notice.show(`${d.name}: archive after moving cases, tasks and access — no delete (demo).`)} className="text-[#0b0c36]"><MoreVertical strokeWidth={2.2} className="h-[16px] w-[16px]" /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {!rows.length && <tr><td colSpan={6} className="py-6 text-center text-[13px] font-medium text-[#5b6280]">No departments match.</td></tr>}
-            </tbody>
-          </TableWrap>
-          <div className="mt-auto flex items-center justify-between pt-[8px]">
-            <p className="text-[12px] font-medium text-[#3b4256]">Showing 1–{rows.length} of 7 Departments</p>
-            <Pager page={page} pages={1} onChange={setPage} />
-          </div>
-        </Panel>
-
-        <div className="flex min-h-0 flex-col gap-[12px]">
-          <Panel title="Organisation Structure" icon={Network} className="lg:h-[272px]" bodyClassName="flex flex-col items-center pt-[4px]">
-            <Org bg="#fff1d6" border="#f3d9a4" title="Namo Gange Trust" sub="(Governing Body / Management)" />
-            <span className="h-[12px] w-[2px] bg-[#1d4fe0]" />
-            <Org bg="#e7f0ff" border="#9cbcf5" title="Moksha Sewa" sub="(Project / Initiative)" />
-            <span className="h-[12px] w-[2px] bg-[#1d4fe0]" />
-            <div className="relative grid w-full grid-cols-4 gap-[6px] pt-[12px] sm:grid-cols-7">
-              <span className="absolute left-[7%] right-[7%] top-0 hidden h-[2px] bg-[#1d4fe0] sm:block" />
-              {depts.map((d) => (
-                <button
-                  key={d.code}
-                  type="button"
-                  onClick={() => setSelected(d.code)}
-                  style={{ background: d.bg, borderColor: d.code === selected ? "#1d4fe0" : d.border }}
-                  className="relative flex h-[66px] flex-col items-center justify-center rounded-[8px] border text-center"
-                >
-                  <span className="absolute -top-[13px] hidden h-[12px] w-[2px] bg-[#1d4fe0] sm:block" />
-                  <d.icon strokeWidth={2} style={{ color: d.color }} className="h-[20px] w-[20px]" />
-                  {d.short.map((l) => (
-                    <span key={l} className="text-[10.5px] font-bold leading-tight">{l}</span>
-                  ))}
-                </button>
-              ))}
-            </div>
-          </Panel>
-
-          <div className="grid min-h-0 flex-1 gap-[12px] sm:grid-cols-[275fr_290fr]">
-            <Panel title="Selected Department – Details" icon={Layers} bodyClassName="flex flex-col justify-between pt-[6px]">
-              {[
-                ["Department Name", sel.name],
-                ["Department Code", sel.code],
-                ["Department Head", sel.head],
-                ["Total Users", String(sel.users)],
-                ["Total Volunteers", "–"],
-              ].map(([k, v]) => (
-                <div key={k} className="grid grid-cols-[118px_10px_1fr] text-[12.8px]">
-                  <span className="font-semibold">{k}</span>
-                  <span>:</span>
-                  <span className="font-medium">{v}</span>
-                </div>
-              ))}
-              <div className="grid grid-cols-[118px_10px_1fr] items-center text-[12.8px]">
-                <span className="font-semibold">Status</span>
-                <span>:</span>
-                <StatusPill className="w-[80px]">{sel.status}</StatusPill>
-              </div>
-            </Panel>
-
-            <Panel title="Department Actions" icon={Cog} bodyClassName="flex flex-col pt-[4px]">
-              {actions.map((a) => (
-                <button key={a.label} type="button" onClick={() => notice.show(`${a.label} — ${sel.name} (demo).`)} className="flex min-h-[34px] flex-1 items-center gap-[10px] border-b border-[#eef0f5] px-[4px] text-left hover:bg-[#f6f8fd]">
-                  <a.icon strokeWidth={2} className="h-[18px] w-[18px] shrink-0 text-[#2f6fe0]" />
-                  <span className="flex-1 text-[12.8px] font-semibold">{a.label}</span>
-                  <ChevronRight strokeWidth={2.4} className="h-[15px] w-[15px]" />
-                </button>
-              ))}
-              <p className="pt-[6px] text-[11.8px] font-medium text-[#3b4256]">HRMS sync / permission mapping</p>
-            </Panel>
-          </div>
-        </div>
-      </div>
-      {notice.node}
-    </SuperAdminFrame>
+    <span className="mt-[3px] block h-[7px] w-full overflow-hidden rounded-full bg-[#e3e7ef]">
+      <span className="block h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+    </span>
   );
 }
 
-function Org({ bg, border, title, sub }: { bg: string; border: string; title: string; sub: string }) {
+export default function SA007Departments() {
+  const notice = useNotice();
+  const [tab, setTab] = useState<Tab>("Departments");
+  const [selected, setSelected] = useState("DPT-01");
+
+  const sel = depts.find((d) => d.crm === selected) ?? depts[0];
+  const detail = detailRows[sel.crm] ?? [
+    ["HRMS source", `${sel.hrms} · Synced`],
+    ["Admin", sel.admin],
+    ["Reports to", "Super Admin"],
+    ["Account scope", "Department"],
+    ["Open tasks", sel.tasks],
+    ["SLA", "94%"],
+    ["Training", "88%"],
+    ["Budget", "₹1.6 L · demo"],
+  ];
+
+  const showRegister = tab === "Departments" || tab === "Assigned admins" || tab === "Team structure";
+  const showSelected = tab === "Departments" || tab === "Assigned admins";
+  const showReporting = tab === "Departments" || tab === "Role mapping";
+  const showAutomation = tab === "Departments" || tab === "HRMS sync" || tab === "Team structure";
+
+  const topRow = showRegister || showSelected;
+  const bottomRow = showReporting || showAutomation;
+  const topCount = [showRegister, showSelected].filter(Boolean).length;
+  const bottomCount = [showReporting, showAutomation].filter(Boolean).length;
+
   return (
-    <div style={{ background: bg, borderColor: border }} className="w-[230px] rounded-[9px] border px-[10px] py-[5px] text-center shadow-[0_2px_6px_rgba(30,50,110,0.07)]">
-      <b className="block text-[14px] leading-tight">{title}</b>
-      <span className="text-[11.5px] font-semibold">{sub}</span>
-    </div>
+    <SuperAdminFrame active="departments-centres">
+      <PageHead
+        light
+        icon={Radio}
+        iconTone="blue"
+        title="Department Management"
+        links={["Super Admin", "FY 2026–27", "Ghaziabad"]}
+      >
+        <ModuleDropdown current="SA-007" />
+        <CentreDropdown className="w-[165px]" />
+      </PageHead>
+
+      <KpiRow cols={6}>
+        <KpiTile tone="blue" icon={Radio} value="07" label="Departments" sub="Registered" />
+        <KpiTile tone="green" icon={Bell} value="186" label="CRM accounts" sub="Total" />
+        <KpiTile tone="orange" icon={CircleCheck} value="162" label="Active accounts" sub="Enabled" />
+        <KpiTile tone="purple" icon={Users} value="12" label="Admins assigned" sub="Across depts" />
+        <KpiTile tone="sky" icon={Layers} value="01" label="Active centre" sub="Ghaziabad" />
+        <KpiTile tone="green" icon={Radio} value="10:20" label="HRMS sync" sub="Today" />
+      </KpiRow>
+
+      <Tabs tabs={tabs} value={tab} onChange={setTab} />
+
+      <div className="flex min-h-0 flex-1 flex-col gap-[10px]">
+        {/* Top row — register + selected department */}
+        {topRow && (
+          <div
+            className={`grid gap-[10px] lg:min-h-0 lg:flex-[340_1_0] ${
+              topCount === 2 ? "lg:grid-cols-[55fr_45fr]" : "lg:grid-cols-1"
+            } lg:[grid-template-rows:minmax(0,1fr)]`}
+          >
+            {showRegister && (
+              <Panel
+                title="Department register"
+                note={`(${String(depts.length).padStart(2, "0")})`}
+                bodyClassName="flex flex-col pt-[6px]"
+                action={
+                  <div className="hidden items-center gap-[8px] lg:flex">
+                    <PrimaryButton
+                      outline
+                      onClick={() => notice.show("Map HRMS department: source fields are read-only (demo).")}
+                    >
+                      Map HRMS
+                    </PrimaryButton>
+                    <PrimaryButton outline onClick={() => notice.show("Review access: scoped to authorised roles (demo).")}>
+                      Review access
+                    </PrimaryButton>
+                  </div>
+                }
+              >
+                <TableWrap>
+                  <Thead>
+                    {["CRM ID", "HRMS ID", "Department", "Admin", "Accounts", "Tasks", "Mode"].map((h) => (
+                      <th key={h} className={`${th} px-[6px] py-[6px] text-[12.5px] ${["Department", "Admin"].includes(h) ? "" : "text-center"}`}>
+                        {h}
+                      </th>
+                    ))}
+                  </Thead>
+                  <tbody>
+                    {depts.map((d) => (
+                      <tr
+                        key={d.crm}
+                        onClick={() => setSelected(d.crm)}
+                        className={`cursor-pointer border-b border-[#eef0f5] last:border-0 ${selected === d.crm ? "bg-[#eef2ff]" : "hover:bg-[#f7f9ff]"}`}
+                      >
+                        <td className={`${td} px-[6px] py-[6px] font-semibold`}>{d.crm}</td>
+                        <td className={`${td} px-[6px] py-[6px] text-center text-[#3b4256]`}>{d.hrms}</td>
+                        <td className={`${td} px-[6px] py-[6px] font-bold`}>
+                          <span className="flex items-center gap-[6px]">
+                            <d.icon strokeWidth={2} style={{ color: d.color }} className="h-[16px] w-[16px] shrink-0" />
+                            {d.name}
+                          </span>
+                        </td>
+                        <td className={`${td} px-[6px] py-[6px]`}>{d.admin}</td>
+                        <td className={`${td} px-[6px] py-[6px] text-center font-semibold`}>{d.accounts}</td>
+                        <td className={`${td} px-[6px] py-[6px] text-center font-semibold`}>{d.tasks}</td>
+                        <td className={`${td} px-[6px] py-[6px] text-center`}>
+                          <StatusPill className="h-[19px] min-w-[54px] text-[11px]">{d.mode}</StatusPill>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </TableWrap>
+                <div className="mt-auto flex flex-wrap gap-[8px] pt-[8px] lg:hidden">
+                  <PrimaryButton outline onClick={() => notice.show("Map HRMS department (demo).")}>
+                    Map HRMS department
+                  </PrimaryButton>
+                  <PrimaryButton outline onClick={() => notice.show("Review access (demo).")}>
+                    Review access
+                  </PrimaryButton>
+                </div>
+                <p className="mt-auto hidden pt-[6px] text-[11.5px] font-medium text-[#5b6280] lg:block">
+                  Departments come from HRMS; CRM access is mapped separately. Never delete linked departments — archive after handover.
+                </p>
+              </Panel>
+            )}
+
+            {showSelected && (
+              <Panel
+                title="Selected department"
+                note={`• ${sel.crm}`}
+                icon={Building2}
+                bodyClassName="flex flex-col pt-[4px]"
+              >
+                <div className="flex flex-col">
+                  {detail.map(([k, v]) => (
+                    <KV key={k} k={k} v={v} className="border-b border-[#eef0f5] py-[5px] last:border-0" />
+                  ))}
+                </div>
+                <div className="mt-[6px]">
+                  <div className="flex items-center justify-between text-[11.5px] font-semibold">
+                    <span>SLA compliance</span>
+                    <b>96%</b>
+                  </div>
+                  <Bar pct={96} color="#1f9a2b" />
+                </div>
+                <div className="mt-[6px]">
+                  <div className="flex items-center justify-between text-[11.5px] font-semibold">
+                    <span>Training status</span>
+                    <b>92%</b>
+                  </div>
+                  <Bar pct={92} />
+                </div>
+                <div className="mt-auto flex flex-wrap gap-[8px] pt-[8px]">
+                  <PrimaryButton onClick={() => notice.show(`Assign admin to ${sel.crm} (demo).`)}>
+                    Assign admin
+                  </PrimaryButton>
+                  <PrimaryButton outline onClick={() => notice.show(`View performance for ${sel.crm} (demo).`)}>
+                    View performance
+                  </PrimaryButton>
+                </div>
+              </Panel>
+            )}
+          </div>
+        )}
+
+        {/* Bottom row — reporting & permissions, automation & training */}
+        {bottomRow && (
+          <div
+            className={`grid gap-[10px] lg:min-h-0 lg:flex-[266_1_0] ${
+              bottomCount === 2 ? "lg:grid-cols-2" : "lg:grid-cols-1"
+            } lg:[grid-template-rows:minmax(0,1fr)]`}
+          >
+            {showReporting && (
+              <Panel title="Reporting & permissions" bodyClassName="flex flex-col pt-[4px]">
+                <div className="flex flex-col">
+                  {reporting.map(([k, v]) => (
+                    <KV key={k} k={k} v={v} className="border-b border-[#eef0f5] py-[5px] last:border-0" />
+                  ))}
+                </div>
+                <div className="mt-auto pt-[8px]">
+                  <PrimaryButton onClick={() => notice.show("Permission matrix opened (demo).")}>
+                    Permission matrix
+                  </PrimaryButton>
+                </div>
+              </Panel>
+            )}
+
+            {showAutomation && (
+              <Panel title="Automation & training" bodyClassName="flex flex-col pt-[4px]">
+                <div className="flex flex-col">
+                  {automation.map(([k, v]) => (
+                    <KV key={k} k={k} v={v} className="border-b border-[#eef0f5] py-[5px] last:border-0" />
+                  ))}
+                </div>
+                <div className="mt-auto pt-[8px]">
+                  <PrimaryButton onClick={() => notice.show("Configure workflow opened (demo).")}>
+                    Configure workflow
+                  </PrimaryButton>
+                </div>
+              </Panel>
+            )}
+          </div>
+        )}
+      </div>
+
+      {notice.node}
+    </SuperAdminFrame>
   );
 }

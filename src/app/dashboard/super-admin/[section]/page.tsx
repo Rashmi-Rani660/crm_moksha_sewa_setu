@@ -4,6 +4,8 @@ import { Suspense } from "react";
 import SectionPage from "@/components/dashboards/SectionPage";
 import { findSection, sectionsOf } from "@/components/dashboards/shells";
 
+type Props = { params: Promise<{ section: string }> };
+
 /** Sections with their own page folder (SA-002 … SA-050, SA-071 … SA-082) are not generated here. */
 const ownPages = new Set(["live-operations", "notification-alerts", "central-approvals", "organisation-setup", "city-zone-centres", "departments-centres", "users-access-control", "master-data", "sewa-operations", "case-workflow", "communication-hub", "automation-ai", "finance-donations", "training-excellence", "backup-recovery", "integrations-api", "audit-logs", "system-security", "system-settings", "reports-analytics"]);
 
@@ -13,12 +15,12 @@ export function generateStaticParams() {
     .map((s) => ({ section: s.slug }));
 }
 
-export async function generateMetadata({ params }: PageProps<"/dashboard/super-admin/[section]">): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { section } = await params;
   return { title: `${findSection("super-admin", section)?.label ?? "Not found"} | Super Admin` };
 }
 
-export default function Page({ params }: PageProps<"/dashboard/super-admin/[section]">) {
+export default function Page({ params }: Props) {
   return (
     <Suspense fallback={<main className="min-h-dvh bg-[#f3f6fb]" />}>
       <Section params={params} />
@@ -26,7 +28,7 @@ export default function Page({ params }: PageProps<"/dashboard/super-admin/[sect
   );
 }
 
-async function Section({ params }: { params: PageProps<"/dashboard/super-admin/[section]">["params"] }) {
+async function Section({ params }: Props) {
   const { section } = await params;
   if (!findSection("super-admin", section)) notFound();
   return <SectionPage role="super-admin" slug={section} />;
