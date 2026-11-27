@@ -36,7 +36,7 @@ export function SuperAdminFrame({ active, demoNote = false, children }: { active
 
 function PageFooter({ demoNote }: { demoNote: boolean }) {
   return (
-    <footer className="mt-4 flex flex-col items-center gap-2 border-t border-[#e3e7ef] pt-3 text-[13px] font-semibold text-[#1d1f33] sm:flex-row sm:justify-between lg:mt-0 lg:h-[40px] lg:gap-0 lg:pt-0 lg:text-[14px]">
+    <footer className="relative z-10 mt-4 flex flex-col items-center gap-2 border-t border-[#e3e7ef] bg-white px-2 pt-3 text-[13px] font-semibold text-[#1d1f33] sm:flex-row sm:justify-between lg:mt-0 lg:h-[40px] lg:gap-0 lg:pt-0 lg:text-[14px]">
       <p className="whitespace-nowrap">
         © {siteConfig.copyrightYear} {siteConfig.trust}
         <span className="mx-[12px] inline-block h-[16px] w-[1.5px] translate-y-[3px] bg-[#3a3d55]" />

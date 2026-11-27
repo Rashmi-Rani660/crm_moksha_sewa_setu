@@ -59,6 +59,7 @@ export type Shell = {
 const slugAlias: Record<string, string> = {
   "notifications-alerts": "notification-alerts",
   "ai-automation": "automation-ai",
+  "training-excellence": "knowledge-base",
 };
 
 export const slugify = (label: string) => {
@@ -200,13 +201,14 @@ export const shells: Record<Role, Shell> = {
       { label: "Case & Workflow", icon: Network, y: 408 },
       { label: "Communication Hub", icon: MessageSquareText, y: 435 },
       { label: "AI & Automation", icon: Settings, y: 462 },
-      { label: "Integrations & API", icon: Link2, y: 489 },
-      { label: "Reports & Analytics", icon: ChartColumn, y: 516 },
-      { label: "Finance & Donations", icon: IndianRupee, y: 543 },
-      { label: "System Security", icon: ShieldCheck, y: 570 },
-      { label: "Backup & Recovery", icon: CloudUpload, y: 597 },
-      { label: "Audit Logs", icon: List, y: 624 },
-      { label: "System Settings", icon: Settings, y: 651 },
+      { label: "Training & Excellence", icon: BookOpenCheck, y: 488 },
+      { label: "Integrations & API", icon: Link2, y: 514 },
+      { label: "Reports & Analytics", icon: ChartColumn, y: 540 },
+      { label: "Finance & Donations", icon: IndianRupee, y: 566 },
+      { label: "System Security", icon: ShieldCheck, y: 592 },
+      { label: "Backup & Recovery", icon: CloudUpload, y: 618 },
+      { label: "Audit Logs", icon: List, y: 644 },
+      { label: "System Settings", icon: Settings, y: 670 },
     ],
   },
     topBar: {
