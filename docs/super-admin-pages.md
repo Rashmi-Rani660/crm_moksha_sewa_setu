@@ -77,3 +77,26 @@ permissions, assign training, activate only after approval; no self-escalation.
 Visual scope: trend and status charts, budget and training bars, status
 colours, schematic GPS (not a real map). Navigation and visible-row search are
 demonstrative; other controls are placeholders until the APIs exist.
+
+## Finance & Donations, AI & Automation (SA-041 … SA-050)
+
+All ten screens share one layout, `super-admin/RegisterScreen.tsx` (heading +
+screen picker, six KPI tiles, five tabs, register table, controls panel, lower
+detail panel, safeguards panel). Each screen is a data file in `pages/`:
+
+```
+finance-donations/                  DonationReceipts.tsx       SA-041
+finance-donations/case-expenses     CaseExpenses.tsx           SA-042
+finance-donations/budget-control    BudgetControl.tsx          SA-043
+finance-donations/csr-partnerships  CsrPartnerships.tsx        SA-044
+finance-donations/fund-utilisation  FundUtilisation.tsx        SA-045
+automation-ai/                      AiAutomationDashboard.tsx  SA-046
+automation-ai/controls              AutomationControls.tsx     SA-047
+automation-ai/rule-builder          RuleBuilder.tsx            SA-048
+automation-ai/smart-assignment      SmartAssignment.tsx        SA-049
+automation-ai/ai-configuration      AiConfiguration.tsx        SA-050
+automation-ai/workflow-builder      SA019WorkflowBuilder.tsx   (moved from automation-ai/)
+```
+
+Sidebar labels "Notifications & Alerts" and "AI & Automation" keep the old
+URLs through `slugAlias` in `shells.tsx`.

@@ -4,8 +4,8 @@ import { Suspense } from "react";
 import SectionPage from "@/components/dashboards/SectionPage";
 import { findSection, sectionsOf } from "@/components/dashboards/shells";
 
-/** Sections with their own page folder (SA-002 … SA-008) are not generated here. */
-const ownPages = new Set(["live-operations", "notification-alerts", "central-approvals", "organisation-setup", "city-zone-centres", "departments-centres", "users-access-control", "master-data", "sewa-operations", "case-workflow", "automation-ai"]);
+/** Sections with their own page folder (SA-002 … SA-050) are not generated here. */
+const ownPages = new Set(["live-operations", "notification-alerts", "central-approvals", "organisation-setup", "city-zone-centres", "departments-centres", "users-access-control", "master-data", "sewa-operations", "case-workflow", "automation-ai", "finance-donations"]);
 
 export function generateStaticParams() {
   return sectionsOf("super-admin")
