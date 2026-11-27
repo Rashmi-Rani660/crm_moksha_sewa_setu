@@ -86,7 +86,7 @@ export function Screen({
               >
                 {picker.map((s) => (
                   <option key={s.code} value={s.code}>
-                    {s.code} · {s.title}
+                    {s.title}
                   </option>
                 ))}
               </select>
