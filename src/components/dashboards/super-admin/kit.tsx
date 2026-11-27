@@ -24,6 +24,8 @@ import { siteConfig } from "@/lib/config/site";
 
 const SB = 210;
 
+const ink = "text-[#1a1d36]";
+
 /** Super Admin page: sidebar + top bar + the page content and footer. */
 export function SuperAdminFrame({ active, children }: { active?: string; children: ReactNode }) {
   return (
@@ -286,8 +288,11 @@ export function Tabs<T extends string>({
   className?: string;
 }) {
   return (
-    <div role="tablist" className={`flex gap-[6px] overflow-x-auto rounded-[10px] border border-[#e1e5ee] bg-white p-[3px] shadow-[0_2px_6px_rgba(30,50,110,0.06)] ${className}`}>
-      {tabs.map((t) => {
+    <div
+      role="tablist"
+      className={`flex overflow-x-auto rounded-[6px] border border-[#d9e1eb] bg-white lg:h-[36px] lg:shrink-0 ${className}`}
+    >
+      {tabs.map((t, i) => {
         const Icon: LucideIcon | undefined = icons?.[t];
         const on = t === value;
         return (
@@ -297,9 +302,7 @@ export function Tabs<T extends string>({
             role="tab"
             aria-selected={on}
             onClick={() => onChange(t)}
-            className={`flex h-[28px] shrink-0 items-center justify-center gap-[7px] whitespace-nowrap rounded-[8px] px-[12px] text-[13px] font-semibold transition-colors lg:flex-1 lg:px-[8px] ${
-              on ? "bg-[#1d4fe0] text-white" : "text-[#1a1d36] hover:bg-[#f1f4fb]"
-            }`}
+            className={`h-[34px] min-w-[150px] flex-1 whitespace-nowrap px-[10px] pt-px text-[14.2px] lg:h-full lg:min-w-0 ${i > 0 ? "border-l border-[#d9e1eb]" : ""} ${on ? "border-l-0 bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] text-white" : `${ink} hover:bg-[#f3f6fc]`} ${i === 0 ? "rounded-l-[5px]" : ""} ${i === tabs.length - 1 ? "rounded-r-[5px]" : ""}`}
           >
             {Icon && <Icon strokeWidth={2} className="h-[16px] w-[16px] shrink-0" />}
             <span className="pt-px">{t}</span>

@@ -36,7 +36,6 @@ import {
   useNotice,
   type PillTone,
 } from "@/components/dashboards/super-admin/kit";
-import { sectionHref } from "@/components/dashboards/shells";
 
 const tabs = [
   "Overview",
@@ -46,13 +45,6 @@ const tabs = [
   "Security & finance",
 ] as const;
 type Tab = (typeof tabs)[number];
-
-const tabSection: Partial<Record<Tab, string>> = {
-  "Requests & cases": "Case & Workflow",
-  "Users & resources": "Users & Access Control",
-  "AI & automation": "Automation & AI",
-  "Security & finance": "System Security",
-};
 
 type Fy = "FY 2026–27" | "FY 2025–26" | "FY 2024–25";
 
@@ -175,7 +167,6 @@ export default function SA001Dashboard() {
   const [tab, setTab] = useState<Tab>("Overview");
   const [fy] = useState<Fy>("FY 2026–27");
   const notice = useNotice();
-  const href = (label: string) => sectionHref("super-admin", label);
 
   return (
     <SuperAdminFrame>
@@ -195,11 +186,7 @@ export default function SA001Dashboard() {
         <KpiTile tone="purple" icon={CircleCheck} value="₹12.40 L" label="Expenses" sub="FY 26 – 27" />
       </KpiRow>
 
-      <Tabs tabs={tabs} value={tab} onChange={(t) => {
-        setTab(t);
-        const to = tabSection[t];
-        if (to) window.location.assign(href(to));
-      }} />
+      <Tabs tabs={tabs} value={tab} onChange={setTab} />
 
       <div className="flex min-h-0 flex-1 flex-col gap-[10px]">
       {/* Row 1 */}
