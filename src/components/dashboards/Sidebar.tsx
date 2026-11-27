@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import { isHomeItem, homeHref, sectionHref, slugify } from "@/components/dashboards/shells";
 import type { Role } from "@/lib/auth/session";
@@ -11,6 +14,8 @@ export type NavItem = {
   icon: LucideIcon;
   /** Vertical centre of the row on the design canvas. */
   y: number;
+  /** Optional explicit route override. */
+  href?: string;
   /** "gold" = current page pill, "blue" = section heading pill. */
   pill?: "gold" | "blue";
   submenu?: boolean;
@@ -57,6 +62,7 @@ export default function Sidebar({
   active?: string;
   onNavigate?: () => void;
 }) {
+  const pathname = usePathname();
   const { width, fontSize, iconSize, textX, iconX, pill, items, diyaShift = 0, rowHeight = 32, pillFontSize = spec.fontSize + 1.5, pillTextClass, goldClass } = spec;
   return (
     <aside
@@ -87,9 +93,18 @@ export default function Sidebar({
         <ul>
           {items.map((item) => {
             const { label, icon: Icon, y, submenu, box } = item;
-            const href = isHomeItem(item) ? homeHref(role) : sectionHref(role, label);
+            const href = item.href ?? (isHomeItem(item) ? homeHref(role) : sectionHref(role, label));
             // gold = current page; keep the blue heading pill everywhere
-            const current = active ? slugify(label) === active : item.pill === "gold";
+            const slug = slugify(label);
+            const pathMatch =
+              !isHomeItem(item) &&
+              Boolean(
+                pathname &&
+                  (pathname === href ||
+                    pathname.startsWith(`${href}/`) ||
+                    (slug === "ai-automation" && pathname.startsWith(`/dashboard/${role}/automation-ai`))),
+              );
+            const current = pathMatch || (active ? slug === active || (slug === "ai-automation" && active === "automation-ai") : item.pill === "gold");
             const kind = current ? "gold" : item.pill === "blue" ? "blue" : undefined;
             const p = box ?? pill;
             const h = kind ? p.h : rowHeight;
