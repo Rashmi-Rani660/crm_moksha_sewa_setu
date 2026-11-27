@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import DonationReceipts from "@/components/dashboards/super-admin/pages/DonationReceipts";
+import SA039FinanceCommand from "@/components/dashboards/super-admin/pages/SA039FinanceCommand";
 
 export const metadata: Metadata = {
-  title: "Donation Receipts & Reconciliation | Super Admin",
+  title: "Finance Command Centre | Super Admin",
 };
 
 export default function Page() {
-  return <DonationReceipts />;
+  return <SA039FinanceCommand />;
 }

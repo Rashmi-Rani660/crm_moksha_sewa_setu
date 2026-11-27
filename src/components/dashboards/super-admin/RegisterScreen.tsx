@@ -39,6 +39,12 @@ export type Lower =
       yes: [string, string];
       no: [string, string];
       actions: string[];
+    }
+  | {
+      kind: "flow5";
+      steps: [string, string, string, string, string];
+      rows?: KVRow[];
+      actions?: string[];
     };
 
 export type ScreenSpec = {
@@ -50,9 +56,9 @@ export type ScreenSpec = {
   kpis: [Kpi, Kpi, Kpi, Kpi, Kpi, Kpi];
   tabs: [string, string, string, string, string];
   register: { title: string; columns: Column[]; rows: string[][]; actions: string[] };
-  side: { title: string; rows: KVRow[]; button?: string; budget?: Bar };
+  side: { title: string; rows: KVRow[]; actions?: string[]; button?: string; budget?: Bar };
   lower: { title: string } & Lower;
-  safeguards: KVRow[];
+  safeguards: KVRow[] | { title: string; rows: KVRow[]; actions?: string[] };
 };
 
 /* ---------------------------------- tokens --------------------------------- */
@@ -76,9 +82,13 @@ const outlineBtn =
 
 /** Pill colour by word: green done states, blue people / transfers, amber the rest. */
 function pillClass(text: string) {
-  const t = text.toLowerCase();
-  if (/^(issued|approved|active|passed|matched|resolved)$/.test(t)) return "bg-[#d5f3d7] text-[#247537]";
-  if (/^admin \d+$|human transfer/.test(t)) return "bg-[#e0efff] text-[#2b5fb0]";
+  const t = text.toLowerCase().trim();
+  if (/^(issued|approved|active|passed|matched|resolved|delivered|completed|settled)$/.test(t))
+    return "bg-[#d5f3d7] text-[#247537]";
+  if (/^(human transfer|admin \d+|user \d+|assigned|scheduled|open|new)$/.test(t))
+    return "bg-[#dde9fd] text-[#1d4fb8]";
+  if (/^(failed|escalated|rejected|blocked)$/.test(t))
+    return "bg-[#fde0e0] text-[#b42318]";
   return "bg-[#ffeabd] text-[#8a5b00]";
 }
 
@@ -161,8 +171,8 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
   const { register, side, lower } = spec;
   const total = register.columns.reduce((a, c) => a + c.w, 0);
   const query = q.trim().toLowerCase();
-  const group = screenPicker.find((s) => s.code === spec.code)?.group;
-  const siblings = screenPicker.filter((s) => s.group === group);
+  const matchedGroup = screenPicker.find((s) => s.code === spec.code)?.group;
+  const siblings = matchedGroup ? screenPicker.filter((s) => s.group === matchedGroup) : screenPicker;
   const rows = query ? register.rows.filter((r) => r.some((c) => c.toLowerCase().includes(query))) : register.rows;
 
   return (
@@ -280,8 +290,8 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((r) => (
-                    <tr key={r[0]} className="h-[36px] border-b border-[#dce4ee]">
+                  {rows.map((r, ri) => (
+                    <tr key={`${r[0]}-${ri}`} className="h-[36px] border-b border-[#dce4ee]">
                       {r.map((cell, ci) => {
                         const c = register.columns[ci];
                         return (
@@ -305,7 +315,11 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
 
           <Panel title={side.title}>
             <KVList rows={side.rows} />
-            <Actions items={[side.button ?? "View details"]} onAct={act} />
+            <Actions
+              items={side.actions ?? (side.button ? [side.button] : ["Review settings", "View history"])}
+              onAct={act}
+              primary={true}
+            />
             {side.budget && (
               <div className="mt-[6px]">
                 <BarRow bar={side.budget} />
@@ -314,6 +328,36 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
           </Panel>
 
           <Panel title={lower.title}>
+            {lower.kind === "flow5" && (
+              <>
+                <div className="flex items-center pt-[2px]">
+                  {lower.steps.map((step, idx) => (
+                    <div key={step} className="contents">
+                      {idx > 0 && (
+                        <span aria-hidden className="w-[18px] shrink-0 text-center text-[13px] text-[#2b3a67]">
+                          →
+                        </span>
+                      )}
+                      <div
+                        className={`flex h-[42px] min-w-0 flex-1 items-center justify-center rounded-[6px] border px-[6px] text-center text-[13.8px] font-medium ${ink} ${
+                          idx % 2 === 0
+                            ? "border-[#c9d8ee] bg-[linear-gradient(180deg,#f4f9ff_0%,#e6f0fc_100%)]"
+                            : "border-[#cfe4d6] bg-[linear-gradient(180deg,#f7fdf8_0%,#eaf6ee_100%)]"
+                        }`}
+                      >
+                        {step}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {lower.rows && lower.rows.length > 0 && (
+                  <div className="mt-[6px]">
+                    <KVList rows={lower.rows} />
+                  </div>
+                )}
+                {lower.actions && lower.actions.length > 0 && <Actions items={lower.actions} onAct={act} primary={false} />}
+              </>
+            )}
             {lower.kind === "list" && (
               <>
                 <KVList rows={lower.rows} />
@@ -357,10 +401,25 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
             )}
           </Panel>
 
-          <Panel title="Priority exceptions & safeguards">
-            <KVList rows={spec.safeguards} />
-            <Actions items={["View history"]} onAct={act} />
-          </Panel>
+          {(() => {
+            const sg = spec.safeguards;
+            if (Array.isArray(sg)) {
+              return (
+                <Panel title="Priority exceptions & safeguards">
+                  <KVList rows={sg} />
+                  <Actions items={["View history"]} onAct={act} />
+                </Panel>
+              );
+            }
+            return (
+              <Panel title={sg.title}>
+                <KVList rows={sg.rows} />
+                {sg.actions && sg.actions.length > 0 && (
+                  <Actions items={sg.actions} onAct={act} />
+                )}
+              </Panel>
+            );
+          })()}
         </div>
       </div>
     </SuperAdminFrame>
