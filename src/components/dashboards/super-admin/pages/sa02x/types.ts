@@ -8,7 +8,7 @@ import type { TileTone } from "@/components/dashboards/super-admin/kit";
  */
 
 export type Pair = [label: string, value: string];
-export type Bar = { label: string; pct: number };
+export type Bar = { label: string; pct: number; value?: string };
 export type Action = { label: string; notice: string; confirm?: string };
 
 export type Tbl = {

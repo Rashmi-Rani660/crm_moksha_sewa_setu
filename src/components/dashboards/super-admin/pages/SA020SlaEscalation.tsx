@@ -11,8 +11,9 @@
 import { useState } from "react";
 import { useCrmQuery } from "@/lib/api/useCrmQuery";
 import { useCrmAccess } from "@/lib/api/useCrmAccess";
+import { useCrmMutation } from "@/lib/api/useCrmMutation";
 import { useDashboardData } from "@/lib/crm/useDashboardData";
-import { EMPTY, records, text as value, type CrmRecord } from "@/lib/crm/data";
+import { EMPTY, choose, records, text as value, type CrmRecord } from "@/lib/crm/data";
 import { humanize, shortDateTime } from "@/lib/format";
 import { useNotice } from "@/components/dashboards/super-admin/kit";
 import { screenPicker1120 } from "@/components/dashboards/super-admin/routes";
@@ -34,6 +35,25 @@ export default function SA020SlaEscalation() {
   const rules = useCrmQuery<CrmRecord[]>(can("sla.view") ? "/sla/rules" : null);
   const escalations = useCrmQuery<CrmRecord[]>(can("sla.view") ? "/sla/escalations?limit=100" : null);
   const dashboard = useDashboardData();
+  const mutation = useCrmMutation(notice.show);
+  async function reviewRule() {
+    setTab("SLA Rules");
+    const rule = choose(records(rules.data).map(row => ({ ...row, name: `${value(row.target)} / ${value(row.priority)}` })), "Choose SLA rule");
+    if (!rule) return;
+    if (!can("sla.edit")) { notice.show(`${value(rule.name)}: ${value(rule.targetMinutes)} min`); return; }
+    const entered = window.prompt("Target minutes:", value(rule.targetMinutes, ""));
+    if (entered === null) return;
+    const targetMinutes = Number(entered);
+    if (!Number.isInteger(targetMinutes) || targetMinutes < 1) return;
+    await mutation.run(`/sla/rules/${rule.id}`, { method: "PATCH", body: { version: rule.version, targetMinutes } }, "SLA rule updated.");
+  }
+  async function reviewEscalation() {
+    setTab("Escalation Matrix");
+    const escalation = choose(records(escalations.data), "Choose escalation", "reference");
+    if (!escalation) return;
+    notice.show(`${value(escalation.reference)}: ${value(escalation.status)}`);
+    if (escalation.status === "OPEN" && window.confirm("Acknowledge this escalation?")) await mutation.run(`/sla/escalations/${escalation.id}/acknowledge`, { method: "POST" }, "Escalation acknowledged.");
+  }
   const rows: Row[] = records(monitor.data?.items).map(item => ({ ref: value(item.reference), type: humanize(value(item.entityType,"")), owner: EMPTY, left: shortDateTime(value(item.dueAt,"")), esc: EMPTY, status: humanize(value(item.slaState,"")), admin: EMPTY, ack: EMPTY, priority: humanize(value(item.priority,"")) }));
   const { q, setQ, f, set, reset, text } = useFilters({ type: "All SLA types", priority: "All priority" });
   const shown = rows.filter(
@@ -115,7 +135,7 @@ export default function SA020SlaEscalation() {
               ]}
             />
             <Buttons className="!mt-[8px]">
-              <Btn primary onClick={() => setTab("SLA Rules")}>Review SLA rules</Btn>
+              <Btn primary disabled={!can("sla.view") || mutation.busy} onClick={reviewRule}>Review SLA rules</Btn>
             </Buttons>
           </Panel>
 
@@ -131,7 +151,7 @@ export default function SA020SlaEscalation() {
               ]}
             />
             <Buttons className="!mt-[8px] !mb-[4px]">
-              <Btn primary onClick={() => setTab("Escalation Matrix")}>Review escalation history</Btn>
+              <Btn primary disabled={!can("sla.view") || mutation.busy} onClick={reviewEscalation}>Review escalation history</Btn>
             </Buttons>
             <KVList
               rowH={24}

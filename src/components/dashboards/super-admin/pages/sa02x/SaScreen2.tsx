@@ -98,7 +98,7 @@ function Bars({ bars }: { bars: Bar[] }) {
           <span className="h-[9px] min-w-0 flex-1 overflow-hidden rounded-full bg-[#e4ebf5]" role="img" aria-label={`${b.label}: ${b.pct}%`}>
             <span style={{ width: `${b.pct}%` }} className="block h-full rounded-full bg-[#2f7bc8]" />
           </span>
-          <span className="w-[36px] shrink-0 text-right">{b.pct}%</span>
+          <span className="w-[36px] shrink-0 text-right">{b.value ?? `${b.pct}%`}</span>
         </li>
       ))}
     </ul>

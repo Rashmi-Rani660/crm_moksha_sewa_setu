@@ -193,7 +193,7 @@ export default function SA064SessionMonitoring() {
                   {TREND_BARS.map((bar) => (
                     <div key={bar.label} className="flex flex-col items-center gap-1">
                       <span className="text-[15px] font-semibold text-slate-700">{EMPTY}</span>
-                      <div className={`w-full rounded-t-md bg-blue-600 ${bar.height}`} />
+                      <div style={{ height: 0 }} className={`w-full rounded-t-md bg-blue-600 ${bar.height}`} />
                       <span className="text-[15px] text-slate-500">{bar.label}</span>
                     </div>
                   ))}

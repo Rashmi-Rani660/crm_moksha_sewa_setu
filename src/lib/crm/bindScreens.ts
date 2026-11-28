@@ -54,7 +54,7 @@ export function bindResourceScreen(screen: ResourceScreen, data: Data): Resource
   const shared = { ...side, rows: pairs(side.rows) };
   const nextSide = shared.kind === "table" ? { ...shared, table: table(shared.table,shared.title) }
     : shared.kind === "fields" ? { ...shared, fields: pairs(shared.fields) }
-    : shared.kind === "kv" ? { ...shared, bars: shared.bars?.map(bar => ({ ...bar, pct: 0 })) }
+    : shared.kind === "kv" ? { ...shared, bars: shared.bars?.map(bar => ({ ...bar, pct: 0, value: EMPTY })) }
     : shared.kind === "thread" ? { ...shared, bubbles: [] } : shared;
   return { ...screen, kpis: screen.kpis.map(k => ({ ...k, value: data.value(k.label) })),
     main: { ...screen.main, table: table(screen.main.table,screen.main.title), nested: screen.main.nested ? { ...screen.main.nested, table: table(screen.main.nested.table,screen.main.nested.title) } : undefined },
