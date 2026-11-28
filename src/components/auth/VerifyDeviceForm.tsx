@@ -20,8 +20,13 @@ import {
   useAuthSession,
   usePendingVerification,
 } from "@/lib/auth/session";
+import { authApi } from "@/lib/api/auth";
+import { ApiError, errorMessage } from "@/lib/api/client";
+import { getDeviceId } from "@/lib/auth/device-id";
 import { authConfig } from "@/lib/config/site";
-import { OTP_CHECK_ENABLED, deviceOtpAccepted, otpError } from "@/lib/auth/test-otp";
+
+/** The challenge is gone (expired, used, too many tries): the user has to sign in again. */
+const RESTART_CODES = new Set(["CRM_AUTH_CHALLENGE_INVALID", "CRM_AUTH_OTP_TOO_MANY_ATTEMPTS"]);
 
 const outlineBtn =
   "inline-flex h-[46px] min-w-[160px] flex-1 items-center justify-center gap-2.5 whitespace-nowrap rounded-full border-[1.5px] border-navy-ink bg-white px-4 text-[15px] font-semibold text-navy-ink transition hover:bg-navy-ink hover:text-white lg:h-[38px] lg:min-w-0 lg:flex-none lg:gap-2 lg:text-[16px]";
@@ -66,44 +71,63 @@ export default function VerifyDeviceForm() {
     return () => window.clearTimeout(id);
   }, [countdown]);
 
-  function resend() {
-    if (countdown > 0) return;
+  /** Back to the login screen with a notice (challenge no longer usable). */
+  function restart(message: string) {
+    leaving.current = true;
+    clearVerification();
+    setFlash(message);
+    router.replace("/login");
+  }
+
+  async function resend() {
+    if (countdown > 0 || !pending) return;
     setError("");
     setOtp("");
     setCountdown(authConfig.otpResendSeconds);
-    // TODO: call the "resend verification OTP" API here.
+    try {
+      const sent = await authApi.resendDeviceCode({ challengeId: pending.challengeId, deviceId: getDeviceId() });
+      setCountdown(sent.resendAfterSeconds);
+    } catch (err) {
+      if (err instanceof ApiError && RESTART_CODES.has(err.code)) return restart(err.message);
+      setCountdown(0);
+      setError(errorMessage(err));
+    }
   }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (OTP_CHECK_ENABLED && otp.length !== authConfig.otpLength) {
-      setError(`Enter the ${authConfig.otpLength}-digit code sent to your email.`);
-      return;
-    }
-    // TODO: call the "verify device" API here with { otp }. Until then the
-    // static test OTP of the role being signed in is accepted.
-    if (!pending || !deviceOtpAccepted(otp, pending.role)) {
-      setError(otpError());
+    if (!pending) return;
+    const destination = pending.channel === "SMS" ? "mobile" : "email";
+    if (otp.length !== authConfig.otpLength) {
+      setError(`Enter the ${authConfig.otpLength}-digit code sent to your ${destination}.`);
       return;
     }
     setError("");
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 600));
-    leaving.current = true;
-    const role = pending.role;
-    signIn(pending.mobile, role);
-    clearVerification();
-    // replace: Back from the dashboard must not return to the sign-in steps
-    router.replace(`/dashboard/${role}`);
+    try {
+      const result = await authApi.verifyDevice({ challengeId: pending.challengeId, deviceId: getDeviceId(), otp });
+      leaving.current = true;
+      signIn(result, pending.remember);
+      clearVerification();
+      // replace: Back from the dashboard must not return to the sign-in steps
+      router.replace(`/dashboard/${result.profile.dashboard}`);
+    } catch (err) {
+      setSubmitting(false);
+      if (err instanceof ApiError && RESTART_CODES.has(err.code)) return restart(err.message);
+      setError(errorMessage(err));
+    }
   }
 
-  function notMe() {
+  async function notMe() {
     leaving.current = true;
+    const current = pending;
     clearVerification();
     setFlash(
       "Thanks for letting us know. This sign-in was blocked — if you did not try to log in, please change your password.",
     );
     router.replace("/login");
+    // Best effort: the attempt is closed on the server and recorded as a security event.
+    if (current) await authApi.denyDevice({ challengeId: current.challengeId, deviceId: getDeviceId() }).catch(() => undefined);
   }
 
   function backToLogin() {
@@ -170,10 +194,10 @@ export default function VerifyDeviceForm() {
           </div>
           <div className="min-w-0 text-navy-ink lg:ml-[19px] lg:pl-[1px]">
             <p className="text-[15px] leading-[1.4] lg:text-[14.5px] lg:leading-[18px]">
-              OTP sent to your registered email:
+              {pending?.channel === "SMS" ? "OTP sent to your registered mobile:" : "OTP sent to your registered email:"}
             </p>
             <p className="break-all text-[15px] font-bold leading-[1.4] text-[#0c2f94] lg:text-[14.5px] lg:leading-[20px]">
-              {pending?.email ?? " "}
+              {pending?.sentTo ?? " "}
             </p>
           </div>
         </div>
@@ -183,7 +207,7 @@ export default function VerifyDeviceForm() {
           htmlFor="device-otp"
           className="mt-5 block text-[16px] font-bold leading-[1.3] text-navy-ink lg:mt-[14px] lg:text-[14.4px]"
         >
-          Enter Email Verification Code (OTP)
+          {pending?.channel === "SMS" ? "Enter Mobile Verification Code (OTP)" : "Enter Email Verification Code (OTP)"}
         </label>
         <div className="relative mt-3 lg:mt-[6px]">
           <LockIcon

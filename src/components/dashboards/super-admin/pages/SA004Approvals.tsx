@@ -5,9 +5,10 @@
  * Rebuild matched to the SA-004 reference design: 6 KPI tiles, 6 tabs, the
  * approval queue table and a 3-panel footer (selected approval, workflow,
  * controls). Maker–checker, independent approval and separation of duties are
- * enforced; no self-approval; bulk actions only for low-risk, policy-approved
- * records; every decision needs a reason, evidence, audit trail and
- * notification. Demo data only.
+ * enforced on the server; no self-approval; every decision needs a reason and
+ * is audited and notified.
+ *
+ * Data: GET /crm/approvals, /crm/approvals/summary; decisions: POST /crm/approvals/:id/decision.
  */
 
 import { useState } from "react";
@@ -35,42 +36,64 @@ import {
   th,
   useNotice,
 } from "@/components/dashboards/super-admin/kit";
+import { authorizedRequest } from "@/lib/api/authorized";
+import { errorMessage } from "@/lib/api/client";
+import { qs, useCrmQuery } from "@/lib/api/useCrmQuery";
+import { humanize, pad2, shortDateTime } from "@/lib/format";
 
 const tabs = ["All", "Sewa & legal", "Expenses", "Donations", "Procurement", "User access"] as const;
 type Tab = (typeof tabs)[number];
 
-type Category = (typeof tabs)[number];
+/** Approval types shown under each tab (finance and procurement approvals arrive with Phase 4). */
+const TAB_TYPES: Record<Exclude<Tab, "All">, string[]> = {
+  "Sewa & legal": ["CASE_CLOSURE", "CASE_REOPEN", "CITY_ACTIVATION", "NOTIFICATION_BROADCAST"],
+  Expenses: [],
+  Donations: [],
+  Procurement: [],
+  "User access": ["USER_ACTIVATION", "USER_ACCESS_CHANGE", "USER_REACTIVATION"],
+};
+
+const LEVEL_LABEL: Record<string, string> = { SUPER_ADMIN: "Super Admin", ADMIN: "Admin", USER: "User" };
 
 type Approval = {
   id: string;
-  request: string;
-  requestedBy: string;
-  approver: string;
-  amount: string;
-  sla: string;
+  approvalNo: string;
+  type: string;
+  entityLabel: string;
+  summary: string;
+  risk: string;
+  requiredLevel: string;
+  requestedBy: { name: string };
+  requestReason: string;
+  evidenceUrls: string[];
   status: string;
-  category: Exclude<Category, "All">;
+  decidedBy?: { name: string };
+  decidedAt?: string;
+  decisionReason?: string;
+  failureMessage?: string;
+  dueAt?: string;
+  overdue: boolean;
+  canDecide: boolean;
+  createdAt: string;
 };
 
-const approvals: Approval[] = [
-  { id: "AP-001", request: "Emergency dispatch", requestedBy: "User 01", approver: "Admin 01", amount: "—", sla: "05m", status: "Pending", category: "Sewa & legal" },
-  { id: "AP-002", request: "Eligibility verification", requestedBy: "User 02", approver: "Admin 02", amount: "—", sla: "20m", status: "Under review", category: "Sewa & legal" },
-  { id: "AP-003", request: "Case expense", requestedBy: "User 03", approver: "Admin 03", amount: "₹28,500", sla: "1h", status: "Pending", category: "Expenses" },
-  { id: "AP-004", request: "Vehicle maintenance", requestedBy: "User 04", approver: "Admin 03", amount: "₹12,400", sla: "2h", status: "Pending", category: "Expenses" },
-  { id: "AP-005", request: "User access change", requestedBy: "Admin 01", approver: "Super Admin 02", amount: "—", sla: "3h", status: "Pending", category: "User access" },
-  { id: "AP-006", request: "Material request", requestedBy: "User 05", approver: "Admin 03", amount: "₹4,100", sla: "4h", status: "Pending", category: "Procurement" },
-];
-
-type Detail = { supporting: string; maker: string; checker: string; decision: string };
-
-const details: Record<string, Detail> = {
-  "AP-001": { supporting: "Emergency dispatch request form", maker: "User 01", checker: "Admin 01", decision: "Pending independent review" },
-  "AP-002": { supporting: "Eligibility documents / ID proof", maker: "User 02", checker: "Admin 02", decision: "Under review by checker" },
-  "AP-003": { supporting: "Invoice / case expense record", maker: "User 03", checker: "Admin 03", decision: "Pending independent review" },
-  "AP-004": { supporting: "Service estimate / AMC quote", maker: "User 04", checker: "Admin 03", decision: "Pending independent review" },
-  "AP-005": { supporting: "Role change justification", maker: "Admin 01", checker: "Super Admin 02", decision: "Pending independent review" },
-  "AP-006": { supporting: "Material quotation / catalog", maker: "User 05", checker: "Admin 03", decision: "Pending independent review" },
+type Summary = {
+  pending: number;
+  critical: number;
+  overdue: number;
+  awaitingMyDecision: number;
+  thisMonth: { approved: number; rejected: number; averageDecisionHours: number | null };
 };
+
+/** Time left to decide: "05m", "2h", "Overdue". */
+function slaLeft(a: Approval): string {
+  if (a.status !== "PENDING") return "—";
+  if (!a.dueAt) return "—";
+  const ms = new Date(a.dueAt).getTime() - Date.now();
+  if (ms <= 0) return "Overdue";
+  const minutes = Math.round(ms / 60_000);
+  return minutes < 60 ? `${pad2(minutes)}m` : `${Math.round(minutes / 60)}h`;
+}
 
 const workflow = [
   { n: "1", step: "Submission", state: "Recorded" },
@@ -79,23 +102,53 @@ const workflow = [
   { n: "4", step: "Notification", state: "Audit & delivery" },
 ] as const;
 
-const controls: readonly (readonly [string, string])[] = [
-  ["SLA compliance", "96% • demo"],
-  ["Pending expense value", "₹45,000"],
-  ["Sensitive approvals", "Individual review required"],
-  ["Reassignment", "Reason mandatory"],
-] as const;
+const workflowHelp: Record<(typeof workflowActions)[number], string> = {
+  Submit: "Approvals are submitted from the screen of the change itself (user activation, access change, case closure…).",
+  Verify: "The checker reviews the reason and evidence shown under Selected approval.",
+  Decide: "Approve or reject with a reason. The maker can never decide their own request.",
+  Notify: "The maker is notified automatically and the decision is written to the audit trail.",
+};
 
 const workflowActions = ["Submit", "Verify", "Decide", "Notify"] as const;
 
 export default function SA004Approvals() {
   const notice = useNotice();
   const [tab, setTab] = useState<Tab>("All");
-  const [selectedId, setSelectedId] = useState("AP-003");
+  const [history, setHistory] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const rows = tab === "All" ? approvals : approvals.filter((a) => a.category === tab);
-  const selected = approvals.find((a) => a.id === selectedId) ?? approvals[2];
-  const detail = details[selected.id];
+  const queue = useCrmQuery<Approval[]>(`/approvals${qs({ status: history ? undefined : "PENDING", limit: 100 })}`);
+  const summary = useCrmQuery<Summary>("/approvals/summary");
+
+  const all = (queue.data ?? []).filter((a) => (history ? a.status !== "PENDING" : true));
+  const rows = tab === "All" ? all : all.filter((a) => TAB_TYPES[tab].includes(a.type));
+  const selected = rows.find((a) => a.id === selectedId) ?? rows[0];
+  const s = summary.data;
+
+  const controls: readonly (readonly [string, string])[] = [
+    ["Overdue decisions", pad2(s?.overdue)],
+    ["Awaiting my decision", pad2(s?.awaitingMyDecision)],
+    ["Sensitive approvals", "Individual review required"],
+    ["Decision reason", "Mandatory"],
+  ];
+
+  async function decide(decision: "APPROVE" | "REJECT") {
+    if (!selected) return notice.show("Select an approval first.");
+    if (!selected.canDecide) {
+      return notice.show(selected.status !== "PENDING" ? "This approval has already been decided." : `You cannot decide ${selected.approvalNo}: it needs an independent ${LEVEL_LABEL[selected.requiredLevel] ?? ""} who did not request it.`);
+    }
+    const reason = window.prompt(`${decision === "APPROVE" ? "Approve" : "Reject"} ${selected.approvalNo} — reason (required):`)?.trim();
+    if (!reason) return;
+    try {
+      await authorizedRequest(`/approvals/${selected.id}/decision`, { body: { decision, reason } });
+      notice.show(`${selected.approvalNo} ${decision === "APPROVE" ? "approved" : "rejected"}.`);
+      queue.reload();
+      summary.reload();
+    } catch (err) {
+      notice.show(errorMessage(err));
+      queue.reload();
+    }
+  }
 
   return (
     <SuperAdminFrame active="central-approvals">
@@ -110,12 +163,12 @@ export default function SA004Approvals() {
       </PageHead>
 
       <KpiRow cols={6}>
-        <KpiTile tone="blue" icon={Radio} value="15" label="Pending review" sub="Open" />
-        <KpiTile tone="red" icon={Bell} value="07" label="Critical approvals" sub="Subset of pending" />
-        <KpiTile tone="orange" icon={CircleCheck} value="18" label="Approved" sub="This month" />
-        <KpiTile tone="purple" icon={Users} value="03" label="Rejected" sub="This month" />
-        <KpiTile tone="sky" icon={Layers} value="02" label="Reassigned" sub="Events" />
-        <KpiTile tone="green" icon={Radio} value="4.6 h" label="Average time" sub="This month" />
+        <KpiTile tone="blue" icon={Radio} value={pad2(s?.pending)} label="Pending review" sub="Open" />
+        <KpiTile tone="red" icon={Bell} value={pad2(s?.critical)} label="Critical approvals" sub="Subset of pending" />
+        <KpiTile tone="orange" icon={CircleCheck} value={pad2(s?.thisMonth.approved)} label="Approved" sub="This month" />
+        <KpiTile tone="purple" icon={Users} value={pad2(s?.thisMonth.rejected)} label="Rejected" sub="This month" />
+        <KpiTile tone="sky" icon={Layers} value={pad2(s?.awaitingMyDecision)} label="Awaiting me" sub="To decide" />
+        <KpiTile tone="green" icon={Radio} value={s?.thisMonth.averageDecisionHours === null || !s ? "—" : `${s.thisMonth.averageDecisionHours} h`} label="Average time" sub="This month" />
       </KpiRow>
 
       <Tabs tabs={tabs} value={tab} onChange={setTab} />
@@ -123,7 +176,7 @@ export default function SA004Approvals() {
       <div className="flex min-h-0 flex-1 flex-col gap-[10px]">
         {/* Approval queue */}
         <Panel
-          title="Approval queue"
+          title={history ? "Decision history" : "Approval queue"}
           className="lg:min-h-0 lg:flex-[376_1_0]"
           bodyClassName="flex flex-col px-[10px] pt-[8px]"
         >
@@ -138,16 +191,16 @@ export default function SA004Approvals() {
                 <tr
                   key={a.id}
                   onClick={() => setSelectedId(a.id)}
-                  className={`cursor-pointer border-b border-[#eef0f5] last:border-0 even:bg-[#f7f9fd] hover:bg-[#eef2ff] ${selectedId === a.id ? "ring-1 ring-inset ring-[#1d4fe0]/30" : ""}`}
+                  className={`cursor-pointer border-b border-[#eef0f5] last:border-0 even:bg-[#f7f9fd] hover:bg-[#eef2ff] ${selected?.id === a.id ? "ring-1 ring-inset ring-[#1d4fe0]/30" : ""}`}
                 >
-                  <td className={`${td} px-[6px] py-[7px] font-semibold`}>{a.id}</td>
-                  <td className={`${td} px-[6px] py-[7px]`}>{a.request}</td>
-                  <td className={`${td} px-[6px] py-[7px]`}>{a.requestedBy}</td>
-                  <td className={`${td} px-[6px] py-[7px]`}>{a.approver}</td>
-                  <td className={`${td} px-[6px] py-[7px] font-semibold`}>{a.amount}</td>
-                  <td className={`${td} px-[6px] py-[7px] font-bold`}>{a.sla}</td>
+                  <td className={`${td} px-[6px] py-[7px] font-semibold`}>{a.approvalNo}</td>
+                  <td className={`${td} px-[6px] py-[7px]`}>{a.summary}</td>
+                  <td className={`${td} px-[6px] py-[7px]`}>{a.requestedBy.name}</td>
+                  <td className={`${td} px-[6px] py-[7px]`}>{a.decidedBy?.name ?? LEVEL_LABEL[a.requiredLevel] ?? "—"}</td>
+                  <td className={`${td} px-[6px] py-[7px] font-semibold`}>—</td>
+                  <td className={`${td} px-[6px] py-[7px] font-bold`}>{slaLeft(a)}</td>
                   <td className={`${td} px-[6px] py-[7px]`}>
-                    <StatusPill className="h-[19px] min-w-[74px] text-[15px]">{a.status}</StatusPill>
+                    <StatusPill className="h-[19px] min-w-[74px] text-[15px]">{humanize(a.status)}</StatusPill>
                   </td>
                   <td className={`${td} px-[6px] py-[7px]`}>
                     <button
@@ -155,7 +208,6 @@ export default function SA004Approvals() {
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedId(a.id);
-                        notice.show(`${a.id}: evidence and audit history opened (demo).`);
                       }}
                       className="text-[14.8px] font-semibold text-[#0b0c36] hover:text-[#2320c4] hover:underline"
                     >
@@ -167,7 +219,7 @@ export default function SA004Approvals() {
               {!rows.length && (
                 <tr>
                   <td colSpan={8} className="py-6 text-center text-[15px] font-medium text-[#5b6280]">
-                    No approvals in this category.
+                    {queue.loading ? "Loading…" : queue.error ?? (history ? "No decided approvals in this category." : "No approvals in this category.")}
                   </td>
                 </tr>
               )}
@@ -176,21 +228,24 @@ export default function SA004Approvals() {
 
           <div className="mt-[10px] flex flex-wrap gap-[8px]">
             <PrimaryButton
-              onClick={() => notice.show(`${selectedId}: review opened with evidence (demo).`)}
+              onClick={() => notice.show(selected ? `${selected.approvalNo}: ${selected.requestReason}` : "Select an approval first.")}
             >
               Review selected
             </PrimaryButton>
             <PrimaryButton
               outline
-              onClick={() => notice.show(`${selectedId}: reassign requires a reason (demo).`)}
+              onClick={() => notice.show("Approvals are routed automatically by access level and service centre; no manual reassignment.")}
             >
               Reassign
             </PrimaryButton>
             <PrimaryButton
               outline
-              onClick={() => notice.show("Decision history opened (demo).")}
+              onClick={() => {
+                setHistory((h) => !h);
+                setSelectedId(null);
+              }}
             >
-              Decision history
+              {history ? "Pending queue" : "Decision history"}
             </PrimaryButton>
           </div>
         </Panel>
@@ -199,25 +254,20 @@ export default function SA004Approvals() {
         <div className="grid gap-[10px] lg:min-h-0 lg:flex-[230_1_0] lg:grid-cols-3 lg:[grid-template-rows:minmax(0,1fr)]">
           <Panel
             title="Selected approval"
-            note={`• ${selected.id}`}
+            note={selected ? `• ${selected.approvalNo}` : undefined}
             bodyClassName="flex flex-col pt-[3px]"
           >
             <div className="flex flex-col gap-[6px]">
-              <KV k="Supporting documents" v={detail.supporting} />
-              <KV k="Maker" v={detail.maker} />
-              <KV k="Checker" v={detail.checker} />
-              <KV k="Decision" v={detail.decision} />
+              <KV k="Supporting documents" v={selected ? (selected.evidenceUrls.length ? `${selected.evidenceUrls.length} file(s)` : selected.requestReason) : "—"} />
+              <KV k="Maker" v={selected?.requestedBy.name ?? "—"} />
+              <KV k="Checker" v={selected ? selected.decidedBy?.name ?? `Independent ${LEVEL_LABEL[selected.requiredLevel] ?? ""}` : "—"} />
+              <KV k="Decision" v={selected ? (selected.status === "PENDING" ? `Pending · requested ${shortDateTime(selected.createdAt)}` : `${humanize(selected.status)}${selected.decisionReason ? ` · ${selected.decisionReason}` : ""}${selected.failureMessage ? ` · ${selected.failureMessage}` : ""}`) : "—"} />
             </div>
             <div className="mt-auto flex flex-wrap gap-[8px] pt-[8px]">
-              <PrimaryButton
-                onClick={() => notice.show(`${selected.id}: approved with reason (demo).`)}
-              >
+              <PrimaryButton onClick={() => decide("APPROVE")}>
                 Approve with reason
               </PrimaryButton>
-              <PrimaryButton
-                outline
-                onClick={() => notice.show(`${selected.id}: rejected with reason (demo).`)}
-              >
+              <PrimaryButton outline onClick={() => decide("REJECT")}>
                 Reject with reason
               </PrimaryButton>
             </div>
@@ -242,7 +292,7 @@ export default function SA004Approvals() {
                 <button
                   key={act}
                   type="button"
-                  onClick={() => notice.show(`${act}: workflow step recorded (demo).`)}
+                  onClick={() => notice.show(workflowHelp[act])}
                   className="flex h-[28px] items-center rounded-[7px] border-[1.5px] border-[#2f4fe0] bg-white px-[12px] pt-px text-[14.2px] font-semibold text-[#1d3fc4] hover:bg-[#f1f4ff]"
                 >
                   {act}
@@ -259,7 +309,7 @@ export default function SA004Approvals() {
             </div>
             <div className="mt-auto pt-[8px]">
               <PrimaryButton
-                onClick={() => notice.show("Approval thresholds and approvers are configured here (demo).")}
+                onClick={() => notice.show("Who must approve what is defined by the access levels in Roles & Permission Matrix (SA-010).")}
               >
                 Approval settings
               </PrimaryButton>

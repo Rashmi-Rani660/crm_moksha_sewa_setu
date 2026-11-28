@@ -5,10 +5,14 @@
  * Matched to the SA-010 reference design: 5 KPI tiles, 4 tabs, 9-column
  * module permissions matrix (Admin sample) on the left and access level
  * summary, scope & security, and effective access preview on the right.
- * Demo data only.
+ * Data: GET /crm/roles (profiles + grants), /crm/roles/catalogue (matrix rows), /crm/users/summary,
+ * /crm/audit-logs (change history). Scope rules are enforced by the server and cannot be switched off.
  */
 
 import { useState } from "react";
+import type { AccessLevel } from "@/lib/api/auth";
+import { qs, useCrmQuery } from "@/lib/api/useCrmQuery";
+import { pad2, shortDateTime } from "@/lib/format";
 import {
   Radio,
   ShieldCheck,
@@ -38,31 +42,33 @@ type Tab = (typeof tabs)[number];
 
 type Cell = "✓" | "Conditional" | "Scoped" | "Approval" | "Restricted" | "Independent" | "—";
 
-type PermRow = {
-  module: string;
-  view: Cell;
-  create: Cell;
-  edit: Cell;
-  approve: Cell;
-  export: Cell;
-  assign: Cell;
-  archive: Cell;
-  manage: Cell;
-};
+const ACTIONS = ["view", "create", "edit", "approve", "export", "assign", "archive", "manage"] as const;
+type ActionKey = (typeof ACTIONS)[number];
+type PermRow = { module: string } & Record<ActionKey, Cell>;
 
-const rows: PermRow[] = [
-  { module: "Dashboard & reports", view: "✓", create: "—", edit: "—", approve: "—", export: "Scoped", assign: "—", archive: "—", manage: "—" },
-  { module: "Sewa requests & cases", view: "✓", create: "✓", edit: "✓", approve: "Conditional", export: "Scoped", assign: "Scoped", archive: "Approval", manage: "—" },
-  { module: "Tasks & field operations", view: "✓", create: "✓", edit: "✓", approve: "Conditional", export: "Scoped", assign: "Scoped", archive: "Approval", manage: "—" },
-  { module: "Communication hub", view: "✓", create: "✓", edit: "✓", approve: "—", export: "Restricted", assign: "Scoped", archive: "—", manage: "—" },
-  { module: "Finance & donations", view: "—", create: "—", edit: "—", approve: "—", export: "Restricted", assign: "—", archive: "—", manage: "—" },
-  { module: "Users & access", view: "✓", create: "—", edit: "—", approve: "Independent", export: "Restricted", assign: "—", archive: "—", manage: "—" },
-  { module: "AI & automation", view: "✓", create: "—", edit: "—", approve: "—", export: "Restricted", assign: "—", archive: "—", manage: "—" },
-  { module: "Security / backup / audit", view: "—", create: "—", edit: "—", approve: "Independent", export: "Restricted", assign: "—", archive: "—", manage: "—" },
-];
+type Grant = { module: string; action: string; scope: string; requiresApproval: boolean };
+type RoleRow = { id: string; name: string; slug: string; accessLevel: AccessLevel; grants: Grant[]; updatedAt: string; userCount: number };
+type Catalogue = { modules: { key: string; group: string; actions: { action: string }[] }[] };
+type UserSummary = { total: number; activeByAccessLevel: Record<AccessLevel, number> };
+type AuditRow = { id: string; at: string; summary: string };
 
 const accessLevels = ["Admin", "Super Admin", "User"] as const;
-const profiles = ["Operations Admin", "Finance Admin", "Centre Admin", "Read-only Auditor"] as const;
+const LEVEL: Record<(typeof accessLevels)[number], AccessLevel> = { Admin: "ADMIN", "Super Admin": "SUPER_ADMIN", User: "USER" };
+
+/**
+ * One matrix cell for a catalogue group (several modules): "✓" when every module of the group that
+ * has the action grants it centre- or organisation-wide, "Scoped" for narrower grants,
+ * "Conditional" when only some modules grant it, "Approval" when it is routed through an approval.
+ */
+function cellFor(grants: Grant[], groupModules: { key: string; actions: { action: string }[] }[], action: ActionKey): Cell {
+  const withAction = groupModules.filter((m) => m.actions.some((a) => a.action === action)).map((m) => m.key);
+  if (!withAction.length) return "—";
+  const found = grants.filter((g) => withAction.includes(g.module) && g.action === action);
+  if (!found.length) return "—";
+  if (found.some((g) => g.requiresApproval)) return "Approval";
+  if (found.length < withAction.length) return "Conditional";
+  return found.every((g) => g.scope === "ORGANISATION" || g.scope === "CENTRE") ? "✓" : "Scoped";
+}
 
 const levelSummary: readonly (readonly [string, string])[] = [
   ["Super Admin", "Organisation-wide"],
@@ -79,14 +85,6 @@ const scopeChecks = [
   "Sensitive exports require approval",
 ] as const;
 
-const effective = [
-  ["Selected profile", "Operations Admin"],
-  ["Centre", "Ghaziabad"],
-  ["Finance approval", "Restricted"],
-  ["Last review", "Demo / pending"],
-  ["Access review", "Independent approver"],
-  ["Session revocation", "On access change"],
-] as const;
 
 function CellValue({ value }: { value: Cell }) {
   if (value === "✓") {
@@ -103,8 +101,31 @@ export default function SA010RolesPermissions() {
   const notice = useNotice();
   const [tab, setTab] = useState<Tab>("Permission Matrix");
   const [level, setLevel] = useState<(typeof accessLevels)[number]>("Admin");
-  const [profile, setProfile] = useState<(typeof profiles)[number]>("Operations Admin");
-  const [checks, setChecks] = useState<Record<string, boolean>>(() => Object.fromEntries(scopeChecks.map((c) => [c, true])));
+  const [profileName, setProfile] = useState<string>("");
+
+  const roles = useCrmQuery<RoleRow[]>(`/roles${qs({ accessLevel: LEVEL[level], status: "ACTIVE", limit: 50 })}`);
+  const catalogue = useCrmQuery<Catalogue>("/roles/catalogue");
+  const summary = useCrmQuery<UserSummary>("/users/summary");
+  const history = useCrmQuery<AuditRow[]>(`/audit-logs${qs({ entityType: "CrmRole", limit: 10 })}`);
+
+  const profiles = (roles.data ?? []).map((r) => r.name);
+  const role = roles.data?.find((r) => r.name === profileName) ?? roles.data?.[0];
+  const modules = catalogue.data?.modules ?? [];
+  const groups = [...new Set(modules.map((m) => m.group))];
+  const rows: PermRow[] = groups.map((group) => {
+    const groupModules = modules.filter((m) => m.group === group);
+    return { module: group, ...(Object.fromEntries(ACTIONS.map((a) => [a, cellFor(role?.grants ?? [], groupModules, a)])) as Record<ActionKey, Cell>) };
+  });
+  const financeApprove = role?.grants.find((g) => g.module === "finance" && g.action === "approve");
+  const effective: readonly (readonly [string, string])[] = [
+    ["Selected profile", role?.name ?? "—"],
+    ["Users holding it", pad2(role?.userCount)],
+    ["Finance approval", financeApprove ? (financeApprove.requiresApproval ? "Approval" : "Allowed") : "Restricted"],
+    ["Last change", shortDateTime(role?.updatedAt)],
+    ["Access review", "Independent approver"],
+    ["Session revocation", "On access change"],
+  ];
+  const s = summary.data;
 
   const showMatrix = tab === "Permission Matrix" || tab === "Access Profiles";
   const showRight = tab === "Permission Matrix" || tab === "Access Profiles" || tab === "Effective Access";
@@ -123,10 +144,10 @@ export default function SA010RolesPermissions() {
 
       <KpiRow cols={5}>
         <KpiTile tone="blue" icon={ShieldCheck} value="03" label="Access levels" sub="Fixed architecture" />
-        <KpiTile tone="green" icon={Users} value="186" label="CRM users" sub="Demo accounts" />
-        <KpiTile tone="orange" icon={Users} value="01" label="Super Admin" sub="Organisation scope" />
-        <KpiTile tone="purple" icon={Users} value="12" label="Admin" sub="Delegated scope" />
-        <KpiTile tone="sky" icon={Users} value="173" label="User" sub="Assigned work" />
+        <KpiTile tone="green" icon={Users} value={pad2(s?.total)} label="CRM users" sub="All accounts" />
+        <KpiTile tone="orange" icon={Users} value={pad2(s?.activeByAccessLevel.SUPER_ADMIN)} label="Super Admin" sub="Organisation scope" />
+        <KpiTile tone="purple" icon={Users} value={pad2(s?.activeByAccessLevel.ADMIN)} label="Admin" sub="Delegated scope" />
+        <KpiTile tone="sky" icon={Users} value={pad2(s?.activeByAccessLevel.USER)} label="User" sub="Assigned work" />
       </KpiRow>
 
       <Tabs tabs={tabs} value={tab} onChange={setTab} />
@@ -134,22 +155,23 @@ export default function SA010RolesPermissions() {
       <div className="flex min-h-0 flex-1 flex-col gap-[10px]">
         {tab === "Change History" ? (
           <Panel title="Change history" className="lg:min-h-0 lg:flex-1" bodyClassName="flex flex-col pt-[6px]">
-            <KV k="Finance approve set to Conditional for Admin" v="24 Nov, 11:32 AM • Applied" className="py-[6px]" />
-            <KV k="Profile 'Operations Admin' updated" v="24 Nov, 10:48 AM • Applied" className="py-[6px]" />
-            <KV k="Self-escalation prevention enabled org-wide" v="23 Nov, 02:10 PM • Applied" className="py-[6px]" />
+            {(history.data ?? []).map((h) => (
+              <KV key={h.id} k={h.summary} v={`${shortDateTime(h.at)} • Applied`} className="py-[6px]" />
+            ))}
+            {!history.data?.length && <p className="py-[6px] text-[15px] font-medium text-[#5b6280]">{history.loading ? "Loading…" : history.error ?? "No access profile changes recorded yet."}</p>}
           </Panel>
         ) : (
           <div className="grid gap-[10px] lg:min-h-0 lg:flex-1 lg:grid-cols-[68fr_32fr] lg:[grid-template-rows:minmax(0,1fr)]">
             {showMatrix && (
-              <Panel title={`Module permissions — ${level} (sample)`} bodyClassName="flex flex-col gap-[8px] pt-[6px]">
+              <Panel title={`Module permissions — ${role?.name ?? level}`} bodyClassName="flex flex-col gap-[8px] pt-[6px]">
                 <div className="grid gap-[10px] sm:grid-cols-2">
                   <div>
                     <p className="mb-[2px] text-[15.5px] font-medium text-[#3b4256]">Access level</p>
-                    <Dropdown label="Access level" value={level} options={accessLevels} onChange={setLevel} className="w-full" size={12.5} />
+                    <Dropdown label="Access level" value={level} options={accessLevels} onChange={(v) => { setLevel(v); setProfile(""); }} className="w-full" size={12.5} />
                   </div>
                   <div>
                     <p className="mb-[2px] text-[15.5px] font-medium text-[#3b4256]">Permission profile</p>
-                    <Dropdown label="Permission profile" value={profile} options={profiles} onChange={setProfile} className="w-full" size={12.5} />
+                    <Dropdown label="Permission profile" value={role?.name ?? "—"} options={profiles.length ? profiles : ["—"]} onChange={setProfile} className="w-full" size={12.5} />
                   </div>
                 </div>
 
@@ -160,6 +182,11 @@ export default function SA010RolesPermissions() {
                     ))}
                   </Thead>
                   <tbody>
+                    {!rows.length && (
+                      <tr>
+                        <td colSpan={9} className="py-6 text-center text-[15px] font-medium text-[#5b6280]">{catalogue.loading || roles.loading ? "Loading…" : catalogue.error ?? roles.error ?? "No access profile for this level."}</td>
+                      </tr>
+                    )}
                     {rows.map((r) => (
                       <tr key={r.module}>
                         <td className={`${td} px-[6px] py-[6px] font-semibold`}>{r.module}</td>
@@ -177,10 +204,10 @@ export default function SA010RolesPermissions() {
                 </TableWrap>
 
                 <div className="flex flex-wrap gap-[8px]">
-                  <PrimaryButton onClick={() => notice.show("Changes submitted for independent approval (demo).")}>
+                  <PrimaryButton onClick={() => notice.show(role?.slug === "super_admin" ? "The Super Admin profile is locked." : "Profile changes are made by a Super Admin and recorded in the change history; holders are signed out when their access changes.")}>
                     Submit changes for approval
                   </PrimaryButton>
-                  <PrimaryButton outline onClick={() => notice.show("Effective access preview opened (demo).")}>
+                  <PrimaryButton outline onClick={() => setTab("Effective Access")}>
                     Preview effective access
                   </PrimaryButton>
                 </div>
@@ -205,7 +232,8 @@ export default function SA010RolesPermissions() {
 
                 <Panel title="Scope & security" className="lg:min-h-0 lg:flex-[42_1_0]" bodyClassName="flex flex-col justify-between py-[4px]">
                   {scopeChecks.map((label) => {
-                    const on = checks[label];
+                    // Enforced by the server for every profile; shown, not switchable.
+                    const on = true;
                     return (
                       <label
                         key={label}
@@ -214,7 +242,7 @@ export default function SA010RolesPermissions() {
                         <input
                           type="checkbox"
                           checked={on}
-                          onChange={(e) => setChecks((s) => ({ ...s, [label]: e.target.checked }))}
+                          readOnly
                           className="sr-only"
                         />
                         <span

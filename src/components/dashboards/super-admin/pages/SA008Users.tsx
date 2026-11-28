@@ -8,11 +8,11 @@
  * levels (designation is not an access level); mobile numbers are masked and
  * records are fictional; no direct deletion; MFA enforced, scope reviews,
  * session revocation and HRMS exit hand-over. Volunteers are managed
- * separately. Demo data only.
+ * separately. Data: GET /crm/users, /crm/users/summary, /crm/audit-logs.
  */
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Bell,
   CircleCheck,
@@ -41,87 +41,22 @@ import {
   th,
   useNotice,
 } from "@/components/dashboards/super-admin/kit";
+import type { AccessLevel } from "@/lib/api/auth";
+import { authorizedRequest } from "@/lib/api/authorized";
+import { errorMessage } from "@/lib/api/client";
+import { qs, useCrmQuery, useDebounced } from "@/lib/api/useCrmQuery";
+import { ACCESS_LEVEL_LABEL, clock, humanize, pad2, shortDateTime } from "@/lib/format";
 
 export const CREATE_USER_HREF = "/dashboard/super-admin/users-access-control/create";
 
 const tabs = ["User list", "Permissions", "Account security", "Activity logs", "HRMS sync"] as const;
 type Tab = (typeof tabs)[number];
 
-type Role = "Super Admin" | "Admin" | "User";
-
-type DemoUser = {
-  id: string;
-  hrms: string;
-  name: string;
-  mobile: string;
-  dept: string;
-  level: Role;
-  reporting: string;
-  centre: string;
-  mfa: string;
-  status: "Active" | "Inactive";
-  login: string;
-};
-
-const departments = [
-  "Operations & Sewa",
-  "CSR & Partnerships",
-  "Finance & Donations",
-  "Communication & Outreach",
-  "Volunteer Management",
-  "IT, Automation & CRM",
-  "Admin & Support Services",
-];
-
-const firstLogins = [
-  "24 Nov, 10:12 AM",
-  "24 Nov, 09:56 AM",
-  "24 Nov, 09:40 AM",
-  "24 Nov, 09:27 AM",
-  "23 Nov, 06:12 PM",
-  "23 Nov, 05:48 PM",
-  "23 Nov, 04:20 PM",
-  "20 Nov, 11:05 AM",
-];
-
-/** First eight rows as designed; the rest generated fictional (1 Super Admin, 12 Admin, 173 User, 24 inactive). */
-const users: DemoUser[] = Array.from({ length: 186 }, (_, i) => {
-  const n = i + 1;
-  const level: Role = n === 1 ? "Super Admin" : n <= 13 || (n % 16 === 0 && n <= 160) ? "Admin" : "User";
-  const inactive = n % 8 === 0 || n === 185;
-  const day = 23 - Math.floor(i / 12);
-  const login =
-    i < 8
-      ? firstLogins[i]
-      : `${Math.max(day, 1)} Nov, ${String(((i * 7) % 12) + 1).padStart(2, "0")}:${String((i * 13) % 60).padStart(2, "0")} ${i % 2 ? "AM" : "PM"}`;
-  const reporting = level === "Super Admin" ? "—" : level === "Admin" ? "Super Admin 01" : `Admin ${String((i % 12) + 1).padStart(2, "0")}`;
-  return {
-    id: `MS-U${String(n).padStart(4, "0")}`,
-    hrms: `HR-E${String(1000 + n)}`,
-    name: `Demo User ${String(n).padStart(2, "0")}`,
-    mobile: `+91 •••••• ${String(n % 10000).padStart(4, "0")}`,
-    dept: departments[i % departments.length],
-    level,
-    reporting,
-    centre: "Ghaziabad",
-    mfa: "Required",
-    status: inactive ? "Inactive" : "Active",
-    login,
-  };
-});
-
 const levels = ["All access levels", "Super Admin", "Admin", "User"] as const;
 const statuses = ["All Status", "Active", "Inactive"] as const;
 const PER_PAGE = 8;
 
 const levelTone = { "Super Admin": "purple", Admin: "blue", User: "gray" } as const;
-
-const accessSecurity: readonly (readonly [string, string])[] = [
-  ["Pending access requests", "03"],
-  ["Active sessions", "48"],
-  ["MFA", "Mandatory"],
-  ["HRMS exit revocation", "Enforced"],
-] as const;
 
 const lifecycle: readonly (readonly [string, string])[] = [
   ["New account approval", "Independent review"],
@@ -137,20 +72,46 @@ const scope: readonly (readonly [string, string])[] = [
   ["Volunteers", "Separate app"],
 ] as const;
 
-const activityLog = [
-  { time: "10:12", text: "MS-U0001 signed in · new device verified", tone: "green" as const },
-  { time: "09:56", text: "MS-U0004 role changed User → Admin · approved", tone: "blue" as const },
-  { time: "09:40", text: "MS-U0008 account suspended · reason recorded", tone: "amber" as const },
-  { time: "09:12", text: "HRMS sync · 2 accounts flagged for exit", tone: "purple" as const },
-];
+const LEVEL_PARAM: Record<(typeof levels)[number], AccessLevel | undefined> = {
+  "All access levels": undefined,
+  "Super Admin": "SUPER_ADMIN",
+  Admin: "ADMIN",
+  User: "USER",
+};
 
-const hrmsRows: readonly (readonly [string, string])[] = [
-  ["Last sync", "Today · 10:20"],
-  ["Employees matched", "186 / 186"],
-  ["New joiners pending", "02"],
-  ["Exit revocations", "01 pending"],
-  ["Sync mode", "Scheduled · hourly"],
-] as const;
+/** Rows of GET /crm/users (mobiles arrive masked from the server). */
+type UserRow = {
+  id: string;
+  crmId: string;
+  employeeId?: string;
+  name: string;
+  mobileMasked: string;
+  department: { name: string } | null;
+  reportingTo: { name: string } | null;
+  accessLevel: AccessLevel;
+  centres: { name: string }[];
+  status: string;
+  version?: number;
+  lastLoginAt?: string;
+};
+
+type UserSummary = {
+  total: number;
+  active: number;
+  draft: number;
+  pendingApproval: number;
+  suspended: number;
+  exited: number;
+  activeByAccessLevel: Record<AccessLevel, number>;
+  linkedToCms: number;
+  activeSessions: number;
+  pendingAccessRequests: number;
+};
+
+type AuditRow = { id: string; at: string; action: string; summary: string; entityLabel?: string };
+
+const auditTone = (action: string) =>
+  action.includes("suspend") || action.includes("exit") ? ("amber" as const) : action.includes("access") || action.includes("approved") ? ("blue" as const) : action.includes("created") || action.includes("activated") ? ("green" as const) : ("purple" as const);
 
 export default function SA008Users() {
   const notice = useNotice();
@@ -159,24 +120,59 @@ export default function SA008Users() {
   const [level, setLevel] = useState<(typeof levels)[number]>("All access levels");
   const [status, setStatus] = useState<(typeof statuses)[number]>("All Status");
   const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<UserRow | null>(null);
+  const search = useDebounced(query.trim());
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return users.filter(
-      (u) =>
-        (level === "All access levels" || u.level === level) &&
-        (status === "All Status" || u.status === status) &&
-        (!q || `${u.id} ${u.hrms} ${u.name} ${u.mobile}`.toLowerCase().includes(q)),
-    );
-  }, [query, level, status]);
+  const list = useCrmQuery<UserRow[]>(
+    `/users${qs({ page, limit: PER_PAGE, sort: "crmId", search: search.length >= 2 ? search : undefined, accessLevel: LEVEL_PARAM[level], inactive: status === "All Status" ? undefined : status === "Inactive" })}`,
+  );
+  const summary = useCrmQuery<UserSummary>("/users/summary");
+  const audit = useCrmQuery<AuditRow[]>(`/audit-logs${qs({ entityType: "CrmUser", limit: 8 })}`);
 
-  const pages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const rows = list.data ?? [];
+  const total = list.meta?.total ?? 0;
+  const pages = list.meta?.totalPages ?? 1;
   const current = Math.min(page, pages);
-  const rows = filtered.slice((current - 1) * PER_PAGE, current * PER_PAGE);
+  const filtered = { length: total };
   const filter = <T,>(set: (v: T) => void) => (v: T) => {
     set(v);
     setPage(1);
   };
+
+  const s = summary.data;
+  const accessSecurity: readonly (readonly [string, string])[] = [
+    ["Pending access requests", pad2(s?.pendingAccessRequests)],
+    ["Active sessions", pad2(s?.activeSessions)],
+    // Password + OTP on every sign-in, new-device verification: cannot be switched off.
+    ["MFA", "Mandatory"],
+    ["HRMS exit revocation", "Enforced"],
+  ];
+  const hrmsRows: readonly (readonly [string, string])[] = [
+    ["Source", "CMS staff directory"],
+    ["Employees linked", s ? `${s.linkedToCms} / ${s.total}` : "—"],
+    ["New joiners pending", pad2(s ? s.pendingApproval + s.draft : undefined)],
+    ["Exited accounts", pad2(s?.exited)],
+    ["Sync mode", "On demand · per account"],
+  ];
+  const activityLog = (audit.data ?? []).map((a) => ({ time: clock(a.at), text: `${a.entityLabel ? `${a.entityLabel} · ` : ""}${a.summary}`, tone: auditTone(a.action) }));
+
+  async function suspendSelected() {
+    if (!selected) return notice.show("Select a user in the register first.");
+    if (selected.status !== "ACTIVE") return notice.show("Only an active account can be suspended.");
+    const reason = window.prompt(`Reason for suspending ${selected.name} (required):`)?.trim();
+    if (!reason) return;
+    try {
+      const detail = await authorizedRequest<{ version: number }>(`/users/${selected.id}`);
+      await authorizedRequest(`/users/${selected.id}/suspend`, { body: { version: detail.data.version, reason } });
+      notice.show(`${selected.name} suspended; their sessions were signed out.`);
+      setSelected(null);
+      list.reload();
+      summary.reload();
+      audit.reload();
+    } catch (err) {
+      notice.show(errorMessage(err));
+    }
+  }
 
   const showRegister = tab === "User list" || tab === "Permissions" || tab === "Activity logs";
   const showAccess = tab === "User list" || tab === "Account security" || tab === "Permissions";
@@ -202,12 +198,12 @@ export default function SA008Users() {
       </PageHead>
 
       <KpiRow cols={6}>
-        <KpiTile tone="blue" icon={Radio} value="186" label="Total accounts" sub="All levels" />
-        <KpiTile tone="green" icon={Bell} value="162" label="Active" sub="Enabled" />
-        <KpiTile tone="orange" icon={CircleCheck} value="24" label="Inactive" sub="Suspended" />
-        <KpiTile tone="purple" icon={Users} value="01" label="Super Admin" sub="Org-wide" />
-        <KpiTile tone="sky" icon={Layers} value="12" label="Admin" sub="Departments" />
-        <KpiTile tone="green" icon={Radio} value="173" label="User" sub="Assigned work" />
+        <KpiTile tone="blue" icon={Radio} value={pad2(s?.total)} label="Total accounts" sub="All levels" />
+        <KpiTile tone="green" icon={Bell} value={pad2(s?.active)} label="Active" sub="Enabled" />
+        <KpiTile tone="orange" icon={CircleCheck} value={pad2(s ? s.total - s.active : undefined)} label="Inactive" sub="Suspended" />
+        <KpiTile tone="purple" icon={Users} value={pad2(s?.activeByAccessLevel.SUPER_ADMIN)} label="Super Admin" sub="Org-wide" />
+        <KpiTile tone="sky" icon={Layers} value={pad2(s?.activeByAccessLevel.ADMIN)} label="Admin" sub="Departments" />
+        <KpiTile tone="green" icon={Radio} value={pad2(s?.activeByAccessLevel.USER)} label="User" sub="Assigned work" />
       </KpiRow>
 
       <Tabs tabs={tabs} value={tab} onChange={setTab} />
@@ -244,34 +240,34 @@ export default function SA008Users() {
                   </Thead>
                   <tbody>
                     {rows.map((u) => (
-                      <tr key={u.id} className="border-b border-[#eef0f5] last:border-0 hover:bg-[#f7f9ff]">
-                        <td className={`${td} px-[5px] py-[5px] font-semibold`}>{u.id}</td>
-                        <td className={`${td} px-[5px] py-[5px] text-[#3b4256]`}>{u.hrms}</td>
+                      <tr key={u.id} onClick={() => setSelected(u)} aria-selected={selected?.id === u.id} className={`cursor-pointer border-b border-[#eef0f5] last:border-0 hover:bg-[#f7f9ff] ${selected?.id === u.id ? "bg-[#f7f9ff]" : ""}`}>
+                        <td className={`${td} px-[5px] py-[5px] font-semibold`}>{u.crmId}</td>
+                        <td className={`${td} px-[5px] py-[5px] text-[#3b4256]`}>{u.employeeId ?? "—"}</td>
                         <td className={`${td} px-[5px] py-[5px] font-bold`}>{u.name}</td>
-                        <td className={`${td} px-[5px] py-[5px]`}>{u.mobile}</td>
-                        <td className={`${td} px-[5px] py-[5px]`}>{u.dept}</td>
+                        <td className={`${td} px-[5px] py-[5px]`}>+91 {u.mobileMasked}</td>
+                        <td className={`${td} px-[5px] py-[5px]`}>{u.department?.name ?? "—"}</td>
                         <td className={`${td} px-[5px] py-[5px]`}>
-                          <Pill tone={levelTone[u.level]} className="h-[18px] min-w-[74px] text-[14.5px]">
-                            {u.level}
+                          <Pill tone={levelTone[ACCESS_LEVEL_LABEL[u.accessLevel]]} className="h-[18px] min-w-[74px] text-[14.5px]">
+                            {ACCESS_LEVEL_LABEL[u.accessLevel]}
                           </Pill>
                         </td>
-                        <td className={`${td} px-[5px] py-[5px]`}>{u.reporting}</td>
-                        <td className={`${td} px-[5px] py-[5px]`}>{u.centre}</td>
+                        <td className={`${td} px-[5px] py-[5px]`}>{u.reportingTo?.name ?? "—"}</td>
+                        <td className={`${td} px-[5px] py-[5px]`}>{u.centres.map((c) => c.name).join(", ") || "—"}</td>
                         <td className={`${td} px-[5px] py-[5px]`}>
                           <Pill tone="green" className="h-[18px] min-w-[58px] text-[14.5px]">
-                            {u.mfa}
+                            Required
                           </Pill>
                         </td>
                         <td className={`${td} px-[5px] py-[5px]`}>
-                          <StatusPill className="h-[18px] min-w-[62px] text-[14.5px]">{u.status}</StatusPill>
+                          <StatusPill className="h-[18px] min-w-[62px] text-[14.5px]">{humanize(u.status)}</StatusPill>
                         </td>
-                        <td className={`${td} px-[5px] py-[5px] text-[15.5px]`}>{u.login}</td>
+                        <td className={`${td} px-[5px] py-[5px] text-[15.5px]`}>{shortDateTime(u.lastLoginAt)}</td>
                       </tr>
                     ))}
                     {!rows.length && (
                       <tr>
                         <td colSpan={11} className="py-6 text-center text-[15px] font-medium text-[#5b6280]">
-                          No users match these filters.
+                          {list.loading ? "Loading…" : list.error ?? "No users match these filters."}
                         </td>
                       </tr>
                     )}
@@ -289,13 +285,13 @@ export default function SA008Users() {
                   <Link href={CREATE_USER_HREF}>
                     <PrimaryButton>Create user</PrimaryButton>
                   </Link>
-                  <PrimaryButton outline onClick={() => notice.show("Edit access: role changes need independent approval (demo).")}>
+                  <PrimaryButton outline onClick={() => notice.show(selected ? `Access changes for ${selected.name} are submitted for independent approval.` : "Select a user in the register first.")}>
                     Edit access
                   </PrimaryButton>
-                  <PrimaryButton outline onClick={() => notice.show("Suspend account: reason required, sessions revoked (demo).")}>
+                  <PrimaryButton outline onClick={suspendSelected}>
                     Suspend account
                   </PrimaryButton>
-                  <PrimaryButton outline onClick={() => notice.show("View audit opened (demo).")}>
+                  <PrimaryButton outline onClick={() => setTab("Activity logs")}>
                     View audit
                   </PrimaryButton>
                 </div>
@@ -318,7 +314,7 @@ export default function SA008Users() {
                   <KV key={k} k={k} v={v} className="border-b border-[#eef0f5] py-[5px] last:border-0" />
                 ))}
                 <div className="pt-[8px]">
-                  <PrimaryButton onClick={() => notice.show("HRMS sync started (demo).")}>
+                  <PrimaryButton onClick={() => { summary.reload(); notice.show("HRMS details are refreshed per account from the CMS staff record."); }}>
                     Sync now
                   </PrimaryButton>
                 </div>

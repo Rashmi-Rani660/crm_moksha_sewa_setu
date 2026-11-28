@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 import { useId, useState, type CSSProperties } from "react";
 import { Bell, ChevronDown, CircleUserRound, LogOut, Menu, Mic, Search, Send, Sparkles } from "lucide-react";
 import { DESIGN_W, useMenuToggle } from "@/components/dashboards/canvas";
-import { sectionHref, sectionsOf, shells } from "@/components/dashboards/shells";
+import { sectionHref, sectionsOf } from "@/components/dashboards/shells";
 import { usePopover } from "@/components/dashboards/usePopover";
-import { signIn, signOut, useAuthSession, type Role } from "@/lib/auth/session";
+import { canViewDashboard, signOut, useAuthSession, viewDashboard, type Role } from "@/lib/auth/session";
+import { authorizedRequest } from "@/lib/api/authorized";
+import { qs, useCrmQuery } from "@/lib/api/useCrmQuery";
+import { ACCESS_LEVEL_LABEL, shortDateTime } from "@/lib/format";
 
 /** Design x positions (full 1600px canvas) of the header pieces. */
 export type TopBarSpec = {
@@ -307,29 +310,26 @@ function AskAi() {
 
 /* ------------------------------ notifications ------------------------------ */
 
-/** Cleared by `signOut` (see STATE_PREFIX in lib/auth/session). */
-const readKey = (role: Role) => `sewa-setu:notifications-read:${role}`;
+type InboxItem = { id: string; title: string; message: string; read: boolean; priority: string; createdAt: string };
+type InboxSummary = { unread: number };
 
-function Notifications({ role, count }: { role: Role; count: number }) {
+/** The signed-in user's CRM notifications (GET /crm/notifications). `count` is the design placeholder, unused. */
+function Notifications({ role }: { role: Role; count: number }) {
   const { open, setOpen, ref } = usePopover();
-  const notices = shells[role].notices;
-  // Rendered on the client only (the dashboard waits for the session), so
-  // reading sessionStorage here is safe.
-  const [read, setRead] = useState(() => {
-    try {
-      return sessionStorage.getItem(readKey(role)) === "1";
-    } catch {
-      return false;
-    }
-  });
-  const unread = read ? 0 : count;
+  const inbox = useCrmQuery<InboxItem[]>(`/notifications${qs({ limit: 6 })}`);
+  const summary = useCrmQuery<InboxSummary>("/notifications/summary");
+  const notices = inbox.data ?? [];
+  const unread = summary.data?.unread ?? 0;
+  const refresh = () => {
+    inbox.reload();
+    summary.reload();
+  };
   const markRead = () => {
-    setRead(true);
-    try {
-      sessionStorage.setItem(readKey(role), "1");
-    } catch {
-      /* storage unavailable */
-    }
+    authorizedRequest("/notifications/read-all", { method: "POST" }).then(refresh, refresh);
+  };
+  const openOne = (id: string) => {
+    setOpen(false);
+    authorizedRequest(`/notifications/${id}/read`, { method: "POST" }).then(refresh, refresh);
   };
 
   return (
@@ -361,20 +361,23 @@ function Notifications({ role, count }: { role: Role; count: number }) {
           </div>
           <ul className="p-[6px]">
             {notices.map((n) => (
-              <li key={n.text}>
+              <li key={n.id}>
                 <Link
-                  href={sectionHref(role, n.section)}
-                  onClick={() => setOpen(false)}
+                  href={sectionHref(role, "Notifications")}
+                  onClick={() => openOne(n.id)}
                   className="flex items-start gap-[10px] rounded-[8px] px-[10px] py-[8px] hover:bg-[#f4f6fc]"
                 >
-                  <span className={`mt-[6px] h-[8px] w-[8px] shrink-0 rounded-full ${read ? "bg-[#c4cad6]" : "bg-[#2f6fe0]"}`} />
+                  <span className={`mt-[6px] h-[8px] w-[8px] shrink-0 rounded-full ${n.read ? "bg-[#c4cad6]" : "bg-[#2f6fe0]"}`} />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[16px] font-semibold leading-snug">{n.text}</span>
-                    <span className="block text-[14px] font-medium text-[#5b6280]">{n.time} · {n.section}</span>
+                    <span className="block text-[16px] font-semibold leading-snug">{n.title}</span>
+                    <span className="block text-[14px] font-medium text-[#5b6280]">{shortDateTime(n.createdAt)} · {n.message}</span>
                   </span>
                 </Link>
               </li>
             ))}
+            {!notices.length && (
+              <li className="px-[10px] py-[12px] text-[15px] font-medium text-[#5b6280]">{inbox.loading ? "Loading…" : inbox.error ?? "No notifications yet."}</li>
+            )}
           </ul>
           <Link
             href={sectionHref(role, "Notifications")}
@@ -429,7 +432,7 @@ function leaveDashboard(done: () => void) {
 
 function ProfileMenu({
   role,
-  user,
+  user: designUser,
   chevron = 0,
   roleSize = 13,
   nameSize = 18,
@@ -448,6 +451,8 @@ function ProfileMenu({
   const router = useRouter();
   const { session } = useAuthSession();
   const { open, setOpen, ref } = usePopover();
+  // The signed-in person, not the design placeholder.
+  const user = session ? { name: session.name, role: ACCESS_LEVEL_LABEL[session.accessLevel] } : designUser;
 
   return (
     <div ref={ref} className="relative">
@@ -504,8 +509,7 @@ function ProfileMenu({
               role="menuitem"
               onClick={() => {
                 setOpen(false);
-                signIn(session?.mobile ?? "9876543210", "user");
-                router.push("/dashboard/user/my-tasks");
+                if (viewDashboard("user")) router.push("/dashboard/user/my-tasks");
               }}
               className="flex h-[36px] w-full items-center gap-[10px] rounded-[8px] px-[10px] text-[16px] font-semibold text-[#1d4fe0] hover:bg-[#f1f4fb]"
             >
@@ -513,13 +517,13 @@ function ProfileMenu({
               <span className="pt-[2px]">User</span>
             </button>
           ) : (
-            <button
+            // Back to the Super Admin dashboard — only for someone who actually has that access.
+            canViewDashboard(session, "super-admin") && <button
               type="button"
               role="menuitem"
               onClick={() => {
                 setOpen(false);
-                signIn(session?.mobile ?? "9876543210", "super-admin");
-                router.push("/dashboard/super-admin");
+                if (viewDashboard("super-admin")) router.push("/dashboard/super-admin");
               }}
               className="flex h-[36px] w-full items-center gap-[10px] rounded-[8px] px-[10px] text-[16px] font-semibold text-[#1d4fe0] hover:bg-[#f1f4fb]"
             >

@@ -4,7 +4,11 @@
  * SA-003 — Notification & Alert Centre.
  * Matches the reference image: 6 KPI tiles, 7 tabs, notification queue
  * table with filter bar and action row, then create notification /
- * broadcast & delivery / alert preferences panels. Demo data only.
+ * broadcast & delivery / alert preferences panels.
+ *
+ * Data: GET /crm/notifications/queue (+ /summary) for people in the caller's scope; a new
+ * notification is a broadcast (POST /crm/notifications/broadcasts) that is previewed and then
+ * submitted for audience approval — it is only sent once someone else approves it.
  */
 
 import { useState, type ReactNode } from "react";
@@ -33,6 +37,10 @@ import {
   th,
   useNotice,
 } from "@/components/dashboards/super-admin/kit";
+import { authorizedRequest } from "@/lib/api/authorized";
+import { errorMessage } from "@/lib/api/client";
+import { qs, useCrmQuery, useDebounced } from "@/lib/api/useCrmQuery";
+import { humanize, pad2, shortDateTime } from "@/lib/format";
 
 type Tab = (typeof tabs)[number];
 const tabs = [
@@ -45,13 +53,15 @@ const tabs = [
   "Announcements",
 ] as const;
 
-const tabFilter: Partial<Record<Tab, string[]>> = {
-  Emergency: ["Emergency"],
-  Operations: ["Learning"],
-  Security: ["Security"],
-  Approvals: ["Approval"],
-  System: ["System"],
-  Announcements: ["Announcement"],
+/** Tab → server filter. Emergency = every critical alert, whatever its category. */
+const TAB_QUERY: Record<Tab, { category?: string; priority?: string }> = {
+  "All alerts": {},
+  Emergency: { priority: "CRITICAL" },
+  Operations: { category: "TASK" },
+  Security: { category: "SECURITY" },
+  Approvals: { category: "APPROVAL" },
+  System: { category: "SLA" },
+  Announcements: { category: "ANNOUNCEMENT" },
 };
 
 const priorityOptions = ["All priorities", "Critical", "High", "Normal"] as const;
@@ -60,23 +70,23 @@ const audienceOptions = ["Department / centre / access level", "All admins", "Se
 const scheduleOptions = ["Now / scheduled", "Now", "Schedule later"] as const;
 const templateOptions = ["Approved template", "Emergency alert", "Case update", "Announcement"] as const;
 
-type Alert = {
+type QueueRow = {
   id: string;
-  subject: string;
+  title: string;
   category: string;
-  priority: "Critical" | "High" | "Normal";
-  assigned: string;
-  readAck: string;
-  delivery: "Delivered" | "Failed";
-  action: "Review" | "Retry";
+  priority: "CRITICAL" | "HIGH" | "NORMAL";
+  recipient: { name: string };
+  mine: boolean;
+  read: boolean;
+  requiresAck: boolean;
+  acknowledged: boolean;
+  createdAt: string;
 };
-const alerts: Alert[] = [
-  { id: "ALT-001", subject: "Emergency case MS-26-1100", category: "Emergency", priority: "Critical", assigned: "Admin 01", readAck: "Unread / Pending", delivery: "Delivered", action: "Review" },
-  { id: "ALT-002", subject: "WhatsApp sync delayed", category: "System", priority: "High", assigned: "Admin 02", readAck: "Read / Pending", delivery: "Delivered", action: "Review" },
-  { id: "ALT-003", subject: "Expense approval due", category: "Approval", priority: "High", assigned: "Admin 03", readAck: "Read / Ack", delivery: "Delivered", action: "Review" },
-  { id: "ALT-004", subject: "Backup completed", category: "System", priority: "Normal", assigned: "Admin 02", readAck: "Read / Ack", delivery: "Delivered", action: "Review" },
-  { id: "ALT-005", subject: "Training reminder", category: "Learning", priority: "Normal", assigned: "Admin 04", readAck: "Unread / —", delivery: "Failed", action: "Retry" },
-];
+type QueueSummary = { all: number; critical: number; highOpen: number; unread: number; scheduledBroadcasts: number; failedDeliveries: number };
+type Centre = { id: string; name: string };
+type Broadcast = { id: string; title: string; status: string; recipients: number; sentAt?: string; createdAt: string; version: number };
+
+const readAck = (n: QueueRow) => `${n.read ? "Read" : "Unread"} / ${n.requiresAck ? (n.acknowledged ? "Ack" : "Pending") : "—"}`;
 
 function PanelRow({ label, value, accent }: { label: string; value: ReactNode; accent?: boolean }) {
   return (
@@ -113,16 +123,78 @@ export default function SA003Notifications() {
   const [subject, setSubject] = useState("");
   const [schedule, setSchedule] = useState<(typeof scheduleOptions)[number]>(scheduleOptions[0]);
   const [template, setTemplate] = useState<(typeof templateOptions)[number]>(templateOptions[0]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const search = useDebounced(query.trim());
 
-  const q = query.trim().toLowerCase();
-  const cats = tabFilter[tab];
-  const rows = alerts.filter(
-    (a) =>
-      (!cats || cats.includes(a.category)) &&
-      (priority === "All priorities" || a.priority === priority) &&
-      (!q || `${a.id} ${a.subject} ${a.category} ${a.assigned}`.toLowerCase().includes(q)),
+  const tabQuery = TAB_QUERY[tab];
+  const queue = useCrmQuery<QueueRow[]>(
+    `/notifications/queue${qs({ limit: 50, category: tabQuery.category, priority: tabQuery.priority ?? (priority === "All priorities" ? undefined : priority.toUpperCase()), search: search || undefined })}`,
   );
+  const summary = useCrmQuery<QueueSummary>("/notifications/queue/summary");
+  const centres = useCrmQuery<Centre[]>(`/geography/centres${qs({ status: "ACTIVE", limit: 50 })}`);
+  const broadcasts = useCrmQuery<Broadcast[]>(`/notifications/broadcasts${qs({ limit: 5 })}`);
+
+  const rows = queue.data ?? [];
   const empty = rows.length === 0;
+  const selected = rows.find((r) => r.id === selectedId);
+  const s = summary.data;
+
+  const refresh = () => {
+    queue.reload();
+    summary.reload();
+    broadcasts.reload();
+  };
+
+  async function acknowledge() {
+    const target = selected ?? rows.find((r) => r.mine && r.requiresAck && !r.acknowledged);
+    if (!target) return notice.show("Select one of your own notifications to acknowledge.");
+    if (!target.mine) return notice.show("Only the recipient can acknowledge a notification.");
+    try {
+      await authorizedRequest(`/notifications/${target.id}/acknowledge`, { method: "POST" });
+      notice.show("Acknowledged.");
+      refresh();
+    } catch (err) {
+      notice.show(errorMessage(err));
+    }
+  }
+
+  /** Builds the audience of the "Create notification" form. */
+  function audienceFor(): { accessLevels: string[]; centreIds: string[] } {
+    const centreIds = (centres.data ?? []).map((c) => c.id);
+    if (audience === "All admins") return { accessLevels: ["ADMIN"], centreIds: [] };
+    if (audience === "Selected centre") return { accessLevels: [], centreIds: centreIds.slice(0, 1) };
+    return { accessLevels: ["USER"], centreIds };
+  }
+
+  async function previewAndSubmit() {
+    const title = subject.trim();
+    if (title.length < 3) return notice.show("Enter a subject (at least 3 characters).");
+    let scheduledAt: string | undefined;
+    if (schedule === "Schedule later") {
+      const when = window.prompt("Send at (YYYY-MM-DD HH:MM, IST):")?.trim();
+      if (!when) return;
+      const parsed = new Date(`${when.replace(" ", "T")}:00+05:30`);
+      if (Number.isNaN(parsed.getTime()) || parsed.getTime() <= Date.now()) return notice.show("Enter a future date and time as YYYY-MM-DD HH:MM.");
+      scheduledAt = parsed.toISOString();
+    }
+    const critical = template === "Emergency alert";
+    try {
+      const aud = audienceFor();
+      const preview = await authorizedRequest<{ recipients: number }>("/notifications/broadcasts/preview", { body: { audience: { ...aud, departmentIds: [], roleIds: [] } } });
+      if (!window.confirm(`Send "${title}" to ${preview.data.recipients} user(s)? It goes to approval first.`)) return;
+      const reason = window.prompt("Reason for this notification (required for the approver):")?.trim();
+      if (!reason) return;
+      const draft = await authorizedRequest<Broadcast>("/notifications/broadcasts", {
+        body: { title, message: title, priority: critical ? "CRITICAL" : "NORMAL", requiresAck: critical, audience: { ...aud, departmentIds: [], roleIds: [] }, ...(scheduledAt && { scheduledAt }) },
+      });
+      await authorizedRequest(`/notifications/broadcasts/${draft.data.id}/submit`, { body: { version: draft.data.version, reason } });
+      notice.show(`"${title}" sent for audience approval (${preview.data.recipients} recipient(s)).`);
+      setSubject("");
+      refresh();
+    } catch (err) {
+      notice.show(errorMessage(err));
+    }
+  }
 
   return (
     <SuperAdminFrame active="notification-alerts">
@@ -131,12 +203,12 @@ export default function SA003Notifications() {
       </PageHead>
 
       <KpiRow cols={6}>
-        <KpiTile tone="blue" icon={Radio} value="37" label="All alerts" sub="Selected period" />
-        <KpiTile tone="red" icon={Bell} value="03" label="Critical" sub="Immediate" />
-        <KpiTile tone="orange" icon={CircleCheck} value="07" label="High priority" sub="Open" />
-        <KpiTile tone="purple" icon={Users} value="14" label="Unread" sub="Review" />
-        <KpiTile tone="sky" icon={Layers} value="06" label="Scheduled" sub="Upcoming" />
-        <KpiTile tone="red" icon={Radio} value="02" label="Failed delivery" sub="Retry" />
+        <KpiTile tone="blue" icon={Radio} value={pad2(s?.all)} label="All alerts" sub="Last 30 days" />
+        <KpiTile tone="red" icon={Bell} value={pad2(s?.critical)} label="Critical" sub="Immediate" />
+        <KpiTile tone="orange" icon={CircleCheck} value={pad2(s?.highOpen)} label="High priority" sub="Open" />
+        <KpiTile tone="purple" icon={Users} value={pad2(s?.unread)} label="Unread" sub="Review" />
+        <KpiTile tone="sky" icon={Layers} value={pad2(s?.scheduledBroadcasts)} label="Scheduled" sub="Upcoming" />
+        <KpiTile tone="red" icon={Radio} value={pad2(s?.failedDeliveries)} label="Failed delivery" sub="Retry" />
       </KpiRow>
 
       <Tabs tabs={tabs} value={tab} onChange={setTab} />
@@ -144,7 +216,7 @@ export default function SA003Notifications() {
       <div className="flex min-h-0 flex-1 flex-col gap-[10px]">
       <Panel title="Notification queue" className="lg:min-h-0 lg:flex-[330_1_0]" bodyClassName="flex flex-col gap-[8px] pt-[4px]">
         <div className="flex items-center gap-[8px]">
-          <SearchField value={query} onChange={setQuery} placeholder="Filter visible rows..." className="min-w-0 flex-1" />
+          <SearchField value={query} onChange={setQuery} placeholder="Search by subject..." className="min-w-0 flex-1" />
           <Dropdown label="Priority" value={priority} options={priorityOptions} onChange={setPriority} className="w-[140px]" />
         </div>
         <TableWrap className="min-h-0 flex-1 overflow-auto">
@@ -164,44 +236,44 @@ export default function SA003Notifications() {
           </Thead>
           <tbody>
             {rows.map((a) => (
-              <tr key={a.id} className="border-b border-[#eef0f5] last:border-0 even:bg-[#f7f9fd] hover:bg-[#eef2ff]">
-                <td className={td}>{a.id}</td>
-                <td className={td}>{a.subject}</td>
-                <td className={td}>{a.category}</td>
-                <td className={td}>{a.priority === "Normal" ? (
-                    <span className="font-semibold">{a.priority}</span>
+              <tr key={a.id} onClick={() => setSelectedId(a.id)} className={`cursor-pointer border-b border-[#eef0f5] last:border-0 even:bg-[#f7f9fd] hover:bg-[#eef2ff] ${selectedId === a.id ? "ring-1 ring-inset ring-[#1d4fe0]/30" : ""}`}>
+                <td className={td}>{shortDateTime(a.createdAt)}</td>
+                <td className={td}>{a.title}</td>
+                <td className={td}>{humanize(a.category)}</td>
+                <td className={td}>{a.priority === "NORMAL" ? (
+                    <span className="font-semibold">Normal</span>
                   ) : (
-                    <Pill tone={a.priority === "Critical" ? "red" : "amber"} className="w-[56px] text-[15px] font-bold">{a.priority}</Pill>
+                    <Pill tone={a.priority === "CRITICAL" ? "red" : "amber"} className="w-[56px] text-[15px] font-bold">{humanize(a.priority)}</Pill>
                   )}
                 </td>
-                <td className={td}>{a.assigned}</td>
-                <td className={td}>{a.readAck}</td>
+                <td className={td}>{a.mine ? `${a.recipient.name} (me)` : a.recipient.name}</td>
+                <td className={td}>{readAck(a)}</td>
                 <td className={td}>
-                  <Pill tone={a.delivery === "Delivered" ? "green" : "red"} className="h-[18px] min-w-[64px] text-[15px] font-bold">{a.delivery}</Pill>
+                  <Pill tone="green" className="h-[18px] min-w-[64px] text-[15px] font-bold">Delivered</Pill>
                 </td>
-                <td className={td}>{a.action}</td>
+                <td className={td}>{a.mine && a.requiresAck && !a.acknowledged ? "Acknowledge" : "Review"}</td>
               </tr>
             ))}
             {empty && (
               <tr>
                 <td colSpan={8} className="py-6 text-center text-[15px] font-medium text-[#5b6280]">
-                  No notifications match the selected tab and filters.
+                  {queue.loading ? "Loading…" : queue.error ?? "No notifications match the selected tab and filters."}
                 </td>
               </tr>
             )}
           </tbody>
         </TableWrap>
         <div className="mt-auto flex flex-wrap items-center gap-[8px] pt-[6px]">
-          <PrimaryButton onClick={() => notice.show(`${rows.length} alert(s) acknowledged (demo).`)}>
+          <PrimaryButton onClick={acknowledge}>
             Acknowledge
           </PrimaryButton>
-          <OutlineButton onClick={() => notice.show("Assign owner opened (demo).")}>
+          <OutlineButton onClick={() => notice.show("Notifications go to the owner of the request, case or task they belong to; reassign that record to change who is notified.")}>
             Assign owner
           </OutlineButton>
-          <OutlineButton onClick={() => notice.show("Escalation raised (demo).")}>
+          <OutlineButton onClick={() => notice.show("Overdue items escalate automatically along the SLA chain (SA-020).")}>
             Escalate
           </OutlineButton>
-          <OutlineButton onClick={() => notice.show("View history opened (demo).")}>
+          <OutlineButton onClick={() => { setTab("All alerts"); setPriority("All priorities"); setQuery(""); }}>
             View history
           </OutlineButton>
         </div>
@@ -217,6 +289,7 @@ export default function SA003Notifications() {
               <input
                 type="text"
                 value={subject}
+                maxLength={160}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="Enter subject"
                 className="h-[34px] w-full rounded-[8px] border border-[#d6dbe6] bg-white px-[10px] text-[15px] font-medium outline-none placeholder:text-[#4a5070] focus:border-[#5b6fe0]"
@@ -230,21 +303,21 @@ export default function SA003Notifications() {
             </FieldBlock>
           </div>
           <div className="mt-auto pt-[4px]">
-            <PrimaryButton onClick={() => notice.show("Notification preview and audience approval requested (demo).")}>
+            <PrimaryButton onClick={previewAndSubmit}>
               Preview &amp; approve
             </PrimaryButton>
           </div>
         </Panel>
 
         <Panel title="Broadcast & delivery" bodyClassName="flex flex-col gap-[6px] pt-[4px]">
-          <PanelRow label="Channels" value="Email / WhatsApp / outbound SMS / in-app" />
-          <PanelRow label="Failed delivery" value={<span className="text-[#b42318]">02 • retry queue</span>} />
+          <PanelRow label="Channels" value="In-app (SMS / WhatsApp with Communication Hub)" />
+          <PanelRow label="Latest broadcast" value={broadcasts.data?.[0] ? `${broadcasts.data[0].title} • ${humanize(broadcasts.data[0].status)}` : "—"} />
           <PanelRow label="Recipient selection" value="Authorised audience only" />
           <div className="mt-auto flex flex-wrap gap-[8px] pt-[6px]">
-            <PrimaryButton onClick={() => notice.show("Delivery history opened (demo).")}>
+            <PrimaryButton onClick={() => notice.show((broadcasts.data ?? []).map((b) => `${b.title}: ${humanize(b.status)}${b.status === "SENT" ? ` to ${b.recipients}` : ""}`).join(" · ") || "No broadcasts yet.")}>
               Delivery history
             </PrimaryButton>
-            <OutlineButton onClick={() => notice.show("Retry failed triggered (demo).")}>
+            <OutlineButton onClick={() => notice.show("In-app delivery is immediate; there is nothing to retry.")}>
               Retry failed
             </OutlineButton>
           </div>
@@ -253,10 +326,10 @@ export default function SA003Notifications() {
         <Panel title="Alert preferences" bodyClassName="flex flex-col gap-[6px] pt-[4px]">
           <PanelRow label="Emergency / security" value={<span>Mandatory • <b className="text-[#1c6b1f]">locked</b></span>} />
           <PanelRow label="Case & task updates" value="Enabled" />
-          <PanelRow label="Daily summary" value="Scheduled" />
+          <PanelRow label="Critical alerts" value="Acknowledgement required" />
           <PanelRow label="Escalation" value="Based on SLA" />
           <div className="mt-auto pt-[4px]">
-            <PrimaryButton onClick={() => notice.show("Configure rules opened (demo).")}>
+            <PrimaryButton onClick={() => notice.show("Escalation timings are configured in SLA & Escalation (SA-020).")}>
               Configure rules
             </PrimaryButton>
           </div>

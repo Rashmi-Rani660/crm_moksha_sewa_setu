@@ -14,9 +14,11 @@ import {
   SendIcon,
   ShieldCheckIcon,
 } from "@/components/ui/icons";
+import { authApi } from "@/lib/api/auth";
+import { errorMessage } from "@/lib/api/client";
+import { getDeviceId } from "@/lib/auth/device-id";
 import { authConfig } from "@/lib/config/site";
-import { clearFlash, startVerification, useAuthSession, useFlash } from "@/lib/auth/session";
-import { OTP_CHECK_ENABLED, otpError, roleForLogin } from "@/lib/auth/test-otp";
+import { clearFlash, signIn, startVerification, useAuthSession, useFlash } from "@/lib/auth/session";
 import {
   isValidMobile,
   sanitizePasswordInput,
@@ -73,41 +75,51 @@ export default function LoginForm() {
     return () => window.clearTimeout(id);
   }, [countdown]);
 
-  function sendOtp() {
+  async function sendOtp() {
     if (!isValidMobile(mobile)) {
       setError("Enter a valid 10-digit mobile number to receive the OTP.");
       return;
     }
     setError("");
-    setOtpSent(true);
+    // Start the timer straight away so a double click cannot send two codes.
     setCountdown(authConfig.otpResendSeconds);
-    otpRef.current?.focus();
-    // TODO: call the "send OTP" API here.
+    try {
+      const sent = await authApi.sendLoginOtp(mobile);
+      setOtpSent(true);
+      setCountdown(sent.resendAfterSeconds);
+      otpRef.current?.focus();
+    } catch (err) {
+      setCountdown(0);
+      setError(errorMessage(err));
+    }
   }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const problem = validateLogin({ mobile, password, otp: otp.join("") }, { checkOtp: OTP_CHECK_ENABLED });
+    const problem = validateLogin({ mobile, password, otp: otp.join("") });
     if (problem) {
       setError(problem);
-      return;
-    }
-    // TODO: the sign-in API verifies the OTP and returns the role. Until then
-    // the role comes from the test mobile numbers (see lib/auth/test-otp).
-    const role = roleForLogin(mobile, otp.join(""));
-    if (!role) {
-      setError(otpError());
       return;
     }
     setError("");
     clearFlash();
     setSubmitting(true);
-    // TODO: call the sign-in API here with { mobile, password, otp, remember }.
-    await new Promise((r) => setTimeout(r, 600));
-    // The API reports this as a new device, so the user must verify it next.
-    startVerification(mobile, role);
-    // replace: the login screen should not stay behind the sign-in steps in history
-    router.replace("/verify-device");
+    try {
+      const result = await authApi.login({ mobile, password, otp: otp.join(""), deviceId: getDeviceId(), remember });
+      if (result.status === "SIGNED_IN") {
+        signIn(result, remember);
+        // replace: Back from the dashboard must not return to the login screen
+        router.replace(`/dashboard/${result.profile.dashboard}`);
+        return;
+      }
+      // New device: a second code was sent; verify it on the next screen.
+      startVerification(mobile, remember, result);
+      router.replace("/verify-device");
+    } catch (err) {
+      setSubmitting(false);
+      setOtp(Array(authConfig.otpLength).fill(""));
+      setError(errorMessage(err));
+    }
   }
 
   return (

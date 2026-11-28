@@ -15,6 +15,8 @@ import {
   SendIcon,
   ShieldCheckIcon,
 } from "@/components/ui/icons";
+import { authApi } from "@/lib/api/auth";
+import { errorMessage } from "@/lib/api/client";
 import { clearFlash, setFlash } from "@/lib/auth/session";
 import { authConfig } from "@/lib/config/site";
 import {
@@ -136,22 +138,32 @@ export default function ForgotPasswordForm() {
     setError("");
     clearFlash();
     setSubmitting(true);
-    // TODO: call the "forgot password / send OTP" API here with { mobile }.
-    await new Promise((r) => setTimeout(r, 400));
-    setSubmitting(false);
-    setOtp(Array(authConfig.otpLength).fill(""));
-    setCountdown(authConfig.otpResendSeconds);
-    setStep("reset");
-    window.setTimeout(() => otpRef.current?.focus(), 0);
+    try {
+      const sent = await authApi.forgotPassword(mobile);
+      setOtp(Array(authConfig.otpLength).fill(""));
+      setCountdown(sent.resendAfterSeconds);
+      setStep("reset");
+      window.setTimeout(() => otpRef.current?.focus(), 0);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  function handleResendOtp() {
+  async function handleResendOtp() {
     if (countdown > 0) return;
     setError("");
     setOtp(Array(authConfig.otpLength).fill(""));
     setCountdown(authConfig.otpResendSeconds);
     otpRef.current?.focus();
-    // TODO: call the "resend reset OTP" API here with { mobile }.
+    try {
+      const sent = await authApi.forgotPassword(mobile);
+      setCountdown(sent.resendAfterSeconds);
+    } catch (err) {
+      setCountdown(0);
+      setError(errorMessage(err));
+    }
   }
 
   async function handleResetPassword(e: FormEvent<HTMLFormElement>) {
@@ -168,12 +180,17 @@ export default function ForgotPasswordForm() {
     }
     setError("");
     setSubmitting(true);
-    // TODO: call the "reset password" API here with { mobile, otp, password }.
-    await new Promise((r) => setTimeout(r, 600));
-    setFlash(
-      "Password reset successfully. Please sign in with your new password.",
-    );
-    router.replace("/login");
+    try {
+      await authApi.resetPassword({ mobile, otp: otp.join(""), password, confirmPassword });
+      setFlash(
+        "Password reset successfully. Please sign in with your new password.",
+      );
+      router.replace("/login");
+    } catch (err) {
+      setSubmitting(false);
+      setOtp(Array(authConfig.otpLength).fill(""));
+      setError(errorMessage(err));
+    }
   }
 
   function handleChangeMobile() {

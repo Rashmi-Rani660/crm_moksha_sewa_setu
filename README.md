@@ -65,10 +65,23 @@ non-UI logic in `src/lib/`.
 - Opening `/verify-device` or `/dashboard` without the previous step redirects
   to `/login`.
 
-State lives in `sessionStorage` (`src/lib/auth/session.ts`) until a backend
-exists. TODOs to wire to the API: Send OTP and Sign In (`LoginForm.tsx`),
-Verify / Resend OTP (`VerifyDeviceForm.tsx`), and the e-mail + location shown
-on the verification screen (`startVerification` in `session.ts`).
+All steps call the CRM API in `moksha-backend` (`/api/v1/crm/auth`, documented in
+`moksha-backend/docs/crm/README.md`):
+
+| Piece | File |
+| --- | --- |
+| HTTP client (envelope, `ApiError` with `code`) | `src/lib/api/client.ts` |
+| Sign-in calls | `src/lib/api/auth.ts` |
+| Signed-in calls (auto refresh, ends the session when the server does) | `src/lib/api/authorized.ts` |
+| Session + tokens (`localStorage` with "Remember me", else `sessionStorage`) | `src/lib/auth/session.ts` |
+| Browser device id (new-device verification) | `src/lib/auth/device-id.ts` |
+
+The server decides the access level and the dashboard. The account menu can open
+the user's own dashboard or a lower one (a Super Admin may open the User panel),
+never a higher one.
+
+Configure the API with `NEXT_PUBLIC_CRM_API_URL` (see `.env.example`; defaults to
+`http://localhost:5003/api/v1/crm` in development).
 
 ## Responsive behaviour
 

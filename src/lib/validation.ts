@@ -19,15 +19,14 @@ export type LoginValues = {
 };
 
 /** Returns the first validation error, or `null` when the values are valid. */
-/** `checkOtp: false` skips the OTP (while OTPs are not verified). */
-export function validateLogin({ mobile, password, otp }: LoginValues, { checkOtp = true } = {}) {
+export function validateLogin({ mobile, password, otp }: LoginValues) {
   if (!isValidMobile(mobile)) return "Enter a valid 10-digit mobile number.";
   if (!password) return "Enter your password.";
   if (password.length < authConfig.minPasswordLength)
     return `Password must be at least ${authConfig.minPasswordLength} characters.`;
   if (password.length > authConfig.maxPasswordLength)
     return `Password must not exceed ${authConfig.maxPasswordLength} characters.`;
-  if (checkOtp && otp.length !== authConfig.otpLength)
+  if (otp.length !== authConfig.otpLength)
     return `Enter the ${authConfig.otpLength}-digit OTP sent to your mobile.`;
   return null;
 }
@@ -53,6 +52,8 @@ export function validatePasswordReset({
     return `Password must be at least ${authConfig.minPasswordLength} characters.`;
   if (password.length > authConfig.maxPasswordLength)
     return `Password must not exceed ${authConfig.maxPasswordLength} characters.`;
+  // Same rule as the server's password policy (letters and digits).
+  if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) return "Password must contain at least one letter and one number.";
   if (password !== confirmPassword) return "Passwords do not match.";
   return null;
 }
