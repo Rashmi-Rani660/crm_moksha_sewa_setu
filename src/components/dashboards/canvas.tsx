@@ -24,7 +24,7 @@ export const DESIGN_H = 901;
 const SidebarWidth = createContext(0);
 
 /** Hamburger: collapses the sidebar from `lg` up, opens it as a drawer below. */
-const MenuToggle = createContext<() => void>(() => {});
+const MenuToggle = createContext<() => void>(() => { });
 export const useMenuToggle = () => useContext(MenuToggle);
 
 const DESKTOP = "(min-width: 1024px)";
@@ -37,12 +37,12 @@ const RoleContext = createContext<Role>("user");
 export const useDashboardRole = () => useContext(RoleContext);
 
 /** Most the content may be stretched sideways to fill a wide window. */
-const MAX_STRETCH = 1.15;
+const MAX_STRETCH = 1.5;
 
 /** `--z` zoom that fits the design in the window; `--k` sideways stretch. */
 const canvasVars = (sidebar: number) =>
   ({
-    "--z": `clamp(0.6, min(calc(var(--vw, ${DESIGN_W}) / ${DESIGN_W}), calc(var(--vh, ${DESIGN_H}) / ${DESIGN_H})), 2)`,
+    "--z": `clamp(0.45, min(calc(var(--vw, ${DESIGN_W}) / ${DESIGN_W}), calc(var(--vh, ${DESIGN_H}) / ${DESIGN_H})), 2)`,
     "--k": `clamp(1, calc((var(--vw, ${DESIGN_W}) / var(--z) - ${sidebar}) / ${DESIGN_W - sidebar}), ${MAX_STRETCH})`,
   }) as CSSProperties;
 
@@ -89,35 +89,35 @@ export function DashboardCanvas({
   return (
     <SidebarWidth.Provider value={sidebarWidth}>
       <MenuToggle.Provider value={toggle}>
-      <RoleContext.Provider value={role}>
-      <div
-        style={canvasVars(collapsed ? 0 : sidebarWidth)}
-        className="flex min-h-dvh bg-[#f3f6fb] font-hind subpixel-antialiased text-[#0b0c36] lg:[height:max(901px,calc(var(--vh,901)*1px/var(--z)))] lg:[min-height:0] lg:[width:calc(var(--vw,1600)*1px/var(--z))] lg:overflow-hidden lg:[zoom:var(--z)]"
-      >
-        <div
-          id="dashboard-sidebar"
-          className={
-            drawer
-              ? "fixed inset-y-0 left-0 z-50 overflow-y-auto shadow-[4px_0_24px_rgba(0,0,0,0.35)] lg:static lg:shadow-none"
-              : `hidden shrink-0 ${collapsed ? "" : "lg:block"}`
-          }
-        >
-          <Sidebar spec={shell.sidebar} role={role} active={active} onNavigate={() => setDrawer(false)} />
-        </div>
-        {drawer && (
-          <button type="button" aria-label="Close menu" onClick={() => setDrawer(false)} className="fixed inset-0 z-40 bg-black/40 lg:hidden" />
-        )}
-        <div className="relative min-w-0 flex-1">
-          <TopBar spec={shell.topBar} role={role} menuOpen={drawer || !collapsed} />
-          <main
-            style={{ "--inner": `${DESIGN_W - sidebarWidth}px` } as CSSProperties}
-            className={`${MOBILE_GRID} lg:relative lg:overflow-visible lg:mx-auto lg:block lg:h-[901px] lg:w-[var(--inner)] lg:gap-0 lg:p-0 lg:[transform:scaleX(var(--k))]`}
+        <RoleContext.Provider value={role}>
+          <div
+            style={canvasVars(collapsed ? 0 : sidebarWidth)}
+            className="flex min-h-dvh bg-[#f3f6fb] font-hind subpixel-antialiased text-[#0b0c36] lg:[height:max(901px,calc(var(--vh,901)*1px/var(--z)))] lg:[min-height:0] lg:[width:calc(var(--vw,1600)*1px/var(--z))] lg:overflow-hidden lg:[zoom:var(--z)]"
           >
-            {children}
-          </main>
-        </div>
-      </div>
-      </RoleContext.Provider>
+            <div
+              id="dashboard-sidebar"
+              className={
+                drawer
+                  ? "fixed inset-y-0 left-0 z-50 overflow-y-auto shadow-[4px_0_24px_rgba(0,0,0,0.35)] lg:static lg:shadow-none"
+                  : `hidden shrink-0 ${collapsed ? "" : "lg:block"}`
+              }
+            >
+              <Sidebar spec={shell.sidebar} role={role} active={active} onNavigate={() => setDrawer(false)} />
+            </div>
+            {drawer && (
+              <button type="button" aria-label="Close menu" onClick={() => setDrawer(false)} className="fixed inset-0 z-40 bg-black/40 lg:hidden" />
+            )}
+            <div className="relative min-w-0 flex-1">
+              <TopBar spec={shell.topBar} role={role} menuOpen={drawer || !collapsed} />
+              <main
+                style={{ "--inner": `${DESIGN_W - sidebarWidth}px` } as CSSProperties}
+                className={`${MOBILE_GRID} lg:relative lg:overflow-visible lg:mx-auto lg:block lg:h-[901px] lg:w-[var(--inner)] lg:gap-0 lg:p-0 lg:[transform:scaleX(var(--k))]`}
+              >
+                {children}
+              </main>
+            </div>
+          </div>
+        </RoleContext.Provider>
       </MenuToggle.Provider>
     </SidebarWidth.Provider>
   );

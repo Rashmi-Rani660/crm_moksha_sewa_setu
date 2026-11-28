@@ -1,4 +1,4 @@
-/** URLs of the Super Admin module pages (SA-001 … SA-020, SA-041 … SA-050). */
+/** URLs of the Super Admin module pages (SA-001 … SA-040). */
 const B = "/dashboard/super-admin";
 
 export const saRoutes = {
@@ -18,8 +18,19 @@ export const saRoutes = {
   createTask: `${B}/case-workflow/tasks/create`,
   sla: `${B}/case-workflow/sla`,
   workflows: `${B}/automation-ai/workflow-builder`,
-  // Finance & Donations (SA-041 … SA-045)
-  donationReceipts: `${B}/finance-donations`,
+  // Communication Hub & Calling (SA-031 … SA-038)
+  inboundCall: `${B}/communication-hub`,
+  outboundCall: `${B}/communication-hub/outbound`,
+  callRecordings: `${B}/communication-hub/recordings`,
+  chatbotManagement: `${B}/communication-hub/chatbot`,
+  outgoingSms: `${B}/communication-hub/sms`,
+  socialLeads: `${B}/communication-hub/leads`,
+  teamWorkspace: `${B}/communication-hub/workspace`,
+  calendarMeetings: `${B}/communication-hub/calendar`,
+  // Finance & Donations (SA-039 … SA-040)
+  financeCommand: `${B}/finance-donations`,
+  donorManagement: `${B}/finance-donations/donations`,
+  donationReceipts: `${B}/finance-donations/receipts`,
   caseExpenses: `${B}/finance-donations/case-expenses`,
   budgetControl: `${B}/finance-donations/budget-control`,
   csrPartnerships: `${B}/finance-donations/csr-partnerships`,
@@ -30,35 +41,94 @@ export const saRoutes = {
   ruleBuilder: `${B}/automation-ai/rule-builder`,
   smartAssignment: `${B}/automation-ai/smart-assignment`,
   aiConfiguration: `${B}/automation-ai/ai-configuration`,
+  aiCostUsage: `${B}/automation-ai/ai-cost-usage`,
+  communicationHub: `${B}/communication-hub`,
+  communicationTemplates: `${B}/communication-hub/templates`,
+  aiSmartSearch: `${B}/automation-ai/smart-search`,
+  trainingAcademy: `${B}/training-excellence`,
+  courseManagement: `${B}/training-excellence/courses`,
+  roleTraining: `${B}/training-excellence/role-assignment`,
+  virtualTrainer: `${B}/training-excellence/virtual-trainer`,
+  assessments: `${B}/training-excellence/assessments`,
+  performance: `${B}/training-excellence/performance`,
+  excellence: `${B}/training-excellence/recognition`,
   audit: `${B}/audit-logs`,
 } as const;
 
 /** SA-011 … SA-020 screens, in the order of the design's screen picker. */
 export const screenPicker1120 = [
-  { code: "SA-011", title: "Reporting Hierarchy", href: saRoutes.hierarchy },
-  { code: "SA-012", title: "Master Data Management", href: saRoutes.masterData },
-  { code: "SA-013", title: "Central Leads & Requests Management", href: saRoutes.leads },
-  { code: "SA-014", title: "Sewa Request Details & Verification", href: saRoutes.requestDetails },
-  { code: "SA-015", title: "Case Management", href: saRoutes.cases },
-  { code: "SA-016", title: "Complete Case Details – 360° View", href: saRoutes.caseDetails },
-  { code: "SA-017", title: "Task Management", href: saRoutes.tasks },
-  { code: "SA-018", title: "Create & Assign Task", href: saRoutes.createTask },
-  { code: "SA-019", title: "Task Templates & Workflow Builder", href: saRoutes.workflows },
-  { code: "SA-020", title: "SLA & Escalation Management", href: saRoutes.sla },
+  { code: "SA-011", title: "Reporting Hierarchy", href: saRoutes.hierarchy , section: "departments-centres" },
+  { code: "SA-012", title: "Master Data Management", href: saRoutes.masterData , section: "master-data" },
+  { code: "SA-013", title: "Central Leads & Requests Management", href: saRoutes.leads , section: "sewa-operations" },
+  { code: "SA-014", title: "Sewa Request Details & Verification", href: saRoutes.requestDetails , section: "sewa-operations" },
+  { code: "SA-021", title: "Staff & Volunteer Live Monitoring", href: `${B}/sewa-operations/live-monitoring`, section: "sewa-operations" },
+  { code: "SA-022", title: "Volunteer Management", href: `${B}/sewa-operations/volunteers`, section: "sewa-operations" },
+  { code: "SA-023", title: "Fleet & Logistics", href: `${B}/sewa-operations/fleet-logistics`, section: "sewa-operations" },
+  { code: "SA-024", title: "Service Network Management", href: `${B}/sewa-operations/service-network`, section: "sewa-operations" },
+  { code: "SA-025", title: "Inventory & Material Management", href: `${B}/sewa-operations/inventory`, section: "sewa-operations" },
+  { code: "SA-015", title: "Case Management", href: saRoutes.cases , section: "case-workflow" },
+  { code: "SA-016", title: "Complete Case Details – 360° View", href: saRoutes.caseDetails , section: "case-workflow" },
+  { code: "SA-017", title: "Task Management", href: saRoutes.tasks , section: "case-workflow" },
+  { code: "SA-018", title: "Create & Assign Task", href: saRoutes.createTask , section: "case-workflow" },
+  { code: "SA-019", title: "Task Templates & Workflow Builder", href: saRoutes.workflows , section: "case-workflow" },
+  { code: "SA-020", title: "SLA & Escalation Management", href: saRoutes.sla , section: "case-workflow" },
 ] as const;
 
-/** SA-041 … SA-050 screens, in the order of the design's screen picker. */
+/** SA-041 … SA-050 screens; the picker lists only the screens of the open section (finance / ai). */
 export const screenPicker = [
-  { code: "SA-041", title: "Donation Receipts & Reconciliation", href: saRoutes.donationReceipts },
-  { code: "SA-042", title: "Case Expenses & Reimbursement", href: saRoutes.caseExpenses },
-  { code: "SA-043", title: "Financial Approvals & Budget Control", href: saRoutes.budgetControl },
-  { code: "SA-044", title: "CSR & Partnership Management", href: saRoutes.csrPartnerships },
-  { code: "SA-045", title: "Fund Utilisation & Transparency", href: saRoutes.fundUtilisation },
-  { code: "SA-046", title: "AI & Automation Dashboard", href: saRoutes.aiDashboard },
-  { code: "SA-047", title: "Automatic / Manual / Approval Controls", href: saRoutes.aiControls },
-  { code: "SA-048", title: "Automation Rule Builder", href: saRoutes.ruleBuilder },
-  { code: "SA-049", title: "AI Smart Assignment Management", href: saRoutes.smartAssignment },
-  { code: "SA-050", title: "AI Configuration & Quality Testing", href: saRoutes.aiConfiguration },
+  { group: "book-031-040", code: "SA-026", title: "Unified Communication Dashboard", href: `${B}/communication-hub/unified-dashboard` },
+  { group: "book-031-040", code: "SA-027", title: "Official Email Workspace", href: `${B}/communication-hub/email-workspace` },
+  { group: "book-031-040", code: "SA-028", title: "Email Account & Assignment Management", href: `${B}/communication-hub/email-accounts` },
+  { group: "book-031-040", code: "SA-029", title: "WhatsApp Business Desk", href: `${B}/communication-hub/whatsapp-desk` },
+  { group: "book-031-040", code: "SA-030", title: "WhatsApp Assignment & Chat Monitoring", href: `${B}/communication-hub/whatsapp-monitoring` },
+  { group: "book-031-040", code: "SA-031", title: "AI Inbound Calling Centre", href: saRoutes.inboundCall },
+  { group: "book-031-040", code: "SA-032", title: "AI Outbound Calling Centre", href: saRoutes.outboundCall },
+  { group: "book-031-040", code: "SA-033", title: "Call Recordings, Transcripts & History", href: saRoutes.callRecordings },
+  { group: "book-031-040", code: "SA-034", title: "AI Chatbot Management", href: saRoutes.chatbotManagement },
+  { group: "book-031-040", code: "SA-035", title: "Outgoing SMS Management", href: saRoutes.outgoingSms },
+  { group: "book-031-040", code: "SA-036", title: "Social Media & Google Ads Leads", href: saRoutes.socialLeads },
+  { group: "book-031-040", code: "SA-037", title: "Internal Team Workspace", href: saRoutes.teamWorkspace },
+  { group: "book-031-040", code: "SA-038", title: "Calendar & Meetings", href: saRoutes.calendarMeetings },
+  { group: "book-031-040", code: "SA-052", title: "Notification & Communication Templates", href: saRoutes.communicationTemplates },
+  { group: "book-031-040", code: "SA-039", title: "Finance Command Centre", href: saRoutes.financeCommand },
+  { group: "book-031-040", code: "SA-040", title: "Donations & Donor Management", href: saRoutes.donorManagement },
+  { group: "finance", code: "SA-041", title: "Donation Receipts & Reconciliation", href: saRoutes.donationReceipts },
+  { group: "finance", code: "SA-042", title: "Case Expenses & Reimbursement", href: saRoutes.caseExpenses },
+  { group: "finance", code: "SA-043", title: "Financial Approvals & Budget Control", href: saRoutes.budgetControl },
+  { group: "finance", code: "SA-044", title: "CSR & Partnership Management", href: saRoutes.csrPartnerships },
+  { group: "finance", code: "SA-045", title: "Fund Utilisation & Transparency", href: saRoutes.fundUtilisation },
+  { group: "ai", code: "SA-046", title: "AI & Automation Dashboard", href: saRoutes.aiDashboard },
+  { group: "ai", code: "SA-047", title: "Automatic / Manual / Approval Controls", href: saRoutes.aiControls },
+  { group: "ai", code: "SA-048", title: "Automation Rule Builder", href: saRoutes.ruleBuilder },
+  { group: "ai", code: "SA-049", title: "AI Smart Assignment Management", href: saRoutes.smartAssignment },
+  { group: "ai", code: "SA-050", title: "AI Configuration & Quality Testing", href: saRoutes.aiConfiguration },
+  { group: "ai", code: "SA-051", title: "AI Cost & Usage Control", href: saRoutes.aiCostUsage },
+  { group: "ai", code: "SA-053", title: "AI Universal Smart Search", href: saRoutes.aiSmartSearch },
+  { group: "training", code: "SA-054", title: "AI Training Academy Dashboard", href: saRoutes.trainingAcademy },
+  { group: "training", code: "SA-055", title: "Course & Training Module Management", href: saRoutes.courseManagement },
+  { group: "training", code: "SA-056", title: "Role-wise Training Assignment", href: saRoutes.roleTraining },
+  { group: "training", code: "SA-057", title: "AI Virtual Trainer Configuration", href: saRoutes.virtualTrainer },
+  { group: "training", code: "SA-058", title: "Assessment & Certification", href: saRoutes.assessments },
+  { group: "training", code: "SA-059", title: "Admin & User Performance", href: saRoutes.performance },
+  { group: "training", code: "SA-060", title: "Sewa Excellence & Recognition", href: saRoutes.excellence },
+  { group: "training", code: "SA-061", title: "Knowledge Base & SOP Management", href: `${B}/knowledge-base` },
+  { group: "training", code: "SA-062", title: "Complaints & Grievances", href: `${B}/knowledge-base/complaints` },
 ] as const;
 
-export type ScreenCode = (typeof screenPicker)[number]["code"];
+export type ScreenCode = (typeof screenPicker)[number]["code"] | string;
+
+/** Core Super Admin screens (SA-001 … SA-010) for the header module switcher. */
+export const saCoreModules = [
+  { code: "SA-001", label: "Super Admin Dashboard", href: B },
+  { code: "SA-002", label: "Live Operations & Emergency", href: `${B}/live-operations` },
+  { code: "SA-003", label: "Notification & Alert Centre", href: `${B}/notification-alerts` },
+  { code: "SA-004", label: "Central Approval Centre", href: `${B}/central-approvals` },
+  { code: "SA-005", label: "Organisation Setup", href: `${B}/organisation-setup` },
+  { code: "SA-006", label: "City, Zone & Service Centres", href: `${B}/city-zone-centres` },
+  { code: "SA-007", label: "Department Management", href: `${B}/departments-centres` },
+  { code: "SA-008", label: "Admin & User Management", href: `${B}/users-access-control` },
+  { code: "SA-009", label: "Create User & Assign Access", href: `${B}/users-access-control/create` },
+  { code: "SA-010", label: "Roles & Permission Matrix", href: `${B}/users-access-control/roles` },
+] as const;
+
+export type CoreModuleCode = (typeof saCoreModules)[number]["code"];

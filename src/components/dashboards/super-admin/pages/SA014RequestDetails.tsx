@@ -104,12 +104,12 @@ export default function SA014RequestDetails() {
           </Panel>
 
           <Panel title="Verification notes">
-            <p className={`text-[13.3px] ${ink}`}>Reviewer remarks</p>
+            <p className={`text-[15.3px] ${ink}`}>Reviewer remarks</p>
             <textarea
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
               aria-label="Reviewer remarks"
-              className={`mt-[3px] h-[46px] w-full resize-none rounded-[6px] border border-[#c9d2e0] bg-white px-[11px] py-[6px] text-[13.3px] outline-none focus:border-[#5b7fe0] ${ink}`}
+              className={`mt-[3px] h-[46px] w-full resize-none rounded-[6px] border border-[#c9d2e0] bg-white px-[11px] py-[6px] text-[15.3px] outline-none focus:border-[#5b7fe0] ${ink}`}
             />
             <div className="mt-[4px]">
               <Check label="Evidence reviewed" checked={checks.evidence} onChange={(v) => setChecks({ ...checks, evidence: v })} />

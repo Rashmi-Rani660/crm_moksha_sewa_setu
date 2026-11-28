@@ -1,5 +1,6 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Hind, Poppins, Source_Serif_4 } from "next/font/google";
+import Script from "next/script";
 import { siteConfig } from "@/lib/config/site";
 import "./globals.css";
 
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
   description: siteConfig.description,
 };
 
-export const viewport: Viewport = {
+export const viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: "#d3e8fc",
@@ -43,17 +44,19 @@ export const viewport: Viewport = {
  */
 const viewportScript = `(function(){var d=document.documentElement;function f(){d.style.setProperty('--vw',d.clientWidth||innerWidth);d.style.setProperty('--vh',innerHeight)}f();addEventListener('resize',f);if(window.ResizeObserver)new ResizeObserver(f).observe(d)})();`;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
       suppressHydrationWarning
       className={`${poppins.variable} ${sourceSerif.variable} ${hind.variable} h-full antialiased`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: viewportScript }} />
-      </head>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <Script id="viewport-vars" strategy="beforeInteractive">
+          {viewportScript}
+        </Script>
+        {children}
+      </body>
     </html>
   );
 }

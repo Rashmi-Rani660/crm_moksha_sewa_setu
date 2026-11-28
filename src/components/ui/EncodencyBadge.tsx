@@ -7,8 +7,8 @@ import { siteConfig } from "@/lib/config/site";
 export default function EncodencyBadge({
   className = "",
   nameClassName = "",
-  legalClassName = "text-[6px]",
-  sloganClassName = "text-[5px]",
+  legalClassName = "text-[10px]",
+  sloganClassName = "text-[9px]",
 }: {
   className?: string;
   nameClassName?: string;
@@ -16,17 +16,18 @@ export default function EncodencyBadge({
   sloganClassName?: string;
 }) {
   const dev = siteConfig.developer;
+  // Slogan / legal sizing props kept for callers; the badge is one line now.
+  void legalClassName;
+  void sloganClassName;
   return (
     <span
-      className={`inline-flex h-[34px] min-w-[128px] shrink-0 flex-col items-center justify-center rounded-[5px] bg-[#e3141b] px-2.5 leading-none text-white shadow-sm ${className}`}
+      className={`inline-flex h-[34px] min-w-[128px] shrink-0 items-center justify-center whitespace-nowrap rounded-[8px] bg-[#d63031] px-2.5 leading-none text-white shadow-sm ${className}`}
       role="img"
-      aria-label={`${dev.name} ${dev.legal} — ${dev.slogan}`}
+      aria-label={`${dev.name} ${dev.legal}`}
     >
-      <span className={`text-[15px] font-semibold tracking-tight ${nameClassName}`}>
-        {dev.name}
-        <span className={`ml-0.5 font-bold ${legalClassName}`}>{dev.legal}</span>
+      <span className={`pt-px text-[15px] font-normal tracking-[-0.1px] ${nameClassName}`}>
+        {dev.name} {dev.legal}
       </span>
-      <span className={`mt-0.5 font-semibold italic ${sloganClassName}`}>{dev.slogan}</span>
     </span>
   );
 }

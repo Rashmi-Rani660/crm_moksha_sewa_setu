@@ -25,7 +25,7 @@ export default function SectionPage({ role, slug }: { role: Role; slug: string }
   return (
     <DashboardCanvas role={role} active={slug}>
       <Box at={[x, 70, w, 60]} as="div" fit="fluid">
-        <nav aria-label="Breadcrumb" className="flex items-center text-[14px] font-semibold text-[#5b6280]">
+        <nav aria-label="Breadcrumb" className="flex items-center text-[16px] font-semibold text-[#5b6280]">
           <Link href={homeHref(role)} className="hover:text-[#2320c4] hover:underline">Dashboard</Link>
           <ChevronRight className="mx-[6px] h-[14px] w-[14px]" aria-hidden />
           <span aria-current="page" className="text-[#0b0c36]">{label}</span>

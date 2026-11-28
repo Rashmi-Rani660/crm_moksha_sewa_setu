@@ -181,7 +181,7 @@ export function CountBadge({ color, children }: { color: string; children: React
   return (
     <span
       style={{ background: color }}
-      className="inline-flex h-[22px] w-[52px] items-center justify-center rounded-full pt-[2px] text-[14px] font-semibold leading-none text-white"
+      className="inline-flex h-[22px] w-[52px] items-center justify-center rounded-full pt-[2px] text-[16px] font-semibold leading-none text-white"
     >
       {children}
     </span>
@@ -387,7 +387,7 @@ export function Select<T extends string>({
                   onChange(o);
                   setOpen(false);
                 }}
-                className={`flex h-[32px] w-full items-center whitespace-nowrap rounded-[7px] px-[10px] pt-[2px] text-left text-[14px] font-semibold ${
+                className={`flex h-[32px] w-full items-center whitespace-nowrap rounded-[7px] px-[10px] pt-[2px] text-left text-[16px] font-semibold ${
                   o === value ? "bg-[#eef2ff] text-[#2a26cf]" : "hover:bg-[#f4f6fc]"
                 }`}
               >
@@ -465,8 +465,8 @@ export function Footer({ y, leftX, logoRight }: { y: number; leftX: number; logo
         <EncodencyBadge
           className="ml-[15px] h-[32px] min-w-[150px] px-3"
           nameClassName="text-[18px]"
-          legalClassName="text-[7.5px]"
-          sloganClassName="text-[6px]"
+          legalClassName="text-[11.5px]"
+          sloganClassName="text-[10px]"
         />
       </Box>
     </>

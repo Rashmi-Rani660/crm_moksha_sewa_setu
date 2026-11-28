@@ -24,10 +24,10 @@ import {
 } from "@/lib/validation";
 
 const fieldClass =
-  "h-[44px] w-full rounded-lg border-[1.5px] border-[#c6ccd9] bg-white pl-[48px] pr-3 text-[15px] font-medium text-navy-ink shadow-[0_1px_3px_rgba(20,40,100,0.12)] outline-none transition placeholder:text-muted focus:border-navy focus:ring-2 focus:ring-navy/15 lg:h-[44px] lg:pl-[55px] lg:text-[13.6px]";
+  "h-[44px] w-full rounded-lg border-[1.5px] border-[#c6ccd9] bg-white pl-[48px] pr-3 text-[15px] font-medium text-navy-ink shadow-[0_1px_3px_rgba(20,40,100,0.12)] outline-none transition placeholder:text-muted focus:border-navy focus:ring-2 focus:ring-navy/15 lg:h-[44px] lg:pl-[55px] lg:text-[15.6px]";
 
 const compactFieldClass =
-  "h-[42px] w-full rounded-lg border-[1.5px] border-[#c6ccd9] bg-white pl-[48px] pr-11 text-[15px] font-medium text-navy-ink shadow-[0_1px_3px_rgba(20,40,100,0.12)] outline-none transition placeholder:text-muted focus:border-navy focus:ring-2 focus:ring-navy/15 lg:h-[35px] lg:pl-[55px] lg:text-[13.6px]";
+  "h-[42px] w-full rounded-lg border-[1.5px] border-[#c6ccd9] bg-white pl-[48px] pr-11 text-[15px] font-medium text-navy-ink shadow-[0_1px_3px_rgba(20,40,100,0.12)] outline-none transition placeholder:text-muted focus:border-navy focus:ring-2 focus:ring-navy/15 lg:h-[35px] lg:pl-[55px] lg:text-[15.6px]";
 
 const labelClass =
   "mb-1.5 block text-[15.5px] font-bold text-navy-ink lg:mb-[6px] lg:text-[14.4px]";
@@ -204,7 +204,7 @@ export default function ForgotPasswordForm() {
             <h2 className="text-[25px] font-bold leading-tight text-navy-ink lg:text-[22.7px]">
               Reset Password
             </h2>
-            <p className="mt-2 text-[15px] font-medium leading-[1.45] text-navy-ink lg:mt-[12px] lg:text-[14px]">
+            <p className="mt-2 text-[15px] font-medium leading-[1.45] text-navy-ink lg:mt-[12px] lg:text-[16px]">
               No worries! Enter your registered mobile number
               <br className="hidden lg:inline" /> and we&apos;ll send a
               verification OTP to reset your password.
@@ -240,7 +240,7 @@ export default function ForgotPasswordForm() {
           <p
             role="alert"
             aria-live="polite"
-            className={`mt-3 text-center text-[14px] font-semibold text-[#c0262d] ${error ? "" : "hidden"}`}
+            className={`mt-3 text-center text-[16px] font-semibold text-[#c0262d] ${error ? "" : "hidden"}`}
           >
             {error}
           </p>
@@ -256,7 +256,7 @@ export default function ForgotPasswordForm() {
           </button>
 
           {/* Divider notice */}
-          <div className="mt-6 flex items-center justify-center gap-3 text-[14.5px] font-medium text-navy-ink lg:-mx-[10px] lg:mt-[34px] lg:text-[13.8px]">
+          <div className="mt-6 flex items-center justify-center gap-3 text-[14.5px] font-medium text-navy-ink lg:-mx-[10px] lg:mt-[34px] lg:text-[15.8px]">
             <span className="h-px min-w-4 flex-1 bg-line" />
             <span className="inline-flex items-center gap-2 text-center lg:whitespace-nowrap">
               <ShieldCheckIcon size={22} className="shrink-0" />
@@ -289,7 +289,7 @@ export default function ForgotPasswordForm() {
             <h2 className="text-[25px] font-bold leading-tight text-navy-ink lg:text-[22.7px]">
               Create New Password
             </h2>
-            <p className="mt-1 text-[15px] font-medium text-navy-ink lg:text-[14px]">
+            <p className="mt-1 text-[15px] font-medium text-navy-ink lg:text-[16px]">
               OTP sent to <b className="font-bold">{maskedMobile}</b>{" "}
               <button
                 type="button"
@@ -312,7 +312,7 @@ export default function ForgotPasswordForm() {
                 <p className="text-[15.5px] font-bold leading-tight text-navy-ink lg:text-[14.7px]">
                   Verification (OTP)
                 </p>
-                <p className="mt-0.5 text-[13px] font-medium text-navy-ink lg:text-[11.2px]">
+                <p className="mt-0.5 text-[15px] font-medium text-navy-ink lg:text-[15.2px]">
                   Enter the {authConfig.otpLength}-digit OTP
                 </p>
               </div>
@@ -324,7 +324,7 @@ export default function ForgotPasswordForm() {
                 type="button"
                 onClick={handleResendOtp}
                 disabled={countdown > 0}
-                className="inline-flex h-[38px] items-center gap-1.5 whitespace-nowrap rounded-full border-[1.5px] border-navy-ink bg-white px-3.5 text-[13px] font-bold text-navy-ink transition hover:bg-navy-ink hover:text-white disabled:cursor-not-allowed disabled:border-line disabled:text-muted disabled:hover:bg-white disabled:hover:text-muted lg:h-[36px] lg:text-[12px]"
+                className="inline-flex h-[38px] items-center gap-1.5 whitespace-nowrap rounded-full border-[1.5px] border-navy-ink bg-white px-3.5 text-[15px] font-bold text-navy-ink transition hover:bg-navy-ink hover:text-white disabled:cursor-not-allowed disabled:border-line disabled:text-muted disabled:hover:bg-white disabled:hover:text-muted lg:h-[36px] lg:text-[14px]"
               >
                 <SendIcon />
                 {countdown > 0 ? `Resend ${countdown}s` : "Resend OTP"}
@@ -362,7 +362,7 @@ export default function ForgotPasswordForm() {
           <p
             role="alert"
             aria-live="polite"
-            className={`mt-3 text-center text-[14px] font-semibold text-[#c0262d] ${error ? "" : "hidden"}`}
+            className={`mt-3 text-center text-[16px] font-semibold text-[#c0262d] ${error ? "" : "hidden"}`}
           >
             {error}
           </p>

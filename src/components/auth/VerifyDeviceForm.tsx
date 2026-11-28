@@ -24,7 +24,7 @@ import { authConfig } from "@/lib/config/site";
 import { OTP_CHECK_ENABLED, deviceOtpAccepted, otpError } from "@/lib/auth/test-otp";
 
 const outlineBtn =
-  "inline-flex h-[46px] min-w-[160px] flex-1 items-center justify-center gap-2.5 whitespace-nowrap rounded-full border-[1.5px] border-navy-ink bg-white px-4 text-[15px] font-semibold text-navy-ink transition hover:bg-navy-ink hover:text-white lg:h-[38px] lg:min-w-0 lg:flex-none lg:gap-2 lg:text-[14px]";
+  "inline-flex h-[46px] min-w-[160px] flex-1 items-center justify-center gap-2.5 whitespace-nowrap rounded-full border-[1.5px] border-navy-ink bg-white px-4 text-[15px] font-semibold text-navy-ink transition hover:bg-navy-ink hover:text-white lg:h-[38px] lg:min-w-0 lg:flex-none lg:gap-2 lg:text-[16px]";
 
 export default function VerifyDeviceForm() {
   const router = useRouter();
@@ -129,7 +129,7 @@ export default function VerifyDeviceForm() {
         <h2 className="mt-8 text-[25px] font-bold leading-tight text-navy-ink lg:mt-[21px] lg:text-[22.7px]">
           New Device Verification
         </h2>
-        <p className="mt-1 text-[15px] font-medium leading-[1.45] text-navy-ink lg:text-[14px] lg:leading-[20px]">
+        <p className="mt-1 text-[15px] font-medium leading-[1.45] text-navy-ink lg:text-[16px] lg:leading-[20px]">
           We detected a sign-in attempt from a new device.
           <br className="hidden sm:inline" /> To protect your account, please
           verify your identity.
@@ -143,7 +143,7 @@ export default function VerifyDeviceForm() {
             </span>
           </div>
           <span aria-hidden className="mr-4 h-[58px] w-px shrink-0 bg-[#b4c0da] lg:mr-[18px] lg:h-[46px]" />
-          <dl className="min-w-0 text-[14px] leading-[1.55] text-navy-ink lg:text-[13.6px] lg:leading-[20px]">
+          <dl className="min-w-0 text-[16px] leading-[1.55] text-navy-ink lg:text-[15.6px] lg:leading-[20px]">
             <div>
               <dt className={`inline ${labelBold}`}>Device:</dt>{" "}
               <dd className="inline">{pending?.device ?? " "}</dd>
@@ -169,7 +169,7 @@ export default function VerifyDeviceForm() {
             <MailIcon size={32} className="lg:h-[30px] lg:w-[30px]" />
           </div>
           <div className="min-w-0 text-navy-ink lg:ml-[19px] lg:pl-[1px]">
-            <p className="text-[13px] leading-[1.4] lg:text-[12.5px] lg:leading-[18px]">
+            <p className="text-[15px] leading-[1.4] lg:text-[14.5px] lg:leading-[18px]">
               OTP sent to your registered email:
             </p>
             <p className="break-all text-[15px] font-bold leading-[1.4] text-[#0c2f94] lg:text-[14.5px] lg:leading-[20px]">
@@ -200,19 +200,19 @@ export default function VerifyDeviceForm() {
             placeholder={`Enter ${authConfig.otpLength}-digit OTP`}
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-            className="h-[48px] w-full rounded-xl border-[1.5px] border-[#c6ccd9] bg-white pl-[52px] pr-3 text-[15px] font-medium tracking-normal text-navy-ink shadow-[0_1px_3px_rgba(20,40,100,0.12)] outline-none transition placeholder:font-normal placeholder:text-muted focus:border-navy focus:ring-2 focus:ring-navy/15 lg:h-[38px] lg:rounded-lg lg:pl-[52px] lg:text-[13.6px]"
+            className="h-[48px] w-full rounded-xl border-[1.5px] border-[#c6ccd9] bg-white pl-[52px] pr-3 text-[15px] font-medium tracking-normal text-navy-ink shadow-[0_1px_3px_rgba(20,40,100,0.12)] outline-none transition placeholder:font-normal placeholder:text-muted focus:border-navy focus:ring-2 focus:ring-navy/15 lg:h-[38px] lg:rounded-lg lg:pl-[52px] lg:text-[15.6px]"
           />
         </div>
 
         <p
           role="alert"
           aria-live="polite"
-          className={`mt-2 text-center text-[13px] font-semibold text-[#c0262d] ${error ? "" : "hidden"}`}
+          className={`mt-2 text-center text-[15px] font-semibold text-[#c0262d] ${error ? "" : "hidden"}`}
         >
           {error}
         </p>
 
-        <p className="mt-3 text-balance text-center text-[14px] text-navy-ink lg:mt-[8px] lg:text-[13.6px] lg:leading-[20px]">
+        <p className="mt-3 text-balance text-center text-[16px] text-navy-ink lg:mt-[8px] lg:text-[15.6px] lg:leading-[20px]">
           Didn&apos;t receive the OTP?{" "}
           <button
             type="button"
@@ -237,7 +237,7 @@ export default function VerifyDeviceForm() {
         {/* or */}
         <div className="mt-5 flex items-center gap-3 lg:mt-[12px]" role="separator">
           <span className="h-px flex-1 bg-[#d3d9e6]" />
-          <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-[#d3d9e6] bg-white text-[15px] font-bold text-navy-ink lg:h-[26px] lg:w-[26px] lg:text-[13px]">
+          <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-[#d3d9e6] bg-white text-[15px] font-bold text-navy-ink lg:h-[26px] lg:w-[26px] lg:text-[15px]">
             or
           </span>
           <span className="h-px flex-1 bg-[#d3d9e6]" />
@@ -254,7 +254,7 @@ export default function VerifyDeviceForm() {
           </button>
         </div>
 
-        <p className="mt-5 flex items-center justify-center gap-3 rounded-lg bg-[#fbf1cf] px-3 py-3 text-center text-[14px] font-medium text-navy-ink lg:mt-[12px] lg:h-[34px] lg:gap-2.5 lg:py-0 lg:text-[13.6px]">
+        <p className="mt-5 flex items-center justify-center gap-3 rounded-lg bg-[#fbf1cf] px-3 py-3 text-center text-[16px] font-medium text-navy-ink lg:mt-[12px] lg:h-[34px] lg:gap-2.5 lg:py-0 lg:text-[15.6px]">
           <InfoIcon size={20} className="shrink-0" />
           Never share your OTP with anyone.
         </p>

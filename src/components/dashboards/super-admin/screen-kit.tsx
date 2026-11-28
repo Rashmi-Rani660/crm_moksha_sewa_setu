@@ -14,14 +14,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Fragment, useState, type CSSProperties, type ReactNode } from "react";
 import { ArrowRight, Bell, ChevronDown, CircleCheck, MapPin, Network, Radio, Users, type LucideIcon } from "lucide-react";
-import { SuperAdminFrame } from "@/components/dashboards/super-admin/kit";
+import { Dropdown, SuperAdminFrame } from "@/components/dashboards/super-admin/kit";
 
 export const ink = "text-[#1a1d36]";
 
 /* ---------------------------------- shell ---------------------------------- */
 
 export type Kpi = { value: string; label: string };
-type Picker = readonly { code: string; title: string; href: string }[];
+type Picker = readonly { code: string; title: string; href: string; section?: string }[];
 
 const kpiIcons: LucideIcon[] = [Radio, Bell, CircleCheck, Users, Network, MapPin];
 const kpiTones = [
@@ -56,6 +56,8 @@ export function Screen({
   children: ReactNode;
 }) {
   const router = useRouter();
+  // only the screens of the open sidebar section
+  const siblings = picker.filter((s) => !s.section || s.section === active);
   return (
     <SuperAdminFrame active={active}>
       <div className="flex min-h-0 flex-1 flex-col gap-3 lg:gap-0">
@@ -67,31 +69,21 @@ export function Screen({
               <h1 className={`text-[19px] font-medium leading-tight tracking-[-0.2px] lg:whitespace-nowrap lg:text-[20.5px] ${ink}`}>
                 {title}
               </h1>
-              <p className={`mt-[2px] text-[13px] ${ink}`}>Super Admin / FY 2026–27 / Ghaziabad</p>
+              <p className={`mt-[2px] text-[15px] ${ink}`}>Super Admin / FY 2026–27 / Ghaziabad</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:mt-[4px] lg:flex-nowrap">
-            <span className="flex h-[25px] items-center rounded-[4px] border border-[#ecd8a0] bg-[#fff1c9] px-[9px] pt-px text-[12px] font-medium text-[#6b5200]">
-              DEMO DATA
-            </span>
-            <label className="relative block h-[30px] w-full sm:w-[304px]">
-              <span className="sr-only">Open screen</span>
-              <select
-                value={code}
-                onChange={(e) => {
-                  const next = picker.find((s) => s.code === e.target.value);
-                  if (next) router.push(next.href);
-                }}
-                className={`h-full w-full cursor-pointer appearance-none truncate rounded-[6px] border border-[#c9d2e0] bg-white pl-[12px] pr-[30px] pt-px text-[13.3px] shadow-[0_1px_2px_rgba(20,45,90,0.06)] outline-none focus:border-[#5b7fe0] ${ink}`}
-              >
-                {picker.map((s) => (
-                  <option key={s.code} value={s.code}>
-                    {s.code} · {s.title}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown strokeWidth={2.6} className="pointer-events-none absolute right-[9px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#1a1d36]" aria-hidden />
-            </label>
+            <Dropdown
+              label="Switch screen"
+              value={siblings.find((s) => s.code === code)?.title ?? title}
+              options={siblings.map((s) => s.title)}
+              onChange={(t) => {
+                const next = siblings.find((s) => s.title === t);
+                if (next && next.code !== code) router.push(next.href);
+              }}
+              className="w-full sm:w-[330px] [&_button]:!font-normal"
+              size={13.5}
+            />
           </div>
         </div>
 
@@ -108,8 +100,8 @@ export function Screen({
                 <Icon strokeWidth={2} style={{ color: t.fg }} className="h-[30px] w-[30px] shrink-0" aria-hidden />
                 <div className="min-w-0">
                   <p className={`whitespace-nowrap text-[23px] font-medium leading-none tracking-[-0.3px] ${ink}`}>{k.value}</p>
-                  <p className={`mt-[3px] truncate text-[13.3px] leading-[16px] ${ink}`}>{k.label}</p>
-                  <p className="truncate text-[11.6px] leading-[14px] text-[#4a5468]">Demo snapshot</p>
+                  <p className={`mt-[3px] truncate text-[15.3px] leading-[16px] ${ink}`}>{k.label}</p>
+                  <p className="truncate text-[15.6px] leading-[14px] text-[#4a5468]">Demo snapshot</p>
                 </div>
               </div>
             );
@@ -127,7 +119,7 @@ export function Screen({
                 role="tab"
                 aria-selected={on}
                 onClick={() => onTab(t)}
-                className={`h-[34px] min-w-[130px] flex-1 whitespace-nowrap px-[10px] pt-px text-[13.4px] lg:h-full lg:min-w-0 ${i > 0 ? "border-l border-[#d9e1eb]" : ""} ${
+                className={`h-[34px] min-w-[130px] flex-1 whitespace-nowrap px-[10px] pt-px text-[15.4px] lg:h-full lg:min-w-0 ${i > 0 ? "border-l border-[#d9e1eb]" : ""} ${
                   on ? "border-l-0 bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] text-white" : `${ink} hover:bg-[#f3f6fc]`
                 } ${i === 0 ? "rounded-l-[5px]" : ""} ${i === tabs.length - 1 ? "rounded-r-[5px]" : ""}`}
               >
@@ -191,7 +183,7 @@ export function toneOf(text: string): PillTone {
 
 export function Pill({ children, tone }: { children: string; tone?: PillTone }) {
   return (
-    <span className={`inline-flex h-[20px] items-center whitespace-nowrap rounded-full px-[9px] pt-px text-[12.4px] font-medium leading-none ${pillTones[tone ?? toneOf(children)]}`}>
+    <span className={`inline-flex h-[20px] items-center whitespace-nowrap rounded-full px-[9px] pt-px text-[14.4px] font-medium leading-none ${pillTones[tone ?? toneOf(children)]}`}>
       {children}
     </span>
   );
@@ -200,9 +192,9 @@ export function Pill({ children, tone }: { children: string; tone?: PillTone }) 
 /* --------------------------------- buttons --------------------------------- */
 
 const primaryBtn =
-  "flex h-[29px] shrink-0 items-center whitespace-nowrap rounded-[6px] bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] px-[12px] pt-px text-[13.2px] font-medium text-white shadow-[0_1px_3px_rgba(9,60,221,0.3)] hover:brightness-110";
+  "flex h-[29px] shrink-0 items-center whitespace-nowrap rounded-[6px] bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] px-[12px] pt-px text-[15.2px] font-medium text-white shadow-[0_1px_3px_rgba(9,60,221,0.3)] hover:brightness-110";
 const outlineBtn =
-  "flex h-[29px] shrink-0 items-center whitespace-nowrap rounded-[6px] border border-[#a9bddf] bg-white px-[11px] pt-px text-[13.2px] font-medium text-[#1e43a8] hover:bg-[#f1f5fd]";
+  "flex h-[29px] shrink-0 items-center whitespace-nowrap rounded-[6px] border border-[#a9bddf] bg-white px-[11px] pt-px text-[15.2px] font-medium text-[#1e43a8] hover:bg-[#f1f5fd]";
 
 export function Btn({ children, primary = false, onClick, href, className = "" }: { children: ReactNode; primary?: boolean; onClick?: () => void; href?: string; className?: string }) {
   const cls = `${primary ? primaryBtn : outlineBtn} ${className}`;
@@ -225,7 +217,7 @@ export function KVList({ rows, rowH = 28 }: { rows: readonly KVRow[]; rowH?: num
   return (
     <dl>
       {rows.map(([k, v], i) => (
-        <div key={i} style={{ height: rowH }} className={`flex items-center gap-[12px] border-b border-[#e1e7f0] text-[13.3px] ${ink}`}>
+        <div key={i} style={{ height: rowH }} className={`flex items-center gap-[12px] border-b border-[#e1e7f0] text-[15.3px] ${ink}`}>
           <dt className="min-w-0 flex-1 truncate pt-px">{k}</dt>
           <dd className="shrink-0 whitespace-nowrap pt-px text-right">{v}</dd>
         </div>
@@ -235,12 +227,12 @@ export function KVList({ rows, rowH = 28 }: { rows: readonly KVRow[]; rowH?: num
 }
 
 /** Small blue-grey sub-heading inside a panel ("Selected case stages", "Verification history"). */
-export const SubLabel = ({ children }: { children: ReactNode }) => <p className="pt-[6px] text-[13px] text-[#3c55a0]">{children}</p>;
+export const SubLabel = ({ children }: { children: ReactNode }) => <p className="pt-[6px] text-[15px] text-[#3c55a0]">{children}</p>;
 
 export function Meter({ label, value, pct }: { label: string; value: string; pct: number }) {
   return (
     <div>
-      <div className={`flex items-center justify-between gap-[10px] text-[13.3px] leading-[18px] ${ink}`}>
+      <div className={`flex items-center justify-between gap-[10px] text-[15.3px] leading-[18px] ${ink}`}>
         <span className="truncate">{label}</span>
         <span className="shrink-0 whitespace-nowrap">{value}</span>
       </div>
@@ -277,7 +269,7 @@ export function DataTable({
         <thead>
           <tr className="h-[29px] bg-[#e2e9f4]">
             {head.map((h) => (
-              <th key={h} scope="col" className={`whitespace-nowrap px-[8px] pt-px text-left text-[13px] font-medium ${ink}`}>{h}</th>
+              <th key={h} scope="col" className={`whitespace-nowrap px-[8px] pt-px text-left text-[15px] font-medium ${ink}`}>{h}</th>
             ))}
           </tr>
         </thead>
@@ -290,13 +282,13 @@ export function DataTable({
               className={`border-b border-[#dce4ee] ${onRow ? "cursor-pointer hover:bg-[#eef3fb]" : ""} ${selected === r.key ? "bg-[#e9f0fc]" : ""}`}
             >
               {r.cells.map((c, i) => (
-                <td key={i} className={`whitespace-nowrap px-[8px] pt-px text-[13.3px] ${ink}`}>{typeof c === "string" && pills.includes(i) && c !== "–" ? <Pill>{c}</Pill> : c}</td>
+                <td key={i} className={`whitespace-nowrap px-[8px] pt-px text-[15.3px] ${ink}`}>{typeof c === "string" && pills.includes(i) && c !== "–" ? <Pill>{c}</Pill> : c}</td>
               ))}
             </tr>
           ))}
           {rows.length === 0 && (
             <tr style={{ height: rowH }} className="border-b border-[#dce4ee]">
-              <td colSpan={head.length} className="px-[8px] text-[13.3px] text-[#4a5468]">{empty}</td>
+              <td colSpan={head.length} className="px-[8px] text-[15.3px] text-[#4a5468]">{empty}</td>
             </tr>
           )}
         </tbody>
@@ -315,7 +307,7 @@ export function SearchInput({ value, onChange, className = "" }: { value: string
       onChange={(e) => onChange(e.target.value)}
       placeholder="Search records..."
       aria-label="Search records"
-      className={`h-[32px] min-w-0 rounded-[6px] border border-[#c9d2e0] bg-white px-[11px] pt-px text-[13.3px] outline-none placeholder:text-[#6b7488] focus:border-[#5b7fe0] ${ink} ${className}`}
+      className={`h-[32px] min-w-0 rounded-[6px] border border-[#c9d2e0] bg-white px-[11px] pt-px text-[15.3px] outline-none placeholder:text-[#6b7488] focus:border-[#5b7fe0] ${ink} ${className}`}
     />
   );
 }
@@ -328,7 +320,7 @@ export function NativeSelect<T extends string>({ value, options, onChange, label
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value as T)}
-        className={`h-full w-full cursor-pointer appearance-none rounded-[6px] border border-[#c9d2e0] bg-white pl-[11px] pr-[28px] pt-px text-[13.3px] outline-none focus:border-[#5b7fe0] disabled:cursor-default disabled:bg-[#eef1f6] ${ink}`}
+        className={`h-full w-full cursor-pointer appearance-none rounded-[6px] border border-[#c9d2e0] bg-white pl-[11px] pr-[28px] pt-px text-[15.3px] outline-none focus:border-[#5b7fe0] disabled:cursor-default disabled:bg-[#eef1f6] ${ink}`}
       >
         {options.map((o) => (
           <option key={o} value={o}>{o}</option>
@@ -361,7 +353,7 @@ export function useFilters<F extends Record<string, string>>(initial: F) {
 export function Field({ label, children, className = "" }: { label: string; children: ReactNode; className?: string }) {
   return (
     <div className={`min-w-0 ${className}`}>
-      <p className={`mb-[3px] text-[13.3px] leading-[16px] ${ink}`}>{label}</p>
+      <p className={`mb-[3px] text-[15.3px] leading-[16px] ${ink}`}>{label}</p>
       {children}
     </div>
   );
@@ -374,14 +366,14 @@ export function TextBox({ value, onChange, readOnly = false, label }: { value: s
       readOnly={readOnly}
       aria-label={label}
       onChange={(e) => onChange?.(e.target.value)}
-      className={`h-[32px] w-full rounded-[6px] border px-[11px] pt-px text-[13.3px] outline-none ${ink} ${readOnly ? "border-[#d6dde8] bg-[#eef1f6]" : "border-[#c9d2e0] bg-white focus:border-[#5b7fe0]"}`}
+      className={`h-[32px] w-full rounded-[6px] border px-[11px] pt-px text-[15.3px] outline-none ${ink} ${readOnly ? "border-[#d6dde8] bg-[#eef1f6]" : "border-[#c9d2e0] bg-white focus:border-[#5b7fe0]"}`}
     />
   );
 }
 
 export function Check({ label, checked, onChange, disabled = false }: { label: string; checked: boolean; onChange?: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <label className={`flex h-[26px] items-center gap-[10px] text-[13.3px] ${ink} ${disabled ? "cursor-default" : "cursor-pointer"}`}>
+    <label className={`flex h-[26px] items-center gap-[10px] text-[15.3px] ${ink} ${disabled ? "cursor-default" : "cursor-pointer"}`}>
       <input type="checkbox" checked={checked} disabled={disabled} onChange={(e) => onChange?.(e.target.checked)} className="h-[15px] w-[15px] shrink-0 accent-[#1561e8] disabled:opacity-60" />
       <span className="pt-px">{label}</span>
     </label>
@@ -403,8 +395,8 @@ export function Flow({ steps, h = 62 }: { steps: string[]; h?: number }) {
               i % 2 ? "border-[#cfe4d6] bg-[linear-gradient(180deg,#f7fdf8_0%,#eaf6ee_100%)]" : "border-[#c9d8ee] bg-[linear-gradient(180deg,#f4f9ff_0%,#e6f0fc_100%)]"
             }`}
           >
-            <span className="text-[11.4px] leading-none text-[#3c55a0]">{String(i + 1).padStart(2, "0")}</span>
-            <span className={`mt-[5px] px-[4px] text-[13.3px] leading-[16px] ${ink}`}>{s}</span>
+            <span className="text-[15.4px] leading-none text-[#3c55a0]">{String(i + 1).padStart(2, "0")}</span>
+            <span className={`mt-[5px] px-[4px] text-[15.3px] leading-[16px] ${ink}`}>{s}</span>
           </div>
         </Fragment>
       ))}

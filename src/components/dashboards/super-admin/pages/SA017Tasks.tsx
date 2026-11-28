@@ -78,7 +78,7 @@ export default function SA017Tasks() {
                   role="tab"
                   aria-selected={view === v}
                   onClick={() => setView(v)}
-                  className={`h-[27px] rounded-[6px] border px-[10px] pt-px text-[13.2px] ${view === v ? "border-[#086eed] bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] text-white" : "border-[#a9bddf] bg-white text-[#1e43a8] hover:bg-[#f1f5fd]"}`}
+                  className={`h-[27px] rounded-[6px] border px-[10px] pt-px text-[15.2px] ${view === v ? "border-[#086eed] bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] text-white" : "border-[#a9bddf] bg-white text-[#1e43a8] hover:bg-[#f1f5fd]"}`}
                 >
                   {v}
                 </button>
@@ -103,9 +103,9 @@ export default function SA017Tasks() {
               <div className="grid grid-cols-2 gap-[8px] sm:grid-cols-3 lg:grid-cols-6">
                 {columns.map((c) => (
                   <div key={c} className="min-w-0 rounded-[6px] border border-[#dce4ee] bg-white p-[6px]">
-                    <p className={`truncate text-[12.4px] font-medium ${ink}`}>{c} ({rows.filter((t) => t.status === c).length})</p>
+                    <p className={`truncate text-[14.4px] font-medium ${ink}`}>{c} ({rows.filter((t) => t.status === c).length})</p>
                     {rows.filter((t) => t.status === c).map((t) => (
-                      <div key={t.id} className="mt-[6px] rounded-[5px] border border-[#e1e7f0] bg-[#f8fbff] p-[5px] text-[11.6px] leading-[14px]">
+                      <div key={t.id} className="mt-[6px] rounded-[5px] border border-[#e1e7f0] bg-[#f8fbff] p-[5px] text-[15.6px] leading-[14px]">
                         <p className={ink}>{t.id.slice(-4)} · {t.due}</p>
                         <p className="text-[#4a5468]">{t.task}</p>
                       </div>

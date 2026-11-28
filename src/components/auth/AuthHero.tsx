@@ -104,7 +104,7 @@ export default function AuthHero({ variant }: { variant: AuthVariant }) {
           />
           <div className="mt-1 flex w-full items-center gap-1.5 lg:absolute lg:left-[var(--init-x)] lg:top-[var(--init-y)] lg:z-10 lg:mt-0 lg:w-[var(--init-w)] lg:gap-2">
             <span className="h-px min-w-1 flex-1 bg-navy-ink/70" />
-            <span className="whitespace-nowrap text-[10.5px] font-semibold text-navy-ink sm:text-[12px] lg:text-[length:var(--init-fs)]">
+            <span className="whitespace-nowrap text-[14.5px] font-semibold text-navy-ink sm:text-[14px] lg:text-[length:var(--init-fs)]">
               {siteConfig.initiative}
             </span>
             <span className="h-px min-w-1 flex-1 bg-navy-ink/70" />
