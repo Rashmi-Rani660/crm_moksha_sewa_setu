@@ -6,8 +6,12 @@ import { findSection, sectionsOf } from "@/components/dashboards/shells";
 
 type Props = { params: Promise<{ section: string }> };
 
+const ownPages = new Set(["my-tasks", "communication-hub", "ai-work-assistant", "resources-expenses"]);
+
 export function generateStaticParams() {
-  return sectionsOf("user").map((s) => ({ section: s.slug }));
+  return sectionsOf("user")
+    .filter((s) => !ownPages.has(s.slug))
+    .map((s) => ({ section: s.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

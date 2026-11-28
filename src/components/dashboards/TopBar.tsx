@@ -7,7 +7,7 @@ import { Bell, ChevronDown, CircleUserRound, LogOut, Menu, Mic, Search, Send, Sp
 import { DESIGN_W, useMenuToggle } from "@/components/dashboards/canvas";
 import { sectionHref, sectionsOf, shells } from "@/components/dashboards/shells";
 import { usePopover } from "@/components/dashboards/usePopover";
-import { signOut, type Role } from "@/lib/auth/session";
+import { signIn, signOut, useAuthSession, type Role } from "@/lib/auth/session";
 
 /** Design x positions (full 1600px canvas) of the header pieces. */
 export type TopBarSpec = {
@@ -445,6 +445,8 @@ function ProfileMenu({
   inline?: boolean;
   compact?: boolean;
 }) {
+  const router = useRouter();
+  const { session } = useAuthSession();
   const { open, setOpen, ref } = usePopover();
 
   return (
@@ -496,6 +498,35 @@ function ProfileMenu({
             <CircleUserRound className="h-[16px] w-[16px]" />
             <span className="pt-[2px]">My Profile</span>
           </Link>
+          {role !== "user" ? (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                signIn(session?.mobile ?? "9876543210", "user");
+                router.push("/dashboard/user/my-tasks");
+              }}
+              className="flex h-[36px] w-full items-center gap-[10px] rounded-[8px] px-[10px] text-[16px] font-semibold text-[#1d4fe0] hover:bg-[#f1f4fb]"
+            >
+              <CircleUserRound className="h-[16px] w-[16px]" />
+              <span className="pt-[2px]">User</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                signIn(session?.mobile ?? "9876543210", "super-admin");
+                router.push("/dashboard/super-admin");
+              }}
+              className="flex h-[36px] w-full items-center gap-[10px] rounded-[8px] px-[10px] text-[16px] font-semibold text-[#1d4fe0] hover:bg-[#f1f4fb]"
+            >
+              <CircleUserRound className="h-[16px] w-[16px]" />
+              <span className="pt-[2px]">Super Admin</span>
+            </button>
+          )}
           <button
             type="button"
             role="menuitem"

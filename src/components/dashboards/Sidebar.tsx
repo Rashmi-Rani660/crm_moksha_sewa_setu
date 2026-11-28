@@ -3,11 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, type LucideIcon } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, ChevronRight, type LucideIcon } from "lucide-react";
 import { isHomeItem, homeHref, sectionHref, slugify } from "@/components/dashboards/shells";
 import type { Role } from "@/lib/auth/session";
 import SidebarMotto from "@/components/dashboards/SidebarMotto";
 import { siteConfig } from "@/lib/config/site";
+
+export type NavSubItem = {
+  label: string;
+  href: string;
+};
 
 export type NavItem = {
   label: string;
@@ -19,6 +25,8 @@ export type NavItem = {
   /** "gold" = current page pill, "blue" = section heading pill. */
   pill?: "gold" | "blue";
   submenu?: boolean;
+  /** Optional dropdown subitems. */
+  children?: readonly NavSubItem[];
   /** Pill box override (left, width, height). */
   box?: { x: number; w: number; h: number };
 };
@@ -63,6 +71,7 @@ export default function Sidebar({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
   const { width, fontSize, iconSize, textX, iconX, pill, items, diyaShift = 0, rowHeight = 32, pillFontSize = spec.fontSize + 1.5, pillTextClass, goldClass } = spec;
   return (
     <aside
@@ -92,8 +101,10 @@ export default function Sidebar({
       <nav aria-label="Main">
         <ul>
           {items.map((item) => {
-            const { label, icon: Icon, y, submenu, box } = item;
+            const { label, icon: Icon, y, submenu, box, children } = item;
             const href = item.href ?? (isHomeItem(item) ? homeHref(role) : sectionHref(role, label));
+            const childMatch = Boolean(children?.some((c) => pathname === c.href || pathname?.startsWith(`${c.href}/`)));
+            const isOpen = openMenus[label] ?? false;
             // gold = current page; keep the blue heading pill everywhere
             const slug = slugify(label);
             const pathMatch =
@@ -106,6 +117,7 @@ export default function Sidebar({
                     (slug === "knowledge-base" && pathname.startsWith(`/dashboard/${role}/training-excellence`))),
               );
             const current =
+              childMatch ||
               pathMatch ||
               (active
                 ? slug === active ||
@@ -117,38 +129,99 @@ export default function Sidebar({
             const h = kind ? p.h : rowHeight;
             const isCurrent = kind === "gold";
             return (
-              <li key={label} style={{ top: y - h / 2, height: h, left: kind ? p.x : 0, width: kind ? p.w : width }} className="absolute">
-                <Link
-                  href={href}
-                  onClick={onNavigate}
-                  aria-current={isCurrent ? "page" : undefined}
-                  className={`relative flex h-full items-center transition-colors ${isCurrent && pillTextClass ? "text-[#0b0c36]" : ""} ${
-                    kind === "gold" && goldClass
-                      ? goldClass
-                      : kind === "gold"
-                      ? "rounded-[9px] border border-[#ffd668]/70 bg-[linear-gradient(90deg,#fdc006_0%,#f2ad0a_45%,#d99a1b_75%,rgba(160,120,40,0.55)_100%)] shadow-[0_2px_8px_rgba(0,0,0,0.25)]"
-                      : kind === "blue"
-                        ? "rounded-[10px] bg-[linear-gradient(90deg,#28467a,#223d6c)]"
-                        : "hover:bg-white/5"
-                  }`}
-                >
-                  <Icon
-                    strokeWidth={2}
-                    style={{ width: iconSize, height: iconSize, left: iconX - (kind ? p.x : 0) - iconSize / 2 }}
-                    className="absolute"
-                  />
-                  <span
-                    style={{ left: textX - (kind ? p.x : 0), fontSize: kind ? pillFontSize : fontSize }}
-                    className={`absolute whitespace-nowrap pt-px leading-none tracking-[-0.2px] ${
-                      isCurrent && pillTextClass ? pillTextClass : kind ? "font-semibold" : "font-medium"
+              <li key={label} style={{ top: y - h / 2, height: h, left: kind ? p.x : 0, width: kind ? p.w : width }} className={`absolute ${isOpen ? "z-30" : ""}`}>
+                {children && children.length > 0 ? (
+                  <>
+                    <button
+                      type="button"
+                      aria-expanded={isOpen}
+                      onClick={() => setOpenMenus((prev) => ({ ...prev, [label]: !isOpen }))}
+                      className={`relative flex h-full w-full items-center text-left transition-colors ${isCurrent && pillTextClass ? "text-[#0b0c36]" : ""} ${
+                        kind === "gold" && goldClass
+                          ? goldClass
+                          : kind === "gold"
+                          ? "rounded-[9px] border border-[#ffd668]/70 bg-[linear-gradient(90deg,#fdc006_0%,#f2ad0a_45%,#d99a1b_75%,rgba(160,120,40,0.55)_100%)] shadow-[0_2px_8px_rgba(0,0,0,0.25)]"
+                          : "hover:bg-white/5"
+                      }`}
+                    >
+                      <Icon
+                        strokeWidth={2}
+                        style={{ width: iconSize, height: iconSize, left: iconX - (kind ? p.x : 0) - iconSize / 2 }}
+                        className="absolute"
+                      />
+                      <span
+                        style={{ left: textX - (kind ? p.x : 0), fontSize: kind ? pillFontSize : fontSize }}
+                        className={`absolute whitespace-nowrap pt-px leading-none tracking-[-0.2px] ${
+                          isCurrent && pillTextClass ? pillTextClass : kind ? "font-semibold" : "font-medium"
+                        }`}
+                      >
+                        {label}
+                      </span>
+                      {isOpen ? (
+                        <ChevronDown strokeWidth={2.4} className="absolute right-[10px] h-[13px] w-[13px]" />
+                      ) : (
+                        <ChevronRight strokeWidth={2.4} className="absolute right-[10px] h-[13px] w-[13px]" />
+                      )}
+                    </button>
+                    {isOpen && (
+                      <ul className="mt-[4px] max-h-[210px] w-[205px] overflow-y-auto rounded-[8px] border border-white/15 bg-[#031942]/95 p-[4px] shadow-[0_10px_24px_rgba(0,0,0,0.45)] backdrop-blur [scrollbar-width:thin]">
+                        {children.map((sub) => {
+                          const subActive = pathname === sub.href;
+                          return (
+                            <li key={sub.href}>
+                              <Link
+                                href={sub.href}
+                                onClick={() => {
+                                  setOpenMenus((prev) => ({ ...prev, [label]: false }));
+                                  onNavigate?.();
+                                }}
+                                className={`block truncate rounded-[6px] px-[10px] py-[6px] text-[12.8px] leading-[1.2] transition-colors ${
+                                  subActive
+                                    ? "bg-[#f6c21a] font-semibold text-[#0b0c36]"
+                                    : "font-medium text-white/90 hover:bg-white/10 hover:text-white"
+                                }`}
+                              >
+                                {sub.label}
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    href={href}
+                    onClick={onNavigate}
+                    aria-current={isCurrent ? "page" : undefined}
+                    className={`relative flex h-full items-center transition-colors ${isCurrent && pillTextClass ? "text-[#0b0c36]" : ""} ${
+                      kind === "gold" && goldClass
+                        ? goldClass
+                        : kind === "gold"
+                        ? "rounded-[9px] border border-[#ffd668]/70 bg-[linear-gradient(90deg,#fdc006_0%,#f2ad0a_45%,#d99a1b_75%,rgba(160,120,40,0.55)_100%)] shadow-[0_2px_8px_rgba(0,0,0,0.25)]"
+                        : kind === "blue"
+                          ? "rounded-[10px] bg-[linear-gradient(90deg,#28467a,#223d6c)]"
+                          : "hover:bg-white/5"
                     }`}
                   >
-                    {label}
-                  </span>
-                  {submenu && (
-                    <ChevronRight strokeWidth={2.4} className="absolute right-[10px] h-[12px] w-[12px]" />
-                  )}
-                </Link>
+                    <Icon
+                      strokeWidth={2}
+                      style={{ width: iconSize, height: iconSize, left: iconX - (kind ? p.x : 0) - iconSize / 2 }}
+                      className="absolute"
+                    />
+                    <span
+                      style={{ left: textX - (kind ? p.x : 0), fontSize: kind ? pillFontSize : fontSize }}
+                      className={`absolute whitespace-nowrap pt-px leading-none tracking-[-0.2px] ${
+                        isCurrent && pillTextClass ? pillTextClass : kind ? "font-semibold" : "font-medium"
+                      }`}
+                    >
+                      {label}
+                    </span>
+                    {submenu && (
+                      <ChevronRight strokeWidth={2.4} className="absolute right-[10px] h-[12px] w-[12px]" />
+                    )}
+                  </Link>
+                )}
               </li>
             );
           })}
