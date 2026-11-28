@@ -65,6 +65,8 @@ export function useWorkforce(show: (message: string) => void) {
 
 export function usePlanner(show: (message: string) => void) {
   const access = useCrmAccess();
+  const [today] = useState(() => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date()));
+  const [asOf] = useState(() => Date.now());
   const [range] = useState(() => {
     const day = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
     const start = `${day.slice(0,8)}01T00:00:00+05:30`;
@@ -92,5 +94,5 @@ export function usePlanner(show: (message: string) => void) {
     if (!item) return;
     await mutation.run(`/workforce/handovers/${item.id}/acknowledge`, { body: { version: item.version } }, "Acknowledged.");
   }
-  return { ...access,planner,handovers,recipients,mutation,add,reschedule,handover,acknowledge,range,EMPTY,text };
+  return { ...access,planner,handovers,recipients,mutation,add,reschedule,handover,acknowledge,range,today,asOf,EMPTY,text };
 }

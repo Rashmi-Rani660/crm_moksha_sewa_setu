@@ -81,9 +81,9 @@ export default function US019VehicleMaterialRequests() {
       <UserHeader code="US-019" title="Vehicle & Material Requests" />
       <UserKpiRow
         items={[
-          { value: profile ? count(rows.length) : EMPTY, label: "My resource requests", tone: "blue" },
-          { value: profile ? count(rows.filter(row => row.status === "REQUESTED").length) : EMPTY, label: "Awaiting approval", tone: "orange" },
-          { value: profile ? count(rows.filter(row => row.status === "DISPATCHED" || row.status === "ISSUED").length) : EMPTY, label: "Allocated", tone: "green" },
+          { value: EMPTY, label: "My resource requests", tone: "blue" },
+          { value: EMPTY, label: "Awaiting approval", tone: "orange" },
+          { value: EMPTY, label: "Allocated", tone: "green" },
           { value: count(at(fleet.data,"vehicles.available")), label: "Vehicle available", tone: "green" },
           { value: count(inventory.data?.lowStockLines), label: "Low stock items", tone: "red", valueRed: true },
           { value: EMPTY, label: "Case clearance", tone: "orange" },

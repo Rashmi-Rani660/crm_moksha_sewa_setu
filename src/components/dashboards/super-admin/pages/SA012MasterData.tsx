@@ -76,7 +76,7 @@ export default function SA012MasterData() {
               pills={[4]}
               rows={rows.map((s) => ({
                 key: s.code,
-                cells: [s.code, s.name, s.scope, "₹0", s.status, <Btn key="r" className="!h-[27px]" disabled={!live.can("master_data.edit") || live.mutation.busy} onClick={() => review(s.id)}>Review</Btn>, s.version],
+                cells: [s.code, s.name, s.scope, EMPTY, s.status, <Btn key="r" className="!h-[27px]" disabled={!live.can("master_data.edit") || live.mutation.busy} onClick={() => review(s.id)}>Review</Btn>, s.version],
               }))}
             />
             <Buttons>

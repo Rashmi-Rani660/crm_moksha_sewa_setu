@@ -39,7 +39,7 @@ export default function SA016CaseDetails() {
         { value: humanize(text(record?.stage,"")), label: "Stage" },
         { value: humanize(text(record?.priority,"")), label: "Priority" },
         { value: shortDateTime(text(at(record,"sla.resolutionDueAt"),"")), label: "SLA left" },
-        { value: "₹0", label: "Service fee" },
+        { value: EMPTY, label: "Service fee" },
       ]}
       tabs={tabs}
       tab={tab}

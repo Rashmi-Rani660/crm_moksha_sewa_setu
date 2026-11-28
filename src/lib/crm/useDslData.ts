@@ -27,6 +27,8 @@ export function useDslData(code: string, tab: string, query: string, selected: n
   const extra1 = useCrmQuery<unknown>(enabled ? config?.extras?.[1] ?? null : null);
   const extra2 = useCrmQuery<unknown>(enabled ? config?.extras?.[2] ?? null : null);
   const dashboard = useDashboardData(code === "AD-001");
+  const volunteerSummary = useCrmQuery<CrmRecord>(enabled && config?.module === "live_operations" && live.can("volunteers.view") ? "/volunteers/summary" : null);
+  const taskSummary = useCrmQuery<CrmRecord>(enabled && config?.module === "live_operations" && live.can("tasks.view") ? "/tasks/summary" : null);
   const selectedRecord = pickedId || routeId ? live.rows.find(row => row.id === (pickedId ?? routeId)) : live.rows[selected];
   const selectedId = pickedId ?? routeId ?? text(selectedRecord?.id, "");
   // Detail selection is driven by the actual row id; no client-generated ids or versions.
@@ -92,12 +94,15 @@ export function useDslData(code: string, tab: string, query: string, selected: n
     if (label === "Item types" && config?.module === "inventory") return count(itemCount.meta?.total);
     if (label === "Shown item lines" && config?.module === "inventory") return live.list.data ? count(live.rows.length) : EMPTY;
     if (config?.module === "live_operations") {
+      if (label === "Volunteers available") return count(volunteerSummary.data?.availableNow);
+      if (label === "Overdue tasks") return count(taskSummary.data?.overdue);
+      if (label === "Unacknowledged") return count(taskSummary.data?.awaitingAcceptance);
       const roster = config.base === "/live/roster" ? live.list.data : extra0.data;
       const path = label === "Staff on duty" ? "summary.onDuty" : label === "GPS stale" ? "summary.stale" : undefined;
       if (path) return count(at(roster,path));
     }
     const metric = metrics[label];
-    if (metric) return count(at(summary, metric));
+    if (metric) return count(at(summary, metric) ?? (/^byStatus\.|^byStage\./.test(metric) && live.summary.data ? 0 : undefined));
     for (const path of fields[label] ?? []) { const v = at(detail,path); if (v !== undefined && v !== null) return text(v); }
     return EMPTY;
   }
