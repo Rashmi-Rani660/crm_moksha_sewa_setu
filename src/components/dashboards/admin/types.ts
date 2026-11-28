@@ -32,8 +32,8 @@ export type Block =
   | { t: "table"; cols: string[]; rows: Cell[][]; compact?: boolean; /** Column used by the status filter (defaults to the last pill column). */ status?: number }
   /** "Label … value" rows; `bold` = bold values (AD-011+ lower panels). */
   | { t: "kv"; rows: [string, Cell][]; bold?: boolean; /** Small, tight rows (AD-031+ lower panels). */ dense?: boolean }
-  /** Buttons; the first is solid unless `outlineAll`. */
-  | { t: "btns"; items: string[]; outlineAll?: boolean }
+  /** Buttons; the first is solid unless `outlineAll`. `grid` = 2-column full-width grid (side panels). */
+  | { t: "btns"; items: string[]; outlineAll?: boolean; grid?: boolean }
   /** Labelled progress bar. */
   | { t: "progress"; label: string; value: number; right?: string; color?: BarColor }
   /** Process boxes joined by arrows; [top, bottom] for two-line boxes. */
@@ -96,12 +96,24 @@ export type Row = {
   panels: Panel[];
 };
 
+export type ScreenView = {
+  kpis: Kpi[];
+  rows: Row[];
+  selected?: number;
+  snapshot?: boolean;
+  scope?: string;
+};
+
 export type Screen = {
   code: string;
   title: string;
   kpis: Kpi[];
   tabs: string[];
   rows: Row[];
+  /** Optional per-tab working views (used by Compact Admin workspaces). */
+  views?: Record<string, ScreenView>;
+  /** Show DEMO DATA badge in the page header. */
+  demo?: boolean;
   /** Row of the main table selected on load (as in the design). */
   selected?: number;
   /** Tabs that open another screen instead of switching the view (screen code). */
