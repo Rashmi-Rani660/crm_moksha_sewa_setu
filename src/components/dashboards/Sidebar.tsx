@@ -112,7 +112,7 @@ export default function Sidebar({
               Boolean(
                 pathname &&
                   (pathname === href ||
-                    pathname.startsWith(`${href}/`) ||
+                    (pathname.startsWith(`${href}/`) && !items.some((other) => other.href && pathname === other.href)) ||
                     (slug === "automation-ai" && pathname.startsWith(`/dashboard/${role}/automation-ai`)) ||
                     (slug === "knowledge-base" && pathname.startsWith(`/dashboard/${role}/training-excellence`))),
               );

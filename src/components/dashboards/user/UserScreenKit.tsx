@@ -34,7 +34,6 @@ export function UserFrame({ active, children }: { active?: string; children: Rea
             <span className="mx-[12px] inline-block h-[16px] w-[1.5px] translate-y-[3px] bg-[#3a3d55]" />
             <b className="font-bold text-[#0b0c36]">{siteConfig.name} CRM v1.0</b>
           </p>
-          <p className="whitespace-nowrap text-[13px] font-medium text-[#3b4256]">DEMO DATA — Design reference only</p>
           <p className="flex items-center whitespace-nowrap">
             Designed, Developed &amp; Maintained by
             <EncodencyBadge className="ml-[12px] h-[28px] min-w-[132px] px-2.5" nameClassName="text-[16px]" legalClassName="text-[7px]" sloganClassName="text-[5.5px]" />
@@ -56,9 +55,6 @@ export function UserHeader({ code, title }: { code: UserScreenCode; title: strin
         <p className={`mt-[2px] text-[13.8px] ${userInk}`}>User 07 / FY 2026–27 / Ghaziabad • My authorised work</p>
       </div>
       <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:mt-[4px] lg:flex-nowrap">
-        <span className="flex h-[25px] items-center rounded-[4px] border border-[#ecd8a0] bg-[#fff1c9] px-[9px] pt-px text-[12.6px] font-normal text-[#6b5200]">
-          DEMO DATA
-        </span>
         <label className="relative block h-[30px] w-full sm:w-[328px]">
           <span className="sr-only">Open screen</span>
           <select
@@ -190,6 +186,59 @@ export function UserFlowSteps({ steps }: { steps: readonly string[] }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+export function UserTabs<T extends string>({
+  tabs,
+  value,
+  onChange,
+  className = "",
+}: {
+  tabs: readonly T[];
+  value: T;
+  onChange: (t: T) => void;
+  className?: string;
+}) {
+  return (
+    <div
+      role="tablist"
+      className={`flex overflow-x-auto rounded-[6px] border border-[#d9e1eb] bg-white lg:mt-[6px] lg:h-[36px] lg:shrink-0 ${className}`}
+    >
+      {tabs.map((t, i) => {
+        const on = t === value;
+        return (
+          <button
+            key={t}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onChange(t)}
+            className={`h-[34px] min-w-[140px] flex-1 whitespace-nowrap px-[10px] pt-px text-[14.2px] font-medium transition-colors lg:h-full lg:min-w-0 ${
+              i > 0 ? "border-l border-[#d9e1eb]" : ""
+            } ${
+              on
+                ? "border-l-0 bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] text-white"
+                : `${userInk} hover:bg-[#f3f6fc]`
+            } ${i === 0 ? "rounded-l-[5px]" : ""} ${i === tabs.length - 1 ? "rounded-r-[5px]" : ""}`}
+          >
+            {t}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export function UserProgressBar({ pct }: { pct: number }) {
+  const clamped = Math.max(0, Math.min(100, pct));
+  return (
+    <div className="h-[7px] w-full overflow-hidden rounded-full bg-[#e3eaf5]">
+      <div
+        style={{ width: `${clamped}%` }}
+        className="h-full rounded-full bg-[linear-gradient(90deg,#1f6fe5_0%,#2563eb_100%)]"
+      />
     </div>
   );
 }

@@ -6,7 +6,15 @@ import { findSection, sectionsOf } from "@/components/dashboards/shells";
 
 type Props = { params: Promise<{ section: string }> };
 
-const ownPages = new Set(["my-tasks", "communication-hub", "ai-work-assistant", "resources-expenses"]);
+const ownPages = new Set([
+  "my-tasks",
+  "communication-hub",
+  "ai-work-assistant",
+  "resources-expenses",
+  "training-knowledge",
+  "my-performance",
+  "help-support",
+]);
 
 export function generateStaticParams() {
   return sectionsOf("user")
