@@ -584,8 +584,8 @@ function BlockView({ b, ctx }: { b: Block; ctx: Ctx }) {
           <svg viewBox="0 0 70 70" className="h-[54px] w-[54px] shrink-0" role="img" aria-label={`${b.value} ${b.unit}`}>
             <circle cx="35" cy="35" r={r} fill="none" stroke="#6fa9e6" strokeWidth="9" />
             <circle cx="35" cy="35" r={r} fill="none" stroke="#3a7a55" strokeWidth="9" strokeDasharray={`${(b.pct / 100) * c} ${c}`} transform="rotate(-90 35 35)" />
-            <text x="35" y="35" textAnchor="middle" className="fill-[#0b0c36] text-[15px] font-semibold">{b.value}</text>
-            <text x="35" y="47" textAnchor="middle" className="fill-[#3b4256] text-[8.5px]">{b.unit}</text>
+            <text x="35" y="34" textAnchor="middle" className="fill-[#0b0c36] text-[20px] font-bold">{b.value}</text>
+            <text x="35" y="48" textAnchor="middle" className="fill-[#1a1d36] text-[12px] font-semibold">{b.unit}</text>
           </svg>
           <div className={`text-[14.8px] font-medium leading-snug ${ink}`}>
             {b.lines.map((l) => (
