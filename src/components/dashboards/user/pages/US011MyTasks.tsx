@@ -157,7 +157,7 @@ export default function US011MyTasks() {
 
         <UserPanel title="Next action">
           <div className="rounded-[6px] border border-[#dce6f5] bg-[#eef4fc] px-[10px] py-[6px] text-[13.8px] font-medium text-[#1a1d36]">
-            {text(live.rawRows[0]?.taskNo)} ? {text(live.rawRows[0]?.title)}
+            {text(live.rawRows[0]?.taskNo)} · {text(live.rawRows[0]?.title)}
           </div>
           <div className="mt-[4px]">
             <UserKVList

@@ -16,6 +16,13 @@ export function useRecordId() {
 export function useRecordKind() {
   return useSyncExternalStore(subscribeLocation, () => new URLSearchParams(window.location.search).get("entityType"), () => null);
 }
+const subscribeDay = (listener: () => void) => {
+  const timer = window.setInterval(listener, 60_000);
+  return () => window.clearInterval(timer);
+};
+export function useIstDay() {
+  return useSyncExternalStore(subscribeDay, () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date()), () => "");
+}
 export function useEntityTab(tabs: string[]): [string, (tab: string) => void] {
   const kind = useRecordKind();
   const [choice, setChoice] = useState<string | null>(null);

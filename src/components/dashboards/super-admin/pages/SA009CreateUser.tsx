@@ -43,6 +43,7 @@ import { errorMessage } from "@/lib/api/client";
 import { qs, useCrmQuery } from "@/lib/api/useCrmQuery";
 import { useAuthSession } from "@/lib/auth/session";
 import { useCrmAccess } from "@/lib/api/useCrmAccess";
+import { useIstDay } from "@/lib/crm/useResource";
 import { ACCESS_LEVEL_LABEL, clock, shortDate } from "@/lib/format";
 
 const tabs = ["Create user", "Permission preview", "Centre access", "Audit history"] as const;
@@ -128,7 +129,8 @@ export default function SA009CreateUser() {
   const employee = staffRows.find((s) => staffLabel(s) === employeeLabel) ?? staffRows[0];
   const role = roles.data?.find((r) => r.slug === DEFAULT_PROFILE[LEVEL[level]]) ?? roles.data?.[0];
   const centre = centres.data?.[0];
-  const [reviewDue] = useState(() => new Date(Date.now() + REVIEW_DAYS * 86_400_000).toISOString());
+  const today = useIstDay();
+  const reviewDue = today ? new Date(Date.parse(`${today}T00:00:00+05:30`) + REVIEW_DAYS * 86_400_000).toISOString() : "";
 
   const permRows = PERM_MODULES.map((m) => ({
     module: m.label,

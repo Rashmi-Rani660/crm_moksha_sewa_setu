@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { authorizedRequest } from "@/lib/api/authorized";
 import { ApiError, errorMessage } from "@/lib/api/client";
 import { useCrmAccess } from "@/lib/api/useCrmAccess";
 import { useCrmMutation } from "@/lib/api/useCrmMutation";
 import { qs, useCrmQuery } from "@/lib/api/useCrmQuery";
 import { choose, EMPTY, istTimestamp, reason, records, text, type CrmRecord } from "./data";
+import { useIstDay } from "./useResource";
 
 export function useWorkforce(show: (message: string) => void) {
   const access = useCrmAccess();
@@ -65,14 +66,10 @@ export function useWorkforce(show: (message: string) => void) {
 
 export function usePlanner(show: (message: string) => void) {
   const access = useCrmAccess();
-  const [today] = useState(() => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date()));
-  const [asOf] = useState(() => Date.now());
-  const [range] = useState(() => {
-    const day = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
-    const start = `${day.slice(0,8)}01T00:00:00+05:30`;
-    return { from: start,to: new Date(Date.parse(start) + 31 * 86400000).toISOString() };
-  });
-  const planner = useCrmQuery<CrmRecord[]>(access.can("planner.view") ? `/workforce/planner${qs(range)}` : null);
+  const today = useIstDay();
+  const start = today ? `${today.slice(0,8)}01T00:00:00+05:30` : "";
+  const range = { from: start, to: start ? new Date(Date.parse(start) + 31 * 86400000).toISOString() : "" };
+  const planner = useCrmQuery<CrmRecord[]>(today && access.can("planner.view") ? `/workforce/planner${qs(range)}` : null);
   const handovers = useCrmQuery<CrmRecord[]>(access.can("planner.view") ? "/workforce/handovers?limit=100" : null);
   const recipients = useCrmQuery<CrmRecord[]>(access.can("users.view") ? "/users?status=ACTIVE&limit=100" : null);
   const mutation = useCrmMutation(show);
@@ -94,5 +91,5 @@ export function usePlanner(show: (message: string) => void) {
     if (!item) return;
     await mutation.run(`/workforce/handovers/${item.id}/acknowledge`, { body: { version: item.version } }, "Acknowledged.");
   }
-  return { ...access,planner,handovers,recipients,mutation,add,reschedule,handover,acknowledge,range,today,asOf,EMPTY,text };
+  return { ...access,planner,handovers,recipients,mutation,add,reschedule,handover,acknowledge,range,today,EMPTY,text };
 }

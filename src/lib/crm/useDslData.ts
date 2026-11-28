@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { qs, useCrmQuery, useDebounced } from "@/lib/api/useCrmQuery";
-import { useRecordId, useRecordKind, useResource } from "./useResource";
+import { useIstDay, useRecordId, useRecordKind, useResource } from "./useResource";
 import { useDashboardData } from "./useDashboardData";
 import { screenSource } from "./screenSources";
 import { at, count, EMPTY, object, records, text, type CrmRecord } from "./data";
@@ -17,14 +17,11 @@ export function useDslData(code: string, tab: string, query: string, selected: n
   const [picked, setPicked] = useState<{ base: string; id: string } | null>(null);
   const pickedId = picked?.base === config?.base ? picked?.id : null;
   const search = useDebounced(query.trim());
-  const [range] = useState(() => {
-    const now = new Date();
-    const day = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(now);
-    const from = `${day.slice(0,8)}01T00:00:00+05:30`;
-    return { from, to: new Date(Date.parse(from) + 31 * 86400000).toISOString() };
-  });
+  const day = useIstDay();
+  const from = day ? `${day.slice(0,8)}01T00:00:00+05:30` : "";
+  const range = { from, to: from ? new Date(Date.parse(from) + 31 * 86400000).toISOString() : "" };
   const params = config?.module === "planner" ? { ...range, includeTeam: true } : config?.search ? { search: search || undefined } : {};
-  const live = useResource(config?.base ?? null, config?.module ?? "", show, params, { ...config, detail: false, ...(config ? {} : { summary: null }) });
+  const live = useResource(config?.module === "planner" && !day ? null : config?.base ?? null, config?.module ?? "", show, params, { ...config, detail: false, ...(config ? {} : { summary: null }) });
   const enabled = !!config && (live.can(`${config.module}.view`) || config.base === "/notifications");
   const extra0 = useCrmQuery<unknown>(enabled ? config?.extras?.[0] ?? null : null);
   const extra1 = useCrmQuery<unknown>(enabled ? config?.extras?.[1] ?? null : null);
