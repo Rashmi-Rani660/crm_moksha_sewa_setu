@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Hind, Poppins, Source_Serif_4 } from "next/font/google";
-import Script from "next/script";
+import ViewportVars from "@/components/ui/ViewportVars";
 import { siteConfig } from "@/lib/config/site";
 import "./globals.css";
 
@@ -36,14 +36,6 @@ export const viewport = {
   themeColor: "#d3e8fc",
 };
 
-/**
- * Publishes the window size as unitless CSS variables (--vw = width without
- * the scrollbar, --vh). The auth
- * card scale is derived from them in CSS (see AuthShell), so the layout is
- * right on first paint and after client-side navigation. Runs before paint.
- */
-const viewportScript = `(function(){var d=document.documentElement;function f(){d.style.setProperty('--vw',d.clientWidth||innerWidth);d.style.setProperty('--vh',innerHeight)}f();addEventListener('resize',f);if(window.ResizeObserver)new ResizeObserver(f).observe(d)})();`;
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
@@ -52,9 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${poppins.variable} ${sourceSerif.variable} ${hind.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <Script id="viewport-vars" strategy="beforeInteractive">
-          {viewportScript}
-        </Script>
+        <ViewportVars />
         {children}
       </body>
     </html>

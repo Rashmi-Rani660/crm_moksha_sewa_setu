@@ -102,6 +102,12 @@ export type Screen = {
   kpis: Kpi[];
   tabs: string[];
   rows: Row[];
+  /** Optional alternate row layout for specific tabs (e.g. AD-005 Shift handover). */
+  tabRows?: Record<string, Row[]>;
+  /** Optional alternate KPI strip for specific tabs (e.g. AD-006/007/008/010). */
+  tabKpis?: Record<string, Kpi[]>;
+  /** Shows Today / Week / Month period selector in header (AD-001). */
+  period?: boolean;
   /** Row of the main table selected on load (as in the design). */
   selected?: number;
   /** Tabs that open another screen instead of switching the view (screen code). */

@@ -16,17 +16,17 @@ const B = "/dashboard/admin";
 const placement: Record<string, [section: string, slug?: string]> = {
   "AD-001": ["Dashboard"],
   "AD-002": ["Live Operations"],
-  "AD-003": ["Notifications & Alerts"],
-  "AD-004": ["Pending Approvals"],
-  "AD-005": ["Daily Work Planner"],
-  "AD-006": ["Team & Users"],
-  "AD-007": ["User Profile"],
-  "AD-008": ["Team Availability"],
-  "AD-009": ["Task Allocation"],
-  "AD-010": ["Attendance & HRMS"],
-  "AD-011": ["Requests & Cases"],
-  "AD-012": ["Requests & Cases", "create-request"],
-  "AD-013": ["Requests & Cases", "verification"],
+  "AD-003": ["Notifications"],
+  "AD-004": ["Approvals"],
+  "AD-005": ["Work Planner"],
+  "AD-006": ["Team Management"],
+  "AD-007": ["Team Management", "availability-hrms"],
+  "AD-008": ["Requests & Cases"],
+  "AD-009": ["Requests & Cases", "create-request"],
+  "AD-010": ["Requests & Cases", "verification"],
+  "AD-011": ["Requests & Cases", "legacy-requests"],
+  "AD-012": ["Requests & Cases", "legacy-create-request"],
+  "AD-013": ["Requests & Cases", "legacy-verification"],
   "AD-014": ["Requests & Cases", "legal-documents"],
   "AD-015": ["Requests & Cases", "cases"],
   "AD-016": ["Requests & Cases", "case-details"],
@@ -79,8 +79,19 @@ export const adScreens: PlacedScreen[] = [...screensA, ...screensB, ...screensC,
 
 export const screenByCode = (code: string) => adScreens.find((s) => s.code === code);
 
-/** Extra links (top-bar profile / notifications) that open a screen. */
-const extraSections: Record<string, string> = { "my-profile": "AD-007", notifications: "AD-003" };
+/** Extra links (top-bar profile / notifications / legacy URLs) that open a screen. */
+const extraSections: Record<string, string> = {
+  "my-profile": "AD-006",
+  notifications: "AD-003",
+  "notification-alerts": "AD-003",
+  "pending-approvals": "AD-004",
+  "daily-work-planner": "AD-005",
+  "team-users": "AD-006",
+  "user-profile": "AD-006",
+  "team-availability": "AD-007",
+  "attendance-hrms": "AD-007",
+  "task-allocation": "AD-019",
+};
 
 /** Screen shown at /dashboard/admin/<section>[/<sub>]. */
 export function screenAt(section: string, sub?: string) {
@@ -90,16 +101,16 @@ export function screenAt(section: string, sub?: string) {
 
 /** Buttons that open another screen instead of recording an action. */
 export const actionTargets: Record<string, string> = {
-  "Create request": "AD-012",
+  "Create request": "AD-009",
   "Create task": "AD-020",
   "Assign task": "AD-020",
   "Open case": "AD-016",
-  "View profile": "AD-007",
-  "View work history": "AD-007",
+  "View profile": "AD-006",
+  "View work history": "AD-006",
   Approvals: "AD-004",
   "Open task list": "AD-019",
   "View task history": "AD-019",
-  "View documents": "AD-014",
+  "View documents": "AD-010",
   "Open communication": "AD-031",
   "Open inbox": "AD-031",
   "Open linked thread": "AD-032",
@@ -109,9 +120,9 @@ export const actionTargets: Record<string, string> = {
   "Calendar view": "AD-005",
   "Review approvals": "AD-004",
   "Review dispatch": "AD-027",
-  "View availability": "AD-008",
-  "Review legal": "AD-014",
-  "Shift roster": "AD-010",
+  "View availability": "AD-007",
+  "Review legal": "AD-010",
+  "Shift roster": "AD-007",
   "Open SOS queue": "AD-025",
   "View GPS": "AD-025",
   "View tracking": "AD-025",

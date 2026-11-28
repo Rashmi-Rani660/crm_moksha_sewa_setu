@@ -643,6 +643,7 @@ const kpiIcons: LucideIcon[] = [House, Radio, Bell, CircleCheck, UsersRound, Net
 const kpiTones: TileTone[] = ["blue", "green", "orange", "purple", "sky", "green", "orange", "purple", "sky", "green"];
 
 const departments = ["Assigned departments", "Sewa operations", "Communication", "Field support", "Documentation"] as const;
+const periods = ["Today", "Week", "Month"] as const;
 
 const screenOptions = adScreens.map((s) => s.title);
 
@@ -670,13 +671,18 @@ function ScreenView({ s, active }: { s: Screen; active?: string }) {
   const notice = useNotice();
   const [tab, setTab] = useState(s.tabs[0]);
   const [dept, setDept] = useState<string>(departments[0]);
+  const [period, setPeriod] = useState<string>(periods[0]);
   const [query, setQuery] = useState("");
-  const filterBlock = s.rows[0].panels[0].blocks.find((b) => b.t === "filter");
+  const tabIndex = s.tabs.indexOf(tab);
+  const hasCustomTab = tabIndex > 0 && Boolean(s.tabRows?.[tab]);
+  const activeRows = hasCustomTab ? s.tabRows![tab] : s.rows;
+  const activeKpis = (tabIndex > 0 && s.tabKpis?.[tab]) ? s.tabKpis[tab] : s.kpis;
+  const filterBlock = activeRows[0].panels[0].blocks.find((b) => b.t === "filter");
   const allLabel = (filterBlock?.t === "filter" && filterBlock.all) || "All assigned records";
   const [status, setStatus] = useState(allLabel);
 
   // main table = first table of the first panel
-  const mainPanel = s.rows[0].panels[0];
+  const mainPanel = activeRows[0].panels[0];
   const mainTable = mainPanel.blocks.find((b) => b.t === "table");
   const rows = useMemo(() => (mainTable?.t === "table" ? mainTable.rows : []), [mainTable]);
   const pillCol = useMemo(() => {
@@ -696,7 +702,6 @@ function ScreenView({ s, active }: { s: Screen; active?: string }) {
   const [selected, setSelected] = useState(s.selected ?? 0);
   const selId = rows[selected] ? plain(rows[selected][0]) : undefined;
 
-  const tabIndex = s.tabs.indexOf(tab);
   const ctxFor = (isMain: boolean): Ctx => ({
     visible,
     selected,
@@ -732,15 +737,16 @@ function ScreenView({ s, active }: { s: Screen; active?: string }) {
             }}
             className={`w-full ${s.snapshot || s.plain ? "sm:w-[425px]" : "sm:w-[285px]"}`}
           />
+          {s.period && <NativeSelect label="Time period" value={period} options={periods} onChange={setPeriod} className="w-[100px]" />}
         </div>
       </div>
 
       {/* KPI tiles */}
       <div
-        style={{ "--n": s.kpis.length } as CSSProperties}
+        style={{ "--n": activeKpis.length } as CSSProperties}
         className="grid grid-cols-2 gap-[10px] sm:grid-cols-3 lg:h-[70px] lg:shrink-0 lg:[grid-template-columns:repeat(var(--n),minmax(0,1fr))]"
       >
-        {s.kpis.map((k, i) => {
+        {activeKpis.map((k, i) => {
           const tone = tiles[k.tone ?? kpiTones[i % kpiTones.length]];
           const Icon = k.icon ?? kpiIcons[i % kpiIcons.length];
           return (
@@ -749,10 +755,10 @@ function ScreenView({ s, active }: { s: Screen; active?: string }) {
               style={{ background: tone.bg, borderColor: tone.border }}
               className="flex min-h-[66px] min-w-0 items-center gap-[8px] rounded-[11px] border px-[9px] py-[6px] shadow-[0_3px_9px_rgba(30,50,110,0.08)]"
             >
-              <Icon strokeWidth={1.9} style={{ color: tone.fg }} className={`${s.kpis.length > 8 ? "h-[24px] w-[24px]" : "h-[30px] w-[30px]"} shrink-0`} aria-hidden />
+              <Icon strokeWidth={1.9} style={{ color: tone.fg }} className={`${activeKpis.length > 8 ? "h-[24px] w-[24px]" : "h-[30px] w-[30px]"} shrink-0`} aria-hidden />
               <div className="min-w-0 flex-1">
                 <p className="whitespace-nowrap text-[22px] font-bold leading-none tracking-[-0.4px] text-[#0b0c36]">{k.v}</p>
-                <p className={`mt-[3px] font-semibold leading-[1.15] tracking-[-0.25px] text-[#1a1d36] ${s.kpis.length > 8 ? "text-[14.2px]" : "text-[15.4px] lg:truncate"}`}>{k.l}</p>
+                <p className={`mt-[3px] font-semibold leading-[1.15] tracking-[-0.25px] text-[#1a1d36] ${activeKpis.length > 8 ? "text-[14.2px]" : "text-[15.4px] lg:truncate"}`}>{k.l}</p>
               </div>
             </div>
           );
@@ -787,7 +793,7 @@ function ScreenView({ s, active }: { s: Screen; active?: string }) {
 
       {/* panels */}
       <div className="flex min-h-0 flex-col gap-3 lg:flex-1 lg:gap-[10px]">
-        {s.rows.map((row, ri) => {
+        {activeRows.map((row, ri) => {
           const widths = row.w ?? row.panels.map(() => 1);
           const pos = row.order ?? row.panels.map((_, i) => i);
           const display = row.panels.map((_, i) => i).sort((a, b) => pos[a] - pos[b]);
@@ -801,7 +807,7 @@ function ScreenView({ s, active }: { s: Screen; active?: string }) {
                 const isMain = ri === 0 && pi === 0;
                 let title = p.follow && selId ? `${p.title} · ${selId}` : p.title;
                 let panel = p;
-                if (isMain && tabIndex > 0) {
+                if (isMain && tabIndex > 0 && !hasCustomTab) {
                   title = `${p.title} · ${tab}`;
                   panel = { ...p, blocks: [{ t: "info", text: `${tab} view · assigned scope only ` }, ...p.blocks] };
                 }
