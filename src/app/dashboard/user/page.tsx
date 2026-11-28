@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import UserDashboard from "@/components/dashboards/UserDashboard";
+import { US001MyWorkDashboard } from "@/components/dashboards/user/us/screens-a";
 
 export const metadata: Metadata = {
-  title: "User Dashboard",
+  title: "My Work Dashboard | User",
 };
 
 export default function Page() {
-  return <UserDashboard />;
+  return <US001MyWorkDashboard />;
 }

@@ -8,7 +8,7 @@ import EncodencyBadge from "@/components/ui/EncodencyBadge";
 import { siteConfig } from "@/lib/config/site";
 import { userScreenPicker, type UserScreenCode } from "@/components/dashboards/user/routes";
 
-const SB = 221;
+const SB = 210; // user sidebar width (shells.tsx)
 export const userInk = "text-[#1a1d36]";
 
 export const userPrimaryBtn =

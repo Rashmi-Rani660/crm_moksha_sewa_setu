@@ -3,14 +3,16 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import SectionPage from "@/components/dashboards/SectionPage";
 import { findSection, sectionsOf } from "@/components/dashboards/shells";
+import { userOwnPages } from "@/components/dashboards/user/us/routes";
 
 type Props = { params: Promise<{ section: string }> };
 
 const ownPages = new Set(["my-tasks", "communication-hub", "ai-work-assistant", "resources-expenses"]);
 
 export function generateStaticParams() {
+  /** Sections with their own page folder (US-001 … US-020) are not generated here. */
   return sectionsOf("user")
-    .filter((s) => !ownPages.has(s.slug))
+    .filter((s) => !ownPages.has(s.slug) && !userOwnPages.includes(s.slug))
     .map((s) => ({ section: s.slug }));
 }
 
