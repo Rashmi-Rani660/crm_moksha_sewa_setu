@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { qs, useCrmQuery, useDebounced } from "@/lib/api/useCrmQuery";
-import { useRecordId, useResource } from "./useResource";
+import { useRecordId, useRecordKind, useResource } from "./useResource";
 import { useDashboardData } from "./useDashboardData";
 import { screenSource } from "./screenSources";
 import { at, count, EMPTY, object, records, text, type CrmRecord } from "./data";
@@ -10,9 +10,12 @@ import { tableRows } from "./tableValues";
 import { humanize } from "@/lib/format";
 
 export function useDslData(code: string, tab: string, query: string, selected: number, show: (message: string) => void) {
-  const config = screenSource(code, tab);
+  const kind = useRecordKind();
+  let config = screenSource(code, tab);
+  if (kind === "materialrequest" && config?.module === "inventory" && /material|issue/i.test(tab)) config = { ...config, base: "/inventory/material-requests", detail: true };
   const routeId = useRecordId();
-  const [pickedId, setPickedId] = useState<string | null>(null);
+  const [picked, setPicked] = useState<{ base: string; id: string } | null>(null);
+  const pickedId = picked?.base === config?.base ? picked?.id : null;
   const search = useDebounced(query.trim());
   const [range] = useState(() => {
     const now = new Date();
@@ -21,7 +24,7 @@ export function useDslData(code: string, tab: string, query: string, selected: n
     return { from, to: new Date(Date.parse(from) + 31 * 86400000).toISOString() };
   });
   const params = config?.module === "planner" ? { ...range, includeTeam: true } : config?.search ? { search: search || undefined } : {};
-  const live = useResource(config?.base ?? null, config?.module ?? "", show, params, config ?? { summary: null });
+  const live = useResource(config?.base ?? null, config?.module ?? "", show, params, { ...config, detail: false, ...(config ? {} : { summary: null }) });
   const enabled = !!config && (live.can(`${config.module}.view`) || config.base === "/notifications");
   const extra0 = useCrmQuery<unknown>(enabled ? config?.extras?.[0] ?? null : null);
   const extra1 = useCrmQuery<unknown>(enabled ? config?.extras?.[1] ?? null : null);
@@ -29,8 +32,10 @@ export function useDslData(code: string, tab: string, query: string, selected: n
   const dashboard = useDashboardData(code === "AD-001");
   const volunteerSummary = useCrmQuery<CrmRecord>(enabled && config?.module === "live_operations" && live.can("volunteers.view") ? "/volunteers/summary" : null);
   const taskSummary = useCrmQuery<CrmRecord>(enabled && config?.module === "live_operations" && live.can("tasks.view") ? "/tasks/summary" : null);
-  const selectedRecord = pickedId || routeId ? live.rows.find(row => row.id === (pickedId ?? routeId)) : live.rows[selected];
-  const selectedId = pickedId ?? routeId ?? text(selectedRecord?.id, "");
+  const entityBase: Record<string,string> = { trip: "/fleet/trips", vehicle: "/fleet/vehicles", driver: "/fleet/drivers", materialrequest: "/inventory/material-requests", purchaserequest: "/inventory/purchase-requests", stockaudit: "/inventory/stock-audits" };
+  const matchingRouteId = !kind || !entityBase[kind] || config?.base === entityBase[kind] ? routeId : null;
+  const selectedRecord = pickedId || matchingRouteId ? live.rows.find(row => row.id === (pickedId ?? matchingRouteId)) : live.rows[selected] ?? live.rows[0];
+  const selectedId = pickedId ?? matchingRouteId ?? text(selectedRecord?.id, "");
   // Detail selection is driven by the actual row id; no client-generated ids or versions.
   const selectedDetail = useCrmQuery<CrmRecord>(enabled && config?.detail !== false && selectedId ? `${config?.base}/${selectedId}` : null);
   const detail = selectedDetail.data ?? (config?.detail === false ? selectedRecord : null);
@@ -150,6 +155,6 @@ export function useDslData(code: string, tab: string, query: string, selected: n
   return { ...live, code, config, enabled: !!config, detail, selectedDetail, selectedRecord, summary, value, rowsFor,
     table: (title: string, columns: string[]) => tableRows(columns, rowsFor(title)), dashboard,
     extras: [extra0, extra1, extra2], trail, status: humanize(text(detail?.status ?? detail?.stage,"")),
-    queryString: qs(params), chooseIndex: (index: number) => setPickedId(text(live.rows[index]?.id, "") || null),
+    queryString: qs(params), chooseIndex: (index: number) => setPicked(config && live.rows[index]?.id ? { base: config.base, id: text(live.rows[index].id, "") } : null),
   };
 }

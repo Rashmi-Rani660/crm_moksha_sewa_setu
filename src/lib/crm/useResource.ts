@@ -13,16 +13,26 @@ const subscribeLocation = (cb: () => void) => {
 export function useRecordId() {
   return useSyncExternalStore(subscribeLocation, () => new URLSearchParams(window.location.search).get("id"), () => null);
 }
+export function useRecordKind() {
+  return useSyncExternalStore(subscribeLocation, () => new URLSearchParams(window.location.search).get("entityType"), () => null);
+}
+export function useEntityTab(tabs: string[]): [string, (tab: string) => void] {
+  const kind = useRecordKind();
+  const [choice, setChoice] = useState<string | null>(null);
+  const pattern = kind === "trip" ? /trip|dispatch/i : kind === "driver" ? /driver/i : kind === "purchaserequest" ? /purchase|procure/i : kind === "stockaudit" ? /audit|count/i : kind === "materialrequest" ? /material|issue/i : null;
+  return [choice ?? (pattern ? tabs.find(tab => pattern.test(tab)) : undefined) ?? tabs[0], setChoice];
+}
 
 export function useResource(base: string | null, module: string, show: (message: string) => void,
   params: Record<string, string | number | boolean | undefined | null> = {}, options: { summary?: string | null; paginated?: boolean; detail?: boolean; rowsKey?: string } = {}) {
   const access = useCrmAccess(base !== null);
   const routeId = useRecordId();
-  const [selection, select] = useState<string | null>(null);
+  const [selection, setSelection] = useState<{ base: string | null; id: string | null } | null>(null);
+  const select = (id: string | null) => setSelection({ base, id });
   const allowed = base !== null && (access.can(`${module}.view`) || (base === "/notifications" && !!access.profile));
   const list = useCrmQuery<unknown>(allowed ? `${base}${qs(options.paginated === false ? params : { page: 1, limit: 50, ...params })}` : null);
   const rows = records(options.rowsKey ? at(list.data, options.rowsKey) : list.data);
-  const id = selection ?? routeId ?? (typeof rows[0]?.id === "string" ? rows[0].id : null);
+  const id = (selection?.base === base ? selection.id : null) ?? routeId ?? (typeof rows[0]?.id === "string" ? rows[0].id : null);
   const detail = useCrmQuery<CrmRecord>(allowed && id && options.detail !== false ? `${base}/${encodeURIComponent(id)}` : null);
   const summaryPath = options.summary === undefined ? `${base}/summary` : options.summary;
   const summary = useCrmQuery<CrmRecord>(allowed && summaryPath ? summaryPath : null);

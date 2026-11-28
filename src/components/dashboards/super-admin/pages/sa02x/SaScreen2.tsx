@@ -27,6 +27,7 @@ import type { Action, Bar, Pair, Screen, Tbl } from "./types";
 import { useDslData } from "@/lib/crm/useDslData";
 import { useScreenActions } from "@/lib/crm/useScreenActions";
 import { bindResourceScreen } from "@/lib/crm/bindScreens";
+import { useEntityTab } from "@/lib/crm/useResource";
 
 /* ---------------------------------- helpers --------------------------------- */
 
@@ -167,7 +168,7 @@ function Readonly({ label, value }: { label: string; value: string }) {
 export default function SaScreen2({ id }: { id: string }) {
   const original: Screen = screens[id];
   const notice = useNotice();
-  const [tab, setTab] = useState(original.tabs[0]);
+  const [tab, setTab] = useEntityTab(original.tabs);
   const [selected, setSelected] = useState(original.main.selected ?? 0);
   const [reply, setReply] = useState("");
   const live = useDslData(id, tab, "", selected, notice.show);

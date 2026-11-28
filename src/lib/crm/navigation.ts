@@ -26,5 +26,5 @@ export function entityHref(type: string, id: string, role: DashboardSlug): strin
   const us: Record<string, string> = { request: usRoutes.verification, case: usRoutes.caseDetails, task: userRoutes.taskExecution };
   const adminCodes: Record<string,string> = { request: "AD-013",case: "AD-016",task: "AD-022",user: "AD-007",trip: "AD-027",materialrequest: "AD-029",purchaserequest: "AD-042",stockaudit: "AD-029",leave: "AD-010",volunteer: "AD-026",partner: "AD-028" };
   const href = role === "super-admin" ? sa[kind] : role === "admin" ? screenByCode(adminCodes[kind])?.href ?? ad[kind] : us[kind];
-  return href ? `${href}?id=${encodeURIComponent(id)}` : null;
+  return href ? `${href}?id=${encodeURIComponent(id)}&entityType=${encodeURIComponent(kind)}` : null;
 }

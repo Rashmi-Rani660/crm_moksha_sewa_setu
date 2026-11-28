@@ -37,6 +37,7 @@ import type { BarColor, Block, Cell, Field, Panel, Screen } from "./types";
 import { useDslData } from "@/lib/crm/useDslData";
 import { useScreenActions } from "@/lib/crm/useScreenActions";
 import { bindAdminScreen } from "@/lib/crm/bindScreens";
+import { useEntityTab } from "@/lib/crm/useResource";
 import { fieldName } from "@/lib/crm/formFields";
 
 const ink = "text-[#1a1d36]";
@@ -678,7 +679,7 @@ export default function AdScreen({ code }: { code: string }) {
 function ScreenView({ s: original, active }: { s: Screen; active?: string }) {
   const router = useRouter();
   const notice = useNotice();
-  const [tab, setTab] = useState(original.tabs[0]);
+  const [tab, setTab] = useEntityTab(original.tabs);
   const [dept, setDept] = useState<string>(departments[0]);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(original.selected ?? 0);
