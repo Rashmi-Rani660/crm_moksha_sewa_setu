@@ -76,6 +76,7 @@ export default function SA038CalendarMeetings() {
   const notice = useNotice();
   const live = usePlanner(notice.show);
   const rows = records(live.planner.data);
-  const wired: ScreenSpec = { ...spec,kpis: spec.kpis.map((k,i) => ({ ...k,value: i === 0 ? live.planner.data ? count(rows.length) : EMPTY : i === 1 ? live.planner.data ? count(rows.filter(row => row.type === "MEETING").length) : EMPTY : i === 2 ? live.planner.data ? count(rows.filter(row => row.type === "REMINDER").length) : EMPTY : k.value })) as ScreenSpec["kpis"],register: { ...spec.register,rows: rows.map(row => [shortDateTime(text(row.startAt,"")),text(row.title),humanize(text(row.type,"")),text(row.ownerName),text(row.link),humanize(text(row.status,""))]) } };
+  const todayRows = rows.filter(row => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date(text(row.startAt, ""))) === live.today);
+  const wired: ScreenSpec = { ...spec,kpis: spec.kpis.map((k,i) => ({ ...k,value: i === 0 ? live.planner.data ? count(todayRows.length) : EMPTY : i === 1 ? live.planner.data ? count(rows.filter(row => row.type === "MEETING" && row.status === "PLANNED").length) : EMPTY : i === 2 ? live.planner.data ? count(rows.filter(row => row.type === "REMINDER").length) : EMPTY : k.value })) as ScreenSpec["kpis"],register: { ...spec.register,rows: todayRows.map(row => [shortDateTime(text(row.startAt,"")),text(row.title),humanize(text(row.type,"")),text(row.ownerName),text(row.link),humanize(text(row.status,""))]) } };
   return <><RegisterScreen spec={wired} onAction={(label) => { if (label === "Create event" || label === "Set reminder") void live.add(); }} />{notice.node}</>;
 }

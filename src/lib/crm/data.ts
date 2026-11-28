@@ -5,7 +5,7 @@ export function object(value: unknown): CrmRecord {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value as CrmRecord : {};
 }
 export function at(value: unknown, path: string): unknown {
-  return path.split(".").reduce<unknown>((current, key) => object(current)[key], value);
+  return path.split(".").reduce<unknown>((current, key) => Array.isArray(current) && /^\d+$/.test(key) ? current[Number(key)] : object(current)[key], value);
 }
 export function records(value: unknown): CrmRecord[] {
   return Array.isArray(value) ? value.map(object) : [];
