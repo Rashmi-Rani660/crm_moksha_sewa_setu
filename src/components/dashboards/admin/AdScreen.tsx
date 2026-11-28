@@ -107,6 +107,8 @@ const btnBase = "inline-flex h-[30px] shrink-0 items-center justify-center white
 const btnSolid = `${btnBase} border-[#0a5ce8] bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] text-white hover:brightness-110`;
 const btnOutline = `${btnBase} border-[#7d9be0] bg-white text-[#1e43a8] hover:bg-[#f1f5fd]`;
 
+type SelectOption = string | { value: string; label: string };
+
 function NativeSelect({
   label,
   value,
@@ -117,7 +119,7 @@ function NativeSelect({
 }: {
   label: string;
   value: string;
-  options: readonly string[];
+  options: readonly SelectOption[];
   onChange: (v: string) => void;
   className?: string;
   size?: number;
@@ -131,9 +133,15 @@ function NativeSelect({
         style={{ fontSize: size }}
         className={`h-full w-full cursor-pointer appearance-none truncate rounded-[7px] border border-[#cfd6e3] bg-white pl-[10px] pr-[28px] pt-px ${ink} outline-none focus:border-[#4a6fe0]`}
       >
-        {options.map((o) => (
-          <option key={o} value={o}>{o}</option>
-        ))}
+        {options.map((o, i) => {
+          const optValue = typeof o === "string" ? o : o.value;
+          const optLabel = typeof o === "string" ? o : o.label;
+          return (
+            <option key={`${i}-${optValue}`} value={optValue}>
+              {optLabel}
+            </option>
+          );
+        })}
       </select>
       <ChevronDown strokeWidth={2.4} className="pointer-events-none absolute right-[8px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#1a1d36]" />
     </span>
@@ -417,11 +425,11 @@ function BlockView({ b, ctx }: { b: Block; ctx: Ctx }) {
       );
     case "btns":
       return (
-        <div className="flex flex-wrap gap-[6px] py-[2px]">
+        <div className={b.grid ? "grid grid-cols-2 gap-[8px] pt-[2px]" : "flex flex-wrap gap-[6px] py-[2px]"}>
           {b.items.map((l, i) => {
             const target = actionTargets[l];
             const href = target ? screenByCode(target)?.href : undefined;
-            const cls = i === 0 && !b.outlineAll ? btnSolid : btnOutline;
+            const cls = `${i === 0 && !b.outlineAll ? btnSolid : btnOutline} ${b.grid ? "h-[32px] w-full" : ""}`;
             return href ? (
               <Link key={l} href={href} className={cls}>{l}</Link>
             ) : (
@@ -645,7 +653,7 @@ const kpiTones: TileTone[] = ["blue", "green", "orange", "purple", "sky", "green
 const departments = ["Assigned departments", "Sewa operations", "Communication", "Field support", "Documentation"] as const;
 const periods = ["Today", "Week", "Month"] as const;
 
-const screenOptions = adScreens.map((s) => s.title);
+const screenOptions = adScreens.map((x) => ({ value: x.code, label: x.title }));
 
 /** Message for an action button (placeholder until the module's API exists). */
 function actionMessage(label: string, id: string | undefined) {
@@ -673,16 +681,21 @@ function ScreenView({ s, active }: { s: Screen; active?: string }) {
   const [dept, setDept] = useState<string>(departments[0]);
   const [period, setPeriod] = useState<string>(periods[0]);
   const [query, setQuery] = useState("");
+  const activeView = s.views?.[tab];
   const tabIndex = s.tabs.indexOf(tab);
-  const hasCustomTab = tabIndex > 0 && Boolean(s.tabRows?.[tab]);
-  const activeRows = hasCustomTab ? s.tabRows![tab] : s.rows;
-  const activeKpis = (tabIndex > 0 && s.tabKpis?.[tab]) ? s.tabKpis[tab] : s.kpis;
-  const filterBlock = activeRows[0].panels[0].blocks.find((b) => b.t === "filter");
+  const hasCustomTab = Boolean(activeView) || (tabIndex > 0 && Boolean(s.tabRows?.[tab]));
+  const viewKpis = activeView?.kpis ?? (tabIndex > 0 ? s.tabKpis?.[tab] : undefined) ?? s.kpis;
+  const viewRows = activeView?.rows ?? (tabIndex > 0 ? s.tabRows?.[tab] : undefined) ?? s.rows;
+  const viewScope = activeView?.scope ?? s.scope;
+  const viewSnapshot = activeView?.snapshot ?? s.snapshot;
+  const viewSelected = activeView?.selected ?? s.selected ?? 0;
+
+  const filterBlock = viewRows[0].panels[0].blocks.find((b) => b.t === "filter");
   const allLabel = (filterBlock?.t === "filter" && filterBlock.all) || "All assigned records";
   const [status, setStatus] = useState(allLabel);
 
   // main table = first table of the first panel
-  const mainPanel = activeRows[0].panels[0];
+  const mainPanel = viewRows[0].panels[0];
   const mainTable = mainPanel.blocks.find((b) => b.t === "table");
   const rows = useMemo(() => (mainTable?.t === "table" ? mainTable.rows : []), [mainTable]);
   const pillCol = useMemo(() => {
@@ -695,20 +708,23 @@ function ScreenView({ s, active }: { s: Screen; active?: string }) {
     () => [allLabel, ...Array.from(new Set(pillCol < 0 ? [] : rows.map((r) => plain(r[pillCol]))))],
     [rows, pillCol, allLabel],
   );
+  const effectiveStatus = statusOptions.includes(status) ? status : allLabel;
+  const [selectedByTab, setSelectedByTab] = useState<Record<string, number>>({});
+  const rawSelected = selectedByTab[tab] ?? viewSelected;
+  const selected = rows.length === 0 ? 0 : Math.min(rawSelected, rows.length - 1);
   const visible = rows
     .map((r, i) => ({ r, i }))
-    .filter(({ r }) => (status === allLabel || plain(r[pillCol]) === status) && (!query.trim() || r.join(" ").toLowerCase().includes(query.trim().toLowerCase())))
+    .filter(({ r }) => (effectiveStatus === allLabel || plain(r[pillCol]) === effectiveStatus) && (!query.trim() || r.join(" ").toLowerCase().includes(query.trim().toLowerCase())))
     .map(({ i }) => i);
-  const [selected, setSelected] = useState(s.selected ?? 0);
   const selId = rows[selected] ? plain(rows[selected][0]) : undefined;
 
   const ctxFor = (isMain: boolean): Ctx => ({
     visible,
     selected,
-    onSelect: setSelected,
+    onSelect: (i) => setSelectedByTab((prev) => ({ ...prev, [tab]: i })),
     query,
     setQuery,
-    status,
+    status: effectiveStatus,
     setStatus,
     statusOptions,
     act: (label) => notice.show(actionMessage(label, selId)),
@@ -723,19 +739,19 @@ function ScreenView({ s, active }: { s: Screen; active?: string }) {
           <h1 className="text-[21px] font-medium leading-tight tracking-[-0.5px] text-[#0b0c36] lg:whitespace-nowrap lg:text-[24px] lg:leading-none">
             {s.title}
           </h1>
-          <p className="mt-[5px] text-[15px] font-normal leading-none text-[#141a4a] lg:text-[16px]">Admin / FY 2026–27 / Ghaziabad {s.scope ?? "· Assigned scope"}</p>
+          <p className="mt-[5px] text-[15px] font-normal leading-none text-[#141a4a] lg:text-[16px]">Admin / FY 2026–27 / Ghaziabad {viewScope ?? "· Assigned scope"}</p>
         </div>
         <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:flex-nowrap">
-          {!s.snapshot && !s.plain && <NativeSelect label="Department scope" value={dept} options={departments} onChange={setDept} className="w-[198px]" />}
+          {!viewSnapshot && !s.plain && <NativeSelect label="Department scope" value={dept} options={departments} onChange={setDept} className="w-[198px]" />}
           <NativeSelect
             label="Switch screen"
-            value={s.title}
+            value={s.code}
             options={screenOptions}
             onChange={(v) => {
-              const next = adScreens.find((x) => x.title === v);
+              const next = screenByCode(v);
               if (next && next.code !== s.code) router.push(next.href);
             }}
-            className={`w-full ${s.snapshot || s.plain ? "sm:w-[425px]" : "sm:w-[285px]"}`}
+            className={`w-full ${viewSnapshot || s.plain ? "sm:w-[320px]" : "sm:w-[285px]"}`}
           />
           {s.period && <NativeSelect label="Time period" value={period} options={periods} onChange={setPeriod} className="w-[100px]" />}
         </div>
@@ -743,10 +759,10 @@ function ScreenView({ s, active }: { s: Screen; active?: string }) {
 
       {/* KPI tiles */}
       <div
-        style={{ "--n": activeKpis.length } as CSSProperties}
+        style={{ "--n": viewKpis.length } as CSSProperties}
         className="grid grid-cols-2 gap-[10px] sm:grid-cols-3 lg:h-[70px] lg:shrink-0 lg:[grid-template-columns:repeat(var(--n),minmax(0,1fr))]"
       >
-        {activeKpis.map((k, i) => {
+        {viewKpis.map((k, i) => {
           const tone = tiles[k.tone ?? kpiTones[i % kpiTones.length]];
           const Icon = k.icon ?? kpiIcons[i % kpiIcons.length];
           return (
@@ -755,10 +771,10 @@ function ScreenView({ s, active }: { s: Screen; active?: string }) {
               style={{ background: tone.bg, borderColor: tone.border }}
               className="flex min-h-[66px] min-w-0 items-center gap-[8px] rounded-[11px] border px-[9px] py-[6px] shadow-[0_3px_9px_rgba(30,50,110,0.08)]"
             >
-              <Icon strokeWidth={1.9} style={{ color: tone.fg }} className={`${activeKpis.length > 8 ? "h-[24px] w-[24px]" : "h-[30px] w-[30px]"} shrink-0`} aria-hidden />
+              <Icon strokeWidth={1.9} style={{ color: tone.fg }} className={`${viewKpis.length > 8 ? "h-[24px] w-[24px]" : "h-[30px] w-[30px]"} shrink-0`} aria-hidden />
               <div className="min-w-0 flex-1">
                 <p className="whitespace-nowrap text-[22px] font-bold leading-none tracking-[-0.4px] text-[#0b0c36]">{k.v}</p>
-                <p className={`mt-[3px] font-semibold leading-[1.15] tracking-[-0.25px] text-[#1a1d36] ${activeKpis.length > 8 ? "text-[14.2px]" : "text-[15.4px] lg:truncate"}`}>{k.l}</p>
+                <p className={`mt-[3px] font-semibold leading-[1.15] tracking-[-0.25px] text-[#1a1d36] ${viewKpis.length > 8 ? "text-[14.2px]" : "text-[15.4px] lg:truncate"}`}>{k.l}</p>
               </div>
             </div>
           );
@@ -793,7 +809,7 @@ function ScreenView({ s, active }: { s: Screen; active?: string }) {
 
       {/* panels */}
       <div className="flex min-h-0 flex-col gap-3 lg:flex-1 lg:gap-[10px]">
-        {activeRows.map((row, ri) => {
+        {viewRows.map((row, ri) => {
           const widths = row.w ?? row.panels.map(() => 1);
           const pos = row.order ?? row.panels.map((_, i) => i);
           const display = row.panels.map((_, i) => i).sort((a, b) => pos[a] - pos[b]);

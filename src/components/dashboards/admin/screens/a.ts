@@ -21,7 +21,7 @@ export const screensA: Screen[] = [
       k("06", "Pending replies", "green"),
     ],
     tabs: ["Overview", "Requests & cases", "Team & tasks", "Communication", "Approvals & reports"],
-    tabLinks: { "Requests & cases": "AD-008", "Team & tasks": "AD-019", Communication: "AD-031", "Approvals & reports": "AD-004" },
+    tabLinks: { "Requests & cases": "AD-008", "Team & tasks": "AD-013", Communication: "AD-031", "Approvals & reports": "AD-004" },
     rows: [
       row(194, [
         panel(

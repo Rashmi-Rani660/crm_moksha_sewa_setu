@@ -21,6 +21,7 @@ export const ctbl = (cols: string[], rows: Cell[][]): Block => ({ t: "table", co
 export const kv = (...rows: [string, Cell][]): Block => ({ t: "kv", rows });
 export const kvb = (...rows: [string, Cell][]): Block => ({ t: "kv", rows, bold: true });
 export const btns = (...items: string[]): Block => ({ t: "btns", items });
+export const btns2 = (...items: string[]): Block => ({ t: "btns", items, grid: true });
 export const obtns = (...items: string[]): Block => ({ t: "btns", items, outlineAll: true });
 export const prog = (label: string, value: number, right?: string, color?: BarColor): Block => ({ t: "progress", label, value, right, color });
 export const flow = (...steps: (string | [string, string])[]): Block => ({ t: "flow", steps });
