@@ -117,7 +117,7 @@ export default function SA066Incidents() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-1.5 text-center text-xs font-semibold transition-colors ${
+              className={`px-4 py-1.5 text-center text-[14px] font-semibold transition-colors ${
                 idx > 0 ? "border-l border-slate-200" : ""
               } ${
                 activeTab === tab.id ? "bg-blue-700 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
@@ -138,16 +138,16 @@ export default function SA066Incidents() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search records..."
-                    className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+                    className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
                   />
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Filter</button>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Export</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Filter</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Export</button>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-left text-[13px]">
+                  <table className="w-full border-collapse text-left text-[15px]">
                     <thead>
-                      <tr className="border-y border-slate-200 bg-slate-50/80 text-xs font-semibold text-slate-600">
+                      <tr className="border-y border-slate-200 bg-slate-50/80 text-[14px] font-semibold text-slate-600">
                         <th className="px-2 py-1.5">Incident ID</th>
                         <th className="px-2 py-1.5">Severity</th>
                         <th className="px-2 py-1.5">Detection source</th>
@@ -171,7 +171,7 @@ export default function SA066Incidents() {
                           <td className="px-2 py-1.5 text-slate-600 whitespace-nowrap">{row.owner}</td>
                           <td className="px-2 py-1.5 text-slate-600">{row.containment}</td>
                           <td className="px-2 py-1.5 text-right whitespace-nowrap">
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${STATUS_BADGE[row.status]}`}>
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[15px] font-semibold ${STATUS_BADGE[row.status]}`}>
                               {row.status}
                             </span>
                           </td>
@@ -183,8 +183,8 @@ export default function SA066Incidents() {
 
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <PrimaryButton>Open incident</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Escalate</button>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Record containment</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Escalate</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Record containment</button>
                 </div>
               </div>
             </Panel>
@@ -195,7 +195,7 @@ export default function SA066Incidents() {
                   {TIMELINE_STEPS.map((step, idx) => (
                     <Fragment key={step.label}>
                       <div
-                        className={`min-w-[68px] flex-1 rounded-lg border px-2 py-1.5 text-center text-[11px] font-semibold ${
+                        className={`min-w-[68px] flex-1 rounded-lg border px-2 py-1.5 text-center text-[15px] font-semibold ${
                           step.tone === "green"
                             ? "border-emerald-200 bg-emerald-50/80 text-slate-700"
                             : "border-blue-200 bg-blue-50/80 text-slate-700"
@@ -209,7 +209,7 @@ export default function SA066Incidents() {
                     </Fragment>
                   ))}
                 </div>
-                <div className="divide-y divide-slate-100 text-[13px]">
+                <div className="divide-y divide-slate-100 text-[15px]">
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-600">09:45 · INC-003</span>
                     <span className="font-semibold text-slate-800">Export anomaly detected</span>
@@ -234,7 +234,7 @@ export default function SA066Incidents() {
           <div className="space-y-2 lg:col-span-4">
             <Panel title={`Selected incident · ${selected.id}`}>
               <div className="space-y-1.5">
-                <div className="divide-y divide-slate-100 text-xs">
+                <div className="divide-y divide-slate-100 text-[14px]">
                   <div className="flex items-center justify-between py-1">
                     <span className="text-slate-500">Detected</span>
                     <span className="font-semibold text-slate-800">{selected.detected}</span>
@@ -262,9 +262,9 @@ export default function SA066Incidents() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-0.5">
                   <PrimaryButton>Open incident</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">Escalate</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Escalate</button>
                 </div>
-                <div className="divide-y divide-slate-100 border-t border-slate-100 pt-0.5 text-xs">
+                <div className="divide-y divide-slate-100 border-t border-slate-100 pt-0.5 text-[14px]">
                   <div className="flex items-center justify-between py-1">
                     <span className="text-slate-500">Age at snapshot</span>
                     <span className="font-semibold text-slate-800">{selected.age}</span>
@@ -279,19 +279,19 @@ export default function SA066Incidents() {
 
             <Panel title="Incident severity & response">
               <div className="space-y-1.5">
-                <p className="text-[11px] font-medium text-slate-500">
+                <p className="text-[15px] font-medium text-slate-500">
                   Open incidents · 4 demo records
                 </p>
                 <div className="grid grid-cols-3 items-end gap-4">
                   {SEVERITY_BARS.map((bar) => (
                     <div key={bar.label} className="flex flex-col items-center gap-0.5">
-                      <span className="text-[11px] font-semibold text-slate-700">{bar.value}</span>
+                      <span className="text-[15px] font-semibold text-slate-700">{bar.value}</span>
                       <div className={`w-full rounded-t-md bg-blue-600 ${bar.height === "h-10" ? "h-7" : "h-4"}`} />
-                      <span className="text-[11px] text-slate-500">{bar.label}</span>
+                      <span className="text-[15px] text-slate-500">{bar.label}</span>
                     </div>
                   ))}
                 </div>
-                <div className="divide-y divide-slate-100 border-t border-slate-100 pt-0.5 text-xs">
+                <div className="divide-y divide-slate-100 border-t border-slate-100 pt-0.5 text-[14px]">
                   <div className="flex items-center justify-between py-1">
                     <span className="text-slate-600">Critical queue</span>
                     <span className="font-semibold text-slate-800">02 · review immediately</span>
@@ -303,7 +303,7 @@ export default function SA066Incidents() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-0.5">
                   <PrimaryButton>Response timers</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50">Evidence vault</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Evidence vault</button>
                 </div>
               </div>
             </Panel>

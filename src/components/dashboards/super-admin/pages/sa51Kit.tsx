@@ -31,11 +31,11 @@ export function Sa51Header({
           <h1 className="text-[19px] font-medium leading-tight tracking-[-0.2px] text-[#1a1d36] lg:whitespace-nowrap lg:text-[21.5px]">
             {title}
           </h1>
-          <p className="mt-[2px] text-[13.8px] text-[#1a1d36]">{subtitle}</p>
+          <p className="mt-[2px] text-[15.8px] text-[#1a1d36]">{subtitle}</p>
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:mt-[4px] lg:flex-nowrap">
-        <span className="flex h-[25px] items-center rounded-[4px] border border-[#ecd8a0] bg-[#fff1c9] px-[9px] pt-px text-[12.6px] font-normal text-[#6b5200]">
+        <span className="flex h-[25px] items-center rounded-[4px] border border-[#ecd8a0] bg-[#fff1c9] px-[9px] pt-px text-[14.6px] font-normal text-[#6b5200]">
           DEMO DATA
         </span>
         <label className="relative block h-[30px] w-full sm:w-[328px]">
@@ -47,7 +47,7 @@ export function Sa51Header({
               const target = siblings.find((s) => s.code === e.target.value);
               if (target) router.push(target.href);
             }}
-            className="h-full w-full cursor-pointer appearance-none truncate rounded-[6px] border border-[#c9d2e0] bg-white pl-[12px] pr-[30px] pt-px text-[14px] text-[#1a1d36] shadow-[0_1px_2px_rgba(20,45,90,0.06)] outline-none focus:border-[#5b7fe0]"
+            className="h-full w-full cursor-pointer appearance-none truncate rounded-[6px] border border-[#c9d2e0] bg-white pl-[12px] pr-[30px] pt-px text-[16px] text-[#1a1d36] shadow-[0_1px_2px_rgba(20,45,90,0.06)] outline-none focus:border-[#5b7fe0]"
           >
             {siblings.map((s) => (
               <option key={s.code} value={s.code}>
@@ -102,8 +102,8 @@ export function KpiTile({
       <Icon strokeWidth={2} style={{ color: t.fg }} className="h-[30px] w-[30px] shrink-0" aria-hidden />
       <div className="min-w-0 flex-1">
         <p className="whitespace-nowrap text-[22px] font-medium leading-none tracking-[-0.2px] text-[#1a1d36]">{value}</p>
-        <p className="mt-[3px] truncate text-[13px] font-normal leading-tight text-[#1a1d36]">{label}</p>
-        {sub && <p className="mt-[1px] truncate text-[11px] font-normal leading-none text-[#4a5070]">{sub}</p>}
+        <p className="mt-[3px] truncate text-[15px] font-normal leading-tight text-[#1a1d36]">{label}</p>
+        {sub && <p className="mt-[1px] truncate text-[15px] font-normal leading-none text-[#4a5070]">{sub}</p>}
       </div>
     </div>
   );
@@ -159,7 +159,7 @@ export function Sa51Tabs<T extends string>({
             role="tab"
             aria-selected={on}
             onClick={() => onChange(t)}
-            className={`flex h-[28px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] px-[12px] text-[13.5px] font-medium transition-colors lg:flex-1 lg:px-[8px] ${on ? "bg-[#1d4fe0] text-white" : "text-[#1a1d36] hover:bg-[#f1f4fb]"
+            className={`flex h-[28px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] px-[12px] text-[15.5px] font-medium transition-colors lg:flex-1 lg:px-[8px] ${on ? "bg-[#1d4fe0] text-white" : "text-[#1a1d36] hover:bg-[#f1f4fb]"
               }`}
           >
             <span className="pt-px">{t}</span>
@@ -201,14 +201,14 @@ export function Sa51Pill({ children, onClick }: { children: string; onClick?: ()
       <button
         type="button"
         onClick={onClick}
-        className={`inline-flex h-[20px] items-center justify-center whitespace-nowrap rounded-full px-[10px] text-[12px] font-medium leading-none hover:brightness-95 ${cls}`}
+        className={`inline-flex h-[20px] items-center justify-center whitespace-nowrap rounded-full px-[10px] text-[14px] font-medium leading-none hover:brightness-95 ${cls}`}
       >
         {children}
       </button>
     );
   }
   return (
-    <span className={`inline-flex h-[20px] items-center justify-center whitespace-nowrap rounded-full px-[10px] text-[12px] font-medium leading-none ${cls}`}>
+    <span className={`inline-flex h-[20px] items-center justify-center whitespace-nowrap rounded-full px-[10px] text-[14px] font-medium leading-none ${cls}`}>
       {children}
     </span>
   );
@@ -229,7 +229,7 @@ export function Sa51Btn({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex h-[28px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] px-[11px] pt-px text-[13px] font-normal transition-colors ${primary
+      className={`inline-flex h-[28px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] px-[11px] pt-px text-[15px] font-normal transition-colors ${primary
         ? "bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] text-white shadow-[0_1px_3px_rgba(9,60,221,0.3)] hover:brightness-110"
         : "border border-[#a9bddf] bg-white text-[#1e43a8] hover:bg-[#f1f5fd]"
         } ${className}`}
@@ -262,14 +262,14 @@ export function Sa51SearchRow({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           aria-label={placeholder}
-          className="ml-[8px] h-full min-w-0 flex-1 bg-transparent text-[13px] font-normal text-[#1a1d36] outline-none placeholder:text-[#6b7280]"
+          className="ml-[8px] h-full min-w-0 flex-1 bg-transparent text-[15px] font-normal text-[#1a1d36] outline-none placeholder:text-[#6b7280]"
         />
       </label>
       {onFilter && (
         <button
           type="button"
           onClick={onFilter}
-          className="h-[29px] shrink-0 rounded-[6px] border border-[#c9d2e0] bg-white px-[12px] text-[13px] font-normal text-[#1a1d36] hover:bg-[#f4f6fb]"
+          className="h-[29px] shrink-0 rounded-[6px] border border-[#c9d2e0] bg-white px-[12px] text-[15px] font-normal text-[#1a1d36] hover:bg-[#f4f6fb]"
         >
           Filter
         </button>
@@ -278,7 +278,7 @@ export function Sa51SearchRow({
         <button
           type="button"
           onClick={onExport}
-          className="h-[29px] shrink-0 rounded-[6px] border border-[#c9d2e0] bg-white px-[12px] text-[13px] font-normal text-[#1a1d36] hover:bg-[#f4f6fb]"
+          className="h-[29px] shrink-0 rounded-[6px] border border-[#c9d2e0] bg-white px-[12px] text-[15px] font-normal text-[#1a1d36] hover:bg-[#f4f6fb]"
         >
           Export
         </button>
@@ -291,7 +291,7 @@ export function Sa51KvList({ rows }: { rows: readonly [string, ReactNode][] }) {
   return (
     <div className="flex flex-col">
       {rows.map(([k, v]) => (
-        <div key={k} className="flex items-center justify-between gap-[10px] border-b border-[#e5eaf3] py-[6px] text-[13px] leading-snug text-[#1a1d36]">
+        <div key={k} className="flex items-center justify-between gap-[10px] border-b border-[#e5eaf3] py-[6px] text-[15px] leading-snug text-[#1a1d36]">
           <span className="font-normal text-[#3b4256]">{k}</span>
           <span className="text-right font-normal text-[#1a1d36]">{v}</span>
         </div>
@@ -303,7 +303,7 @@ export function Sa51KvList({ rows }: { rows: readonly [string, ReactNode][] }) {
 export function Sa51ProgressBar({ label, pct, rightText }: { label: string; pct: number; rightText?: string }) {
   return (
     <div>
-      <div className="mb-[3px] flex items-center justify-between text-[13px] font-normal text-[#1a1d36]">
+      <div className="mb-[3px] flex items-center justify-between text-[15px] font-normal text-[#1a1d36]">
         <span>{label}</span>
         <span>{rightText ?? `${pct}%`}</span>
       </div>
@@ -331,7 +331,7 @@ export function Sa51Lifecycle({
           <Fragment key={step}>
             {i > 0 && <ArrowRight strokeWidth={2} className="h-[13px] w-[13px] shrink-0 text-[#4f74b8]" />}
             <div
-              className={`flex h-[46px] min-w-[110px] flex-1 items-center justify-center rounded-[7px] border px-[8px] text-center text-[13px] font-normal text-[#1a1d36] ${i % 2 === 1
+              className={`flex h-[46px] min-w-[110px] flex-1 items-center justify-center rounded-[7px] border px-[8px] text-center text-[15px] font-normal text-[#1a1d36] ${i % 2 === 1
                 ? "border-[#cde5cb] bg-[#f2fbf1]"
                 : "border-[#cddcf5] bg-[#f3f8ff]"
                 }`}
@@ -346,6 +346,6 @@ export function Sa51Lifecycle({
   );
 }
 
-export const sa51TableHead = "whitespace-nowrap border-b border-[#e3e7ef] bg-[#eff3fa] px-[10px] py-[5px] text-left text-[12.5px] font-medium text-[#4a5070]";
+export const sa51TableHead = "whitespace-nowrap border-b border-[#e3e7ef] bg-[#eff3fa] px-[10px] py-[5px] text-left text-[14.5px] font-medium text-[#4a5070]";
 export const sa51TableRow = "even:bg-[#f8fafd] last:[&>td]:border-b-0 hover:bg-[#eef4ff]";
-export const sa51TableCell = "whitespace-nowrap border-b border-[#eef1f6] px-[10px] py-[5px] text-[13px] font-normal text-[#1a1d36]";
+export const sa51TableCell = "whitespace-nowrap border-b border-[#eef1f6] px-[10px] py-[5px] text-[15px] font-normal text-[#1a1d36]";

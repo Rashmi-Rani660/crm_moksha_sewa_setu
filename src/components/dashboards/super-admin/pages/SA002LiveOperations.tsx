@@ -114,14 +114,14 @@ function GpsSchematic() {
         <path d="M95 55 C150 48 210 62 265 72" stroke="#1f9a2b" strokeWidth="2.5" strokeDasharray="6 4" fill="none" />
         <path d="M265 72 C300 80 330 88 360 92" stroke="#f0a020" strokeWidth="2.5" strokeDasharray="5 4" fill="none" />
       </svg>
-      <span className="absolute left-[18%] top-[38%] rounded-[6px] border border-[#cfd5e2] bg-white px-[5px] py-[1px] text-[9.5px] font-bold text-[#0b0c36] shadow-sm">
+      <span className="absolute left-[18%] top-[38%] rounded-[6px] border border-[#cfd5e2] bg-white px-[5px] py-[1px] text-[13.5px] font-bold text-[#0b0c36] shadow-sm">
         10:45
       </span>
-      <span className="absolute bottom-[22%] right-[16%] flex items-center gap-[3px] rounded-[6px] border border-[#1f9a2b] bg-white px-[5px] py-[1px] text-[9.5px] font-bold text-[#1f9a2b] shadow-sm">
+      <span className="absolute bottom-[22%] right-[16%] flex items-center gap-[3px] rounded-[6px] border border-[#1f9a2b] bg-white px-[5px] py-[1px] text-[13.5px] font-bold text-[#1f9a2b] shadow-sm">
         <MapPin strokeWidth={2.4} className="h-[10px] w-[10px]" />
         Centre
       </span>
-      <span className="absolute right-[6px] top-[4px] text-[9.5px] font-semibold text-[#5b6280]">GPS schematic — demo</span>
+      <span className="absolute right-[6px] top-[4px] text-[13.5px] font-semibold text-[#5b6280]">GPS schematic — demo</span>
     </div>
   );
 }
@@ -179,14 +179,14 @@ export default function SA002LiveOperations() {
                 <TableWrap>
                   <Thead>
                     {["Case", "Category", "Owner", "SLA left", "Stage"].map((h) => (
-                      <th key={h} className={`${th} px-[5px] py-[5px] text-[12px]`}>
+                      <th key={h} className={`${th} px-[5px] py-[5px] text-[14px]`}>
                         {h}
                       </th>
                     ))}
                   </Thead>
                   <tbody>
                     {queue.map((r) => (
-                      <tr key={r.id} className="border-b border-[#eef0f5] last:border-0 [&>td]:px-[5px] [&>td]:py-[5px] [&>td]:text-[12.2px]">
+                      <tr key={r.id} className="border-b border-[#eef0f5] last:border-0 [&>td]:px-[5px] [&>td]:py-[5px] [&>td]:text-[14.2px]">
                         <td className={`${td} font-semibold`}>{r.id}</td>
                         <td className={td}>{r.category}</td>
                         <td className={`${td} ${r.owner === "Unassigned" ? "text-[#8a5300]" : ""}`}>{r.owner}</td>
@@ -223,12 +223,12 @@ export default function SA002LiveOperations() {
                 <div className="flex flex-col">
                   {stages.map(([label, value]) => (
                     <div key={label} className="flex items-center border-b border-[#eef0f5] py-[7px] last:border-0">
-                      <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[#1a1d36]">{label}</span>
-                      <b className="shrink-0 text-[13.5px] font-bold text-[#0b0c36]">{value}</b>
+                      <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-[#1a1d36]">{label}</span>
+                      <b className="shrink-0 text-[15.5px] font-bold text-[#0b0c36]">{value}</b>
                     </div>
                   ))}
                 </div>
-                <p className="mt-auto pt-[6px] text-[11px] font-medium leading-tight text-[#5b6280]">
+                <p className="mt-auto pt-[6px] text-[15px] font-medium leading-tight text-[#5b6280]">
                   Stages are current open-case states; unassigned may overlap verification.
                 </p>
               </Panel>
@@ -244,14 +244,14 @@ export default function SA002LiveOperations() {
                 <TableWrap>
                   <Thead>
                     {["Vehicle", "Driver", "Case", "ETA / GPS"].map((h) => (
-                      <th key={h} className={`${th} px-[5px] py-[5px] text-[12px]`}>
+                      <th key={h} className={`${th} px-[5px] py-[5px] text-[14px]`}>
                         {h}
                       </th>
                     ))}
                   </Thead>
                   <tbody>
                     {vehicles.map((v) => (
-                      <tr key={v.id} className="border-b border-[#eef0f5] last:border-0 [&>td]:px-[5px] [&>td]:py-[4px] [&>td]:text-[12.2px]">
+                      <tr key={v.id} className="border-b border-[#eef0f5] last:border-0 [&>td]:px-[5px] [&>td]:py-[4px] [&>td]:text-[14.2px]">
                         <td className={`${td} font-semibold`}>{v.id}</td>
                         <td className={td}>{v.driver}</td>
                         <td className={td}>{v.caseId}</td>
@@ -260,7 +260,7 @@ export default function SA002LiveOperations() {
                     ))}
                   </tbody>
                 </TableWrap>
-                <p className="mt-[5px] text-[11px] font-medium leading-tight text-[#8a5300]">
+                <p className="mt-[5px] text-[15px] font-medium leading-tight text-[#8a5300]">
                   GPS stale / offline: flag and switch to manual updates.
                 </p>
                 <GpsSchematic />
@@ -271,27 +271,27 @@ export default function SA002LiveOperations() {
               <Panel title="Staff & volunteer availability" bodyClassName="flex flex-col pt-[3px]">
                 <StatRows rows={staffRows} />
                 <div className="mt-[8px] border-t border-[#eef0f5] pt-[6px]">
-                  <p className="mb-[5px] text-[12px] font-bold text-[#0b0c36]">Coverage</p>
-                  <div className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px] text-[12.5px] font-semibold">
+                  <p className="mb-[5px] text-[14px] font-bold text-[#0b0c36]">Coverage</p>
+                  <div className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px] text-[14.5px] font-semibold">
                     <span className="min-w-0 flex-1 truncate">Ghaziabad</span>
-                    <Pill tone="green" className="h-[17px] text-[10.5px]">
+                    <Pill tone="green" className="h-[17px] text-[14.5px]">
                       Active
                     </Pill>
                   </div>
-                  <div className="mt-[5px] flex items-center gap-[8px] text-[12.5px] font-semibold">
+                  <div className="mt-[5px] flex items-center gap-[8px] text-[14.5px] font-semibold">
                     <span className="min-w-0 flex-1 truncate">Delhi / Noida</span>
-                    <Pill tone="amber" className="h-[17px] text-[10.5px]">
+                    <Pill tone="amber" className="h-[17px] text-[14.5px]">
                       Coming soon
                     </Pill>
                   </div>
                 </div>
                 <div className="mt-auto flex flex-col gap-[6px] pt-[8px]">
-                  <div className="flex items-center justify-between text-[11.5px] font-semibold">
+                  <div className="flex items-center justify-between text-[15.5px] font-semibold">
                     <span>Staff on duty</span>
                     <b>80%</b>
                   </div>
                   <PctBar pct={80} />
-                  <div className="flex items-center justify-between text-[11.5px] font-semibold">
+                  <div className="flex items-center justify-between text-[15.5px] font-semibold">
                     <span>Volunteers available</span>
                     <b>67%</b>
                   </div>
@@ -319,7 +319,7 @@ export default function SA002LiveOperations() {
             {showMilestones && (
               <Panel title="Today's request milestones" bodyClassName="flex flex-col pt-[3px]">
                 <StatRows rows={milestoneRows} />
-                <p className="mt-auto pt-[6px] text-[11px] font-medium leading-tight text-[#5b6280]">
+                <p className="mt-auto pt-[6px] text-[15px] font-medium leading-tight text-[#5b6280]">
                   Cumulative milestones, not current status.
                 </p>
               </Panel>
@@ -329,7 +329,7 @@ export default function SA002LiveOperations() {
               <Panel title="Live activity & control" bodyClassName="flex flex-col pt-[3px]">
                 <div className="flex flex-col gap-[7px]">
                   {activity.map((a) => (
-                    <div key={a.time} className="flex items-center gap-[8px] text-[12.5px] font-semibold">
+                    <div key={a.time} className="flex items-center gap-[8px] text-[14.5px] font-semibold">
                       <Dot color={a.color} size={8} />
                       <span className="min-w-0 flex-1 truncate">
                         {a.time} • {a.text}

@@ -96,7 +96,7 @@ export default function SA057VirtualTrainer() {
 
         <div className="flex min-h-0 flex-col gap-[10px]">
           <Panel title="Virtual trainer · practice sandbox" className="lg:flex-[1.55]" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
-            <div className="flex flex-col gap-[8px] text-[12px] leading-[1.4]">
+            <div className="flex flex-col gap-[8px] text-[14px] leading-[1.4]">
               <div className="rounded-[8px] border border-[#dce4f2] bg-[#f4f7fd] px-[10px] py-[8px] text-[#1a1d36]">
                 <b className="block text-[#0b0c36]">Sewa Sathi</b>
                 Namaskar! How would you respond to a family requesting free cremation assistance?

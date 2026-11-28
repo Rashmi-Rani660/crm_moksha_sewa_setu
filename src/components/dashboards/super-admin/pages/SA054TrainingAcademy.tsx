@@ -104,7 +104,7 @@ export default function SA054TrainingAcademy() {
                     ))}
                     {!rows.length && (
                       <tr>
-                        <td colSpan={5} className="py-5 text-center text-[12.5px] font-medium text-[#5b6280]">No learning tracks match your search.</td>
+                        <td colSpan={5} className="py-5 text-center text-[14.5px] font-medium text-[#5b6280]">No learning tracks match your search.</td>
                       </tr>
                     )}
                   </tbody>

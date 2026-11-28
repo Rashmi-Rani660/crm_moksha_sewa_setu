@@ -140,7 +140,7 @@ export default function SA006CityZone() {
                         <td className={`${td} px-[6px] py-[7px]`}>{c.centres}</td>
                         <td className={`${td} px-[6px] py-[7px] font-semibold`}>{c.pins}</td>
                         <td className={`${td} px-[6px] py-[7px]`}>
-                          <StatusPill className="h-[19px] min-w-[84px] text-[11px]">{c.status}</StatusPill>
+                          <StatusPill className="h-[19px] min-w-[84px] text-[15px]">{c.status}</StatusPill>
                         </td>
                       </tr>
                     ))}
@@ -163,15 +163,15 @@ export default function SA006CityZone() {
             {showHierarchy && (
               <Panel title="Geographical hierarchy" bodyClassName="flex flex-col pt-[8px]">
                 <div className="rounded-[10px] border border-[#dce6f7] bg-[#f4f8ff] px-[14px] py-[14px] text-center">
-                  <p className="text-[13px] font-semibold text-[#0b0c36]">India → State / UT → City</p>
-                  <p className="my-[4px] text-[13px] leading-none text-[#1d4fe0]">↓</p>
-                  <p className="text-[13px] font-semibold text-[#0b0c36]">Zone → Service centre → Locality / PIN</p>
+                  <p className="text-[15px] font-semibold text-[#0b0c36]">India → State / UT → City</p>
+                  <p className="my-[4px] text-[15px] leading-none text-[#1d4fe0]">↓</p>
+                  <p className="text-[15px] font-semibold text-[#0b0c36]">Zone → Service centre → Locality / PIN</p>
                 </div>
                 <div className="mt-[18px] grid grid-cols-3 gap-[12px]">
                   {hierarchyCities.map((c) => (
                     <div key={c.name} className="flex flex-col gap-[2px]">
-                      <span className="text-[13px] font-semibold text-[#0b0c36]">{c.name}</span>
-                      <span className="text-[12px] font-medium text-[#3b4256]">{c.status}</span>
+                      <span className="text-[15px] font-semibold text-[#0b0c36]">{c.name}</span>
+                      <span className="text-[14px] font-medium text-[#3b4256]">{c.status}</span>
                     </div>
                   ))}
                 </div>
@@ -194,7 +194,7 @@ export default function SA006CityZone() {
                     <KV
                       key={r.label}
                       k={r.label}
-                      v={r.pill ? <Pill tone="green" className="h-[19px] text-[11px]">{r.value}</Pill> : r.value}
+                      v={r.pill ? <Pill tone="green" className="h-[19px] text-[15px]">{r.value}</Pill> : r.value}
                       className="py-[5px]"
                     />
                   ))}

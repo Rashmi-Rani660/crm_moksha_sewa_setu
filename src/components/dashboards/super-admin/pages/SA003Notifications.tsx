@@ -80,7 +80,7 @@ const alerts: Alert[] = [
 
 function PanelRow({ label, value, accent }: { label: string; value: ReactNode; accent?: boolean }) {
   return (
-    <div className="flex items-start justify-between gap-[10px] border-b border-[#eef0f5] pb-[5px] text-[12px] font-semibold leading-tight last:border-b-0 last:pb-0">
+    <div className="flex items-start justify-between gap-[10px] border-b border-[#eef0f5] pb-[5px] text-[14px] font-semibold leading-tight last:border-b-0 last:pb-0">
       <span className="shrink-0 whitespace-nowrap text-[#1a1d36]">{label}</span>
       <span className={`text-right ${accent ? "text-[#b42318]" : "text-[#1a1d36]"}`}>{value}</span>
     </div>
@@ -90,7 +90,7 @@ function PanelRow({ label, value, accent }: { label: string; value: ReactNode; a
 function FieldBlock({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-[3px]">
-      <span className="text-[11px] font-semibold text-[#3b4256]">{label}</span>
+      <span className="text-[15px] font-semibold text-[#3b4256]">{label}</span>
       {children}
     </div>
   );
@@ -98,7 +98,7 @@ function FieldBlock({ label, children }: { label: string; children: ReactNode })
 
 function OutlineButton({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="flex h-[34px] shrink-0 items-center gap-[6px] rounded-[7px] border-[1.5px] border-[#2f4fe0] bg-white px-[14px] text-[13px] font-semibold text-[#1d3fc4] hover:bg-[#f1f4ff]">
+    <button type="button" onClick={onClick} className="flex h-[34px] shrink-0 items-center gap-[6px] rounded-[7px] border-[1.5px] border-[#2f4fe0] bg-white px-[14px] text-[15px] font-semibold text-[#1d3fc4] hover:bg-[#f1f4ff]">
       <span className="pt-px">{children}</span>
     </button>
   );
@@ -171,20 +171,20 @@ export default function SA003Notifications() {
                 <td className={td}>{a.priority === "Normal" ? (
                     <span className="font-semibold">{a.priority}</span>
                   ) : (
-                    <Pill tone={a.priority === "Critical" ? "red" : "amber"} className="w-[56px] text-[11px] font-bold">{a.priority}</Pill>
+                    <Pill tone={a.priority === "Critical" ? "red" : "amber"} className="w-[56px] text-[15px] font-bold">{a.priority}</Pill>
                   )}
                 </td>
                 <td className={td}>{a.assigned}</td>
                 <td className={td}>{a.readAck}</td>
                 <td className={td}>
-                  <Pill tone={a.delivery === "Delivered" ? "green" : "red"} className="h-[18px] min-w-[64px] text-[11px] font-bold">{a.delivery}</Pill>
+                  <Pill tone={a.delivery === "Delivered" ? "green" : "red"} className="h-[18px] min-w-[64px] text-[15px] font-bold">{a.delivery}</Pill>
                 </td>
                 <td className={td}>{a.action}</td>
               </tr>
             ))}
             {empty && (
               <tr>
-                <td colSpan={8} className="py-6 text-center text-[13px] font-medium text-[#5b6280]">
+                <td colSpan={8} className="py-6 text-center text-[15px] font-medium text-[#5b6280]">
                   No notifications match the selected tab and filters.
                 </td>
               </tr>
@@ -219,7 +219,7 @@ export default function SA003Notifications() {
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="Enter subject"
-                className="h-[34px] w-full rounded-[8px] border border-[#d6dbe6] bg-white px-[10px] text-[13px] font-medium outline-none placeholder:text-[#4a5070] focus:border-[#5b6fe0]"
+                className="h-[34px] w-full rounded-[8px] border border-[#d6dbe6] bg-white px-[10px] text-[15px] font-medium outline-none placeholder:text-[#4a5070] focus:border-[#5b6fe0]"
               />
             </FieldBlock>
             <FieldBlock label="Schedule">

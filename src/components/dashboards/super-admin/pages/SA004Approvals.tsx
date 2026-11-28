@@ -130,7 +130,7 @@ export default function SA004Approvals() {
           <TableWrap>
             <Thead>
               {["ID", "Request", "Requested by", "Approver", "Amount", "SLA", "Status", "Action"].map((h) => (
-<th key={h} className={`${th} px-[6px] py-[6px] text-[12.5px]`}>{h}</th>
+<th key={h} className={`${th} px-[6px] py-[6px] text-[14.5px]`}>{h}</th>
               ))}
             </Thead>
             <tbody>
@@ -147,7 +147,7 @@ export default function SA004Approvals() {
                   <td className={`${td} px-[6px] py-[7px] font-semibold`}>{a.amount}</td>
                   <td className={`${td} px-[6px] py-[7px] font-bold`}>{a.sla}</td>
                   <td className={`${td} px-[6px] py-[7px]`}>
-                    <StatusPill className="h-[19px] min-w-[74px] text-[11px]">{a.status}</StatusPill>
+                    <StatusPill className="h-[19px] min-w-[74px] text-[15px]">{a.status}</StatusPill>
                   </td>
                   <td className={`${td} px-[6px] py-[7px]`}>
                     <button
@@ -157,7 +157,7 @@ export default function SA004Approvals() {
                         setSelectedId(a.id);
                         notice.show(`${a.id}: evidence and audit history opened (demo).`);
                       }}
-                      className="text-[12.8px] font-semibold text-[#0b0c36] hover:text-[#2320c4] hover:underline"
+                      className="text-[14.8px] font-semibold text-[#0b0c36] hover:text-[#2320c4] hover:underline"
                     >
                       Review
                     </button>
@@ -166,7 +166,7 @@ export default function SA004Approvals() {
               ))}
               {!rows.length && (
                 <tr>
-                  <td colSpan={8} className="py-6 text-center text-[13px] font-medium text-[#5b6280]">
+                  <td colSpan={8} className="py-6 text-center text-[15px] font-medium text-[#5b6280]">
                     No approvals in this category.
                   </td>
                 </tr>
@@ -227,14 +227,14 @@ export default function SA004Approvals() {
             <div className="flex flex-col">
               {workflow.map((w) => (
                 <div key={w.n} className="flex items-baseline justify-between gap-[8px] border-b border-[#eef0f5] py-[6px] leading-tight last:border-0">
-                  <span className="text-[12.8px] font-semibold text-[#0b0c36]">
+                  <span className="text-[14.8px] font-semibold text-[#0b0c36]">
                     {w.n} <span className="mx-[2px] text-[#0b0c36]">•</span> {w.step}
                   </span>
-                  <span className="shrink-0 text-right text-[11.5px] font-medium text-[#3b4256]">{w.state}</span>
+                  <span className="shrink-0 text-right text-[15.5px] font-medium text-[#3b4256]">{w.state}</span>
                 </div>
               ))}
             </div>
-            <p className="mt-[6px] text-[11.5px] font-medium leading-tight text-[#5b6280]">
+            <p className="mt-[6px] text-[15.5px] font-medium leading-tight text-[#5b6280]">
               Bulk approval restricted to approved low-risk categories.
             </p>
             <div className="mt-auto flex flex-wrap gap-[6px] pt-[8px]">
@@ -243,7 +243,7 @@ export default function SA004Approvals() {
                   key={act}
                   type="button"
                   onClick={() => notice.show(`${act}: workflow step recorded (demo).`)}
-                  className="flex h-[28px] items-center rounded-[7px] border-[1.5px] border-[#2f4fe0] bg-white px-[12px] pt-px text-[12.2px] font-semibold text-[#1d3fc4] hover:bg-[#f1f4ff]"
+                  className="flex h-[28px] items-center rounded-[7px] border-[1.5px] border-[#2f4fe0] bg-white px-[12px] pt-px text-[14.2px] font-semibold text-[#1d3fc4] hover:bg-[#f1f4ff]"
                 >
                   {act}
                 </button>

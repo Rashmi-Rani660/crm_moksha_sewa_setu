@@ -92,7 +92,7 @@ export default function SA069BackupDashboard() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-1.5 text-center text-xs font-semibold transition-colors ${
+              className={`px-4 py-1.5 text-center text-[14px] font-semibold transition-colors ${
                 idx > 0 ? "border-l border-slate-200" : ""
               } ${
                 activeTab === tab.id ? "bg-blue-700 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
@@ -113,16 +113,16 @@ export default function SA069BackupDashboard() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search records..."
-                    className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+                    className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
                   />
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Filter</button>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Export</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Filter</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Export</button>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-left text-[13px]">
+                  <table className="w-full border-collapse text-left text-[15px]">
                     <thead>
-                      <tr className="border-y border-slate-200 bg-slate-50/80 text-xs font-semibold text-slate-600">
+                      <tr className="border-y border-slate-200 bg-slate-50/80 text-[14px] font-semibold text-slate-600">
                         <th className="px-2 py-1.5">Job ID</th>
                         <th className="px-2 py-1.5">Backup scope</th>
                         <th className="px-2 py-1.5">Completed</th>
@@ -146,7 +146,7 @@ export default function SA069BackupDashboard() {
                           <td className="px-2 py-1.5 text-slate-600">{row.destination}</td>
                           <td className="px-2 py-1.5 text-slate-600">{row.integrity}</td>
                           <td className="px-2 py-1.5 text-right whitespace-nowrap">
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${STATUS_BADGE[row.status]}`}>
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[15px] font-semibold ${STATUS_BADGE[row.status]}`}>
                               {row.status}
                             </span>
                           </td>
@@ -161,30 +161,30 @@ export default function SA069BackupDashboard() {
                   <button
                     type="button"
                     onClick={() => router.push("/dashboard/super-admin/backup-recovery/schedule")}
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                   >
                     Request restore
                   </button>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">View test evidence</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">View test evidence</button>
                 </div>
               </div>
             </Panel>
 
             <Panel title="Backup success · recent jobs">
               <div className="space-y-2">
-                <p className="text-[11px] font-medium text-slate-500">
+                <p className="text-[15px] font-medium text-slate-500">
                   Latest 3 backup jobs shown in register · demo
                 </p>
                 <div className="grid grid-cols-3 items-end gap-4 pt-1">
                   {["Database", "Documents", "Configuration"].map((label) => (
                     <div key={label} className="flex flex-col items-center gap-1">
-                      <span className="text-[11px] font-semibold text-slate-700">1</span>
+                      <span className="text-[15px] font-semibold text-slate-700">1</span>
                       <div className="h-9 w-full rounded-t-md bg-emerald-600" />
-                      <span className="text-[11px] text-slate-500">{label}</span>
+                      <span className="text-[15px] text-slate-500">{label}</span>
                     </div>
                   ))}
                 </div>
-                <div className="divide-y divide-slate-100 border-t border-slate-100 pt-1 text-[13px]">
+                <div className="divide-y divide-slate-100 border-t border-slate-100 pt-1 text-[15px]">
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-600">Failed jobs</span>
                     <span className="font-semibold text-slate-800">00 in displayed sample</span>
@@ -196,7 +196,7 @@ export default function SA069BackupDashboard() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <PrimaryButton>View backup history</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Capacity alerts</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Capacity alerts</button>
                 </div>
               </div>
             </Panel>
@@ -205,7 +205,7 @@ export default function SA069BackupDashboard() {
           <div className="space-y-2 lg:col-span-4">
             <Panel title="Recovery readiness · actual vs target">
               <div className="space-y-1.5">
-                <div className="divide-y divide-slate-100 text-xs">
+                <div className="divide-y divide-slate-100 text-[14px]">
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-500">Actual recovery point</span>
                     <span className="font-semibold text-slate-800">8 min · demo</span>
@@ -245,7 +245,7 @@ export default function SA069BackupDashboard() {
                   <button
                     type="button"
                     onClick={() => router.push("/dashboard/super-admin/backup-recovery/schedule")}
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                   >
                     Request restore
                   </button>
@@ -255,7 +255,7 @@ export default function SA069BackupDashboard() {
 
             <Panel title="Recovery safeguards">
               <div className="space-y-2">
-                <div className="divide-y divide-slate-100 text-[13px]">
+                <div className="divide-y divide-slate-100 text-[15px]">
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-600">Immutable copy</span>
                     <span className="font-semibold text-slate-800">Policy enforced</span>
@@ -279,7 +279,7 @@ export default function SA069BackupDashboard() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <PrimaryButton>Integrity report</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Test restore</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Test restore</button>
                 </div>
               </div>
             </Panel>

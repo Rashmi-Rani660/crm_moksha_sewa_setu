@@ -145,9 +145,9 @@ function MonthBar() {
     <div className="flex min-w-0 flex-1 items-end gap-[6px]">
       {trend.map((t) => (
         <div key={t.m} className="flex min-w-0 flex-1 flex-col items-center gap-[2px]">
-          <span className="text-[9.5px] font-semibold text-[#0b0c36]">{t.v}</span>
+          <span className="text-[13.5px] font-semibold text-[#0b0c36]">{t.v}</span>
           <span className="w-full rounded-[2px] bg-[#8fc6f5]" style={{ height: `${(t.v / 324) * 48}px` }} />
-          <span className="text-[9px] font-semibold text-[#3b4256]">{t.m}</span>
+          <span className="text-[13px] font-semibold text-[#3b4256]">{t.m}</span>
         </div>
       ))}
     </div>
@@ -191,9 +191,9 @@ export default function SA001Dashboard() {
       <div className="grid gap-[10px] sm:grid-cols-2 lg:min-h-0 lg:flex-[225_1_0] lg:[grid-template-rows:minmax(0,1fr)] lg:grid-cols-[275fr_345fr_260fr]">
         <Panel title="Critical alerts & priority actions" bodyClassName="flex flex-col gap-[5px] pt-[3px]">
           {alerts.map((a) => (
-            <div key={a.label} className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px] text-[12.4px] font-semibold leading-none last:border-b-0 last:pb-0">
+            <div key={a.label} className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px] text-[14.4px] font-semibold leading-none last:border-b-0 last:pb-0">
               <span className="min-w-0 flex-1 truncate">{a.label}</span>
-              <Pill tone={a.tone} className="h-[18px] min-w-[28px] text-[11px] font-bold">{a.count}</Pill>
+              <Pill tone={a.tone} className="h-[18px] min-w-[28px] text-[15px] font-bold">{a.count}</Pill>
             </div>
           ))}
         </Panel>
@@ -202,7 +202,7 @@ export default function SA001Dashboard() {
           <div className="mt-auto flex items-end gap-[10px]">
             <Donut size={72} thickness={11} segments={[{ value: 276, color: "#2f6fe0" }, { value: 18, color: "#7cc1f5" }, { value: 14, color: "#f7b500" }, { value: 16, color: "#c4cad6" }]}>
               <b className="text-[15px] leading-none">324</b>
-              <span className="text-[8.8px] font-semibold">Total</span>
+              <span className="text-[12.8px] font-semibold">Total</span>
             </Donut>
             <div className="min-w-0 flex-1"><MonthBar /></div>
           </div>
@@ -218,9 +218,9 @@ export default function SA001Dashboard() {
           <StatRows rows={commStats} />
           <div className="flex flex-col gap-[5px] border-t border-[#eef0f5] pt-[5px]">
             {commIntegrations.map((i) => (
-              <div key={i.label} className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px] text-[12.4px] font-semibold leading-none last:border-b-0 last:pb-0">
+              <div key={i.label} className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px] text-[14.4px] font-semibold leading-none last:border-b-0 last:pb-0">
                 <span className="min-w-0 flex-1 truncate">{i.label}</span>
-                <Pill tone={i.tone} className="h-[17px] text-[10.5px]">{i.status}</Pill>
+                <Pill tone={i.tone} className="h-[17px] text-[14.5px]">{i.status}</Pill>
               </div>
             ))}
           </div>
@@ -228,7 +228,7 @@ export default function SA001Dashboard() {
         <Panel title="AI & automation" bodyClassName="flex flex-col gap-[5px] pt-[3px]">
           <StatRows rows={aiRows} />
           <div className="mt-auto flex flex-col gap-[4px] pt-[2px]">
-            <div className="flex items-center justify-between text-[11.5px] font-semibold">
+            <div className="flex items-center justify-between text-[15.5px] font-semibold">
               <span>AI budget used</span>
               <b>56%</b>
             </div>
@@ -245,33 +245,33 @@ export default function SA001Dashboard() {
         <Panel title="Financial control · FY" bodyClassName="flex flex-col gap-[5px] pt-[3px]">
           <StatRows rows={financeRows} />
           <div className="mt-auto flex flex-col gap-[4px] pt-[2px]">
-            <div className="flex items-center justify-between text-[11.5px] font-semibold">
+            <div className="flex items-center justify-between text-[15.5px] font-semibold">
               <span>Expenses / donations</span>
               <b>66.1%</b>
             </div>
             <Bar pct={66.1} />
           </div>
         </Panel>
-        <Panel title="Coverage & training" bodyClassName="flex flex-col gap-[5px] pt-[3px] text-[12.4px] font-semibold">
+        <Panel title="Coverage & training" bodyClassName="flex flex-col gap-[5px] pt-[3px] text-[14.4px] font-semibold">
           <div className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px]">
             <span className="min-w-0 flex-1 truncate">{coverage[0].city}</span>
-            <Pill tone={coverage[0].tone} className="h-[17px] text-[10.5px]">{coverage[0].status}</Pill>
+            <Pill tone={coverage[0].tone} className="h-[17px] text-[14.5px]">{coverage[0].status}</Pill>
           </div>
           <div className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px]">
             <span className="min-w-0 flex-1 truncate">{coverage[1].city}</span>
-            <Pill tone={coverage[1].tone} className="h-[17px] text-[10.5px]">{coverage[1].status}</Pill>
+            <Pill tone={coverage[1].tone} className="h-[17px] text-[14.5px]">{coverage[1].status}</Pill>
           </div>
           <div className="flex items-center justify-between gap-[8px]">
             <span>{trainingRows[0][0]}</span>
             <b className="shrink-0 whitespace-nowrap">{trainingRows[0][1]}</b>
           </div>
           <div className="mt-auto flex flex-col gap-[4px] pt-[2px]">
-            <div className="flex items-center justify-between text-[11.5px] font-semibold">
+            <div className="flex items-center justify-between text-[15.5px] font-semibold">
               <span>Staff training</span>
               <b>92%</b>
             </div>
             <Bar pct={92} />
-            <div className="flex items-center justify-between text-[11.5px] font-semibold">
+            <div className="flex items-center justify-between text-[15.5px] font-semibold">
               <span>Volunteer training</span>
               <b>80%</b>
             </div>
@@ -279,13 +279,13 @@ export default function SA001Dashboard() {
           </div>
         </Panel>
         <Panel title="AI management insights" bodyClassName="flex flex-col gap-[7px] pt-[6px]">
-          <p className="text-[12px] font-medium leading-tight text-[#1a1d36]">{insights[0]}</p>
-          <p className="text-[12px] font-medium leading-tight text-[#1a1d36]">{insights[1]}</p>
+          <p className="text-[14px] font-medium leading-tight text-[#1a1d36]">{insights[0]}</p>
+          <p className="text-[14px] font-medium leading-tight text-[#1a1d36]">{insights[1]}</p>
           <div className="flex flex-wrap gap-[8px]">
-            <button type="button" onClick={() => notice.show("Opening the alert queue (demo).")} className="flex h-[28px] items-center rounded-[7px] bg-[#1d4fe0] px-[12px] text-[12px] font-semibold text-white shadow-[0_2px_6px_rgba(29,79,224,0.28)] hover:bg-[#1840c0]">Review alerts</button>
-            <button type="button" onClick={() => notice.show("Automation pause requested (demo).")} className="flex h-[28px] items-center rounded-[7px] border border-[#cfd5e2] bg-white px-[12px] text-[12px] font-semibold text-[#1d4fe0] hover:bg-[#f1f4ff]">Pause automation</button>
+            <button type="button" onClick={() => notice.show("Opening the alert queue (demo).")} className="flex h-[28px] items-center rounded-[7px] bg-[#1d4fe0] px-[12px] text-[14px] font-semibold text-white shadow-[0_2px_6px_rgba(29,79,224,0.28)] hover:bg-[#1840c0]">Review alerts</button>
+            <button type="button" onClick={() => notice.show("Automation pause requested (demo).")} className="flex h-[28px] items-center rounded-[7px] border border-[#cfd5e2] bg-white px-[12px] text-[14px] font-semibold text-[#1d4fe0] hover:bg-[#f1f4ff]">Pause automation</button>
           </div>
-          <p className="mt-auto rounded-[7px] border border-[#e1e5ee] bg-[#f8fafc] px-[10px] py-[6px] text-[12px] font-medium leading-tight text-[#1a1d36]">{insights[2]}</p>
+          <p className="mt-auto rounded-[7px] border border-[#e1e5ee] bg-[#f8fafc] px-[10px] py-[6px] text-[14px] font-medium leading-tight text-[#1a1d36]">{insights[2]}</p>
         </Panel>
       </div>
       </div>

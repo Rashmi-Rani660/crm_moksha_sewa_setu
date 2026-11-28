@@ -42,12 +42,12 @@ const fill = (text: string, row?: string[]) =>
     .replace(/\$#(\d)/g, (_, i) => (row?.[Number(i)] ?? "").replace(/\D/g, "").slice(-2))
     .replace(/\$(\d)/g, (_, i) => row?.[Number(i)] ?? "—");
 
-const btn = "flex h-[32px] shrink-0 items-center justify-center whitespace-nowrap rounded-[8px] border-[1.5px] px-[12px] pt-px text-[12.5px] font-medium transition-colors";
+const btn = "flex h-[32px] shrink-0 items-center justify-center whitespace-nowrap rounded-[8px] border-[1.5px] px-[12px] pt-px text-[14.5px] font-medium transition-colors";
 const btnSolid = `${btn} border-[#1d4fe0] bg-[#1d4fe0] text-white hover:bg-[#1840c0]`;
 const btnOutline = `${btn} border-[#2f4fe0] bg-white text-[#1d3fc4] hover:bg-[#f1f4ff]`;
 
 function Value({ v }: { v: string }) {
-  return v.startsWith("*") ? <Pill tone={tone(v.slice(1))} className="h-[19px] text-[11.5px] !font-medium">{v.slice(1)}</Pill> : <>{v}</>;
+  return v.startsWith("*") ? <Pill tone={tone(v.slice(1))} className="h-[19px] text-[15.5px] !font-medium">{v.slice(1)}</Pill> : <>{v}</>;
 }
 
 function Buttons({ actions, notice, className = "" }: { actions: Action[]; notice: (m: string) => void; className?: string }) {
@@ -74,7 +74,7 @@ function Lines({ rows, row }: { rows: Pair[]; row?: string[] }) {
   return (
     <ul className="flex flex-col">
       {rows.map(([k, v]) => (
-        <li key={k} className="flex min-h-[29px] items-center gap-[10px] border-b border-[#e6eaf2] py-[3px] text-[13px] font-normal text-[#1a1d36] last:border-b-0">
+        <li key={k} className="flex min-h-[29px] items-center gap-[10px] border-b border-[#e6eaf2] py-[3px] text-[15px] font-normal text-[#1a1d36] last:border-b-0">
           <span className="min-w-0 shrink-0 whitespace-nowrap">{k}</span>
           <span className="min-w-0 flex-1 py-px text-right lg:truncate">
             <Value v={fill(v, row)} />
@@ -89,7 +89,7 @@ function Bars({ bars }: { bars: Bar[] }) {
   return (
     <ul className="flex flex-col gap-[7px] py-[3px]">
       {bars.map((b) => (
-        <li key={b.label} className="flex items-center gap-[10px] text-[13px] font-normal text-[#1a1d36]">
+        <li key={b.label} className="flex items-center gap-[10px] text-[15px] font-normal text-[#1a1d36]">
           <span className="w-[112px] shrink-0 leading-[1.2]">{b.label}</span>
           <span className="h-[9px] min-w-0 flex-1 overflow-hidden rounded-full bg-[#e4ebf5]" role="img" aria-label={`${b.label}: ${b.pct}%`}>
             <span style={{ width: `${b.pct}%` }} className="block h-full rounded-full bg-[#2f7bc8]" />
@@ -125,7 +125,7 @@ function DataTable({ t, selected, onSelect, compact = false }: { t: Tbl; selecte
               const text = c.startsWith("*") ? c.slice(1) : c;
               return (
                 <td key={j} className={`${td} ${pad} !font-normal`}>
-                  {asPill ? <Pill tone={tone(text)} className="h-[19px] text-[11.5px] !font-medium">{text}</Pill> : text}
+                  {asPill ? <Pill tone={tone(text)} className="h-[19px] text-[15.5px] !font-medium">{text}</Pill> : text}
                 </td>
               );
             })}
@@ -141,7 +141,7 @@ function Flow({ steps }: { steps: string[] }) {
     <div className="my-[4px] flex flex-wrap items-center gap-y-[8px] lg:flex-nowrap">
       {steps.map((s, i) => (
         <div key={s} className="flex min-w-0 flex-1 items-center basis-[140px] lg:basis-0">
-          <span className="flex h-[40px] min-w-0 flex-1 items-center justify-center rounded-[8px] border border-[#d6e1f5] bg-gradient-to-b from-[#f8fbff] to-[#e6eefb] px-2 text-[13px] font-normal text-[#1a1d36] shadow-[0_2px_4px_rgba(30,50,110,0.06)]">{s}</span>
+          <span className="flex h-[40px] min-w-0 flex-1 items-center justify-center rounded-[8px] border border-[#d6e1f5] bg-gradient-to-b from-[#f8fbff] to-[#e6eefb] px-2 text-[15px] font-normal text-[#1a1d36] shadow-[0_2px_4px_rgba(30,50,110,0.06)]">{s}</span>
           {i < steps.length - 1 && <ArrowRight strokeWidth={2} className="mx-[6px] h-[15px] w-[15px] shrink-0 text-[#2f4fe0]" />}
         </div>
       ))}
@@ -152,8 +152,8 @@ function Flow({ steps }: { steps: string[] }) {
 function Readonly({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="mb-[3px] text-[12.5px] font-normal text-[#1a1d36]">{label}</p>
-      <p className="truncate rounded-[8px] border border-[#d6dbe6] bg-[#eef1f7] px-[10px] py-[7px] text-[13px] font-normal text-[#1a1d36]">{value}</p>
+      <p className="mb-[3px] text-[14.5px] font-normal text-[#1a1d36]">{label}</p>
+      <p className="truncate rounded-[8px] border border-[#d6dbe6] bg-[#eef1f7] px-[10px] py-[7px] text-[15px] font-normal text-[#1a1d36]">{value}</p>
     </div>
   );
 }
@@ -209,7 +209,7 @@ export default function SaScreen2({ id }: { id: string }) {
               {side.bubbles.map(([dir, text]) => (
                 <p
                   key={text}
-                  className={`max-w-[92%] rounded-[8px] border px-[11px] py-[7px] text-[12.5px] font-normal leading-[1.35] text-[#1a1d36] ${
+                  className={`max-w-[92%] rounded-[8px] border px-[11px] py-[7px] text-[14.5px] font-normal leading-[1.35] text-[#1a1d36] ${
                     dir === "in" ? "self-start border-[#d6dbe6] bg-[#eef1f7]" : "self-end border-[#cfe9cd] bg-[#e3f5e1]"
                   }`}
                 >
@@ -223,7 +223,7 @@ export default function SaScreen2({ id }: { id: string }) {
                 onChange={(e) => setReply(e.target.value)}
                 placeholder={side.input}
                 aria-label={side.input}
-                className="mt-[8px] h-[32px] w-full rounded-[8px] border border-[#cfd5e2] bg-white px-[10px] text-[13px] font-normal text-[#1a1d36] outline-none placeholder:text-[#6b7390] focus:border-[#5b6fe0]"
+                className="mt-[8px] h-[32px] w-full rounded-[8px] border border-[#cfd5e2] bg-white px-[10px] text-[15px] font-normal text-[#1a1d36] outline-none placeholder:text-[#6b7390] focus:border-[#5b6fe0]"
               />
             )}
             <Buttons actions={side.actions} notice={(m) => { notice.show(m); setReply(""); }} className="mt-[8px]" />
@@ -248,11 +248,11 @@ export default function SaScreen2({ id }: { id: string }) {
           <Icon strokeWidth={1.9} className="h-[26px] w-[26px] shrink-0 text-[#1d5bd6]" />
           <div className="min-w-0">
             <h1 className="text-[21px] font-medium leading-tight tracking-[-0.5px] text-[#0b0c36] lg:whitespace-nowrap lg:text-[24px] lg:leading-none">{s.title}</h1>
-            <p className="mt-[6px] text-[13px] font-normal leading-none text-[#1a1d36] lg:text-[14px]">Super Admin / FY 2026–27 / Ghaziabad</p>
+            <p className="mt-[6px] text-[15px] font-normal leading-none text-[#1a1d36] lg:text-[16px]">Super Admin / FY 2026–27 / Ghaziabad</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:flex-nowrap">
-          <span className="flex h-[30px] shrink-0 items-center rounded-[7px] border border-[#ecd48a] bg-[#fff4d1] px-[12px] pt-px text-[11.5px] font-medium tracking-[0.2px] text-[#8a5300]">DEMO DATA</span>
+          <span className="flex h-[30px] shrink-0 items-center rounded-[7px] border border-[#ecd48a] bg-[#fff4d1] px-[12px] pt-px text-[15.5px] font-medium tracking-[0.2px] text-[#8a5300]">DEMO DATA</span>
           <ScreenSwitch current={s.id} screens={sectionScreens(s.active)} />
         </div>
       </div>
@@ -276,7 +276,7 @@ export default function SaScreen2({ id }: { id: string }) {
               <Buttons actions={s.main.actions} notice={notice.show} />
               {s.main.nested && (
                 <section className="rounded-[10px] border border-[#e1e5ee] bg-white px-[10px] pb-[6px] pt-[8px]">
-                  <h3 className="mb-[4px] text-[14px] font-medium text-[#0b0c36]">{s.main.nested.title}</h3>
+                  <h3 className="mb-[4px] text-[16px] font-medium text-[#0b0c36]">{s.main.nested.title}</h3>
                   <DataTable t={s.main.nested.table} compact />
                 </section>
               )}

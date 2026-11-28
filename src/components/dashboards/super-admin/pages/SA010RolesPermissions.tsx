@@ -91,12 +91,12 @@ const effective = [
 function CellValue({ value }: { value: Cell }) {
   if (value === "✓") {
     return (
-      <span className="inline-flex h-[18px] w-[18px] items-center justify-center rounded-[4px] bg-[#d4f3d2] text-[11px] font-bold text-[#1c6b1f]">
+      <span className="inline-flex h-[18px] w-[18px] items-center justify-center rounded-[4px] bg-[#d4f3d2] text-[15px] font-bold text-[#1c6b1f]">
         ✓
       </span>
     );
   }
-  return <span className="text-[12px] font-medium text-[#3b4256]">{value}</span>;
+  return <span className="text-[14px] font-medium text-[#3b4256]">{value}</span>;
 }
 
 export default function SA010RolesPermissions() {
@@ -144,11 +144,11 @@ export default function SA010RolesPermissions() {
               <Panel title={`Module permissions — ${level} (sample)`} bodyClassName="flex flex-col gap-[8px] pt-[6px]">
                 <div className="grid gap-[10px] sm:grid-cols-2">
                   <div>
-                    <p className="mb-[2px] text-[11.5px] font-medium text-[#3b4256]">Access level</p>
+                    <p className="mb-[2px] text-[15.5px] font-medium text-[#3b4256]">Access level</p>
                     <Dropdown label="Access level" value={level} options={accessLevels} onChange={setLevel} className="w-full" size={12.5} />
                   </div>
                   <div>
-                    <p className="mb-[2px] text-[11.5px] font-medium text-[#3b4256]">Permission profile</p>
+                    <p className="mb-[2px] text-[15.5px] font-medium text-[#3b4256]">Permission profile</p>
                     <Dropdown label="Permission profile" value={profile} options={profiles} onChange={setProfile} className="w-full" size={12.5} />
                   </div>
                 </div>
@@ -156,7 +156,7 @@ export default function SA010RolesPermissions() {
                 <TableWrap className="min-h-0 flex-1 overflow-auto">
                   <Thead>
                     {["Module", "View", "Create", "Edit", "Approve", "Export", "Assign", "Archive", "Manage"].map((h) => (
-<th key={h} className={`${th} px-[6px] py-[6px] text-[12px]`}>{h}</th>
+<th key={h} className={`${th} px-[6px] py-[6px] text-[14px]`}>{h}</th>
                     ))}
                   </Thead>
                   <tbody>
@@ -185,7 +185,7 @@ export default function SA010RolesPermissions() {
                   </PrimaryButton>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-[10px] rounded-[8px] border border-[#dce6f7] bg-[#f4f8ff] px-[10px] py-[6px] text-[11.5px] font-medium">
+                <div className="flex flex-wrap items-center gap-[10px] rounded-[8px] border border-[#dce6f7] bg-[#f4f8ff] px-[10px] py-[6px] text-[15.5px] font-medium">
                   <span className="font-semibold text-[#1c6b1f]">✓ Allowed</span>
                   <span className="font-semibold text-[#8a5300]">Conditional / Approval</span>
                   <span className="font-semibold text-[#1d4fb8]">Scoped / Restricted</span>
@@ -218,7 +218,7 @@ export default function SA010RolesPermissions() {
                           className="sr-only"
                         />
                         <span
-                          className={`flex h-[13px] w-[13px] items-center justify-center rounded-[3px] border text-[9px] font-bold leading-none transition-colors ${
+                          className={`flex h-[13px] w-[13px] items-center justify-center rounded-[3px] border text-[13px] font-bold leading-none transition-colors ${
                             on
                               ? "border-[#cbd5e1] bg-[#cbd5e1] text-white"
                               : "border-[#cbd5e1] bg-white text-transparent"
@@ -227,7 +227,7 @@ export default function SA010RolesPermissions() {
                         >
                           ✓
                         </span>
-                        <span className="text-[11.5px] font-medium leading-tight text-[#1a1d36]">{label}</span>
+                        <span className="text-[15.5px] font-medium leading-tight text-[#1a1d36]">{label}</span>
                       </label>
                     );
                   })}
@@ -238,7 +238,7 @@ export default function SA010RolesPermissions() {
                     <KV
                       key={k}
                       k={k}
-                      v={v === "Restricted" ? <Pill tone="blue" className="h-[18px] text-[10.5px]">{v}</Pill> : v}
+                      v={v === "Restricted" ? <Pill tone="blue" className="h-[18px] text-[14.5px]">{v}</Pill> : v}
                       className="py-[3px]"
                     />
                   ))}

@@ -178,13 +178,13 @@ export const shells: Record<Role, Shell> = {
     // current page is a gold pill with dark text, no submenu chevrons.
     sidebar: {
       width: 210,
-      fontSize: 13.6,
+      fontSize: 14.6,
       iconSize: 18,
       iconX: 25,
       textX: 47,
       pill: { x: 7, w: 197, h: 27 },
       rowHeight: 26,
-      pillFontSize: 13.6,
+      pillFontSize: 14.6,
       pillTextClass: "font-medium text-[#0b0c36]",
       goldClass: "rounded-[7px] bg-[linear-gradient(90deg,#fdd763_0%,#f2c04e_50%,#e2a438_100%)] shadow-[0_1px_4px_rgba(0,0,0,0.25)]",
       diyaShift: 0,

@@ -110,7 +110,7 @@ export default function SA065DeviceManagement() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-1.5 text-center text-xs font-semibold transition-colors ${
+              className={`px-4 py-1.5 text-center text-[14px] font-semibold transition-colors ${
                 idx > 0 ? "border-l border-slate-200" : ""
               } ${
                 activeTab === tab.id ? "bg-blue-700 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
@@ -131,16 +131,16 @@ export default function SA065DeviceManagement() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search records..."
-                    className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+                    className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
                   />
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Filter</button>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Export</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Filter</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Export</button>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-left text-[13px]">
+                  <table className="w-full border-collapse text-left text-[15px]">
                     <thead>
-                      <tr className="border-y border-slate-200 bg-slate-50/80 text-xs font-semibold text-slate-600">
+                      <tr className="border-y border-slate-200 bg-slate-50/80 text-[14px] font-semibold text-slate-600">
                         <th className="px-2 py-1.5">Device ID</th>
                         <th className="px-2 py-1.5">Employee ID</th>
                         <th className="px-2 py-1.5">Device type</th>
@@ -164,7 +164,7 @@ export default function SA065DeviceManagement() {
                           <td className="px-2 py-1.5 text-slate-600">{row.lastVerified}</td>
                           <td className="px-2 py-1.5 text-slate-600">{row.trustStatus}</td>
                           <td className="px-2 py-1.5 text-right whitespace-nowrap">
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${STATUS_BADGE[row.status]}`}>
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[15px] font-semibold ${STATUS_BADGE[row.status]}`}>
                               {row.status}
                             </span>
                           </td>
@@ -176,8 +176,8 @@ export default function SA065DeviceManagement() {
 
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <PrimaryButton>Review device</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Revoke access</button>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">View policy</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Revoke access</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">View policy</button>
                 </div>
               </div>
             </Panel>
@@ -188,7 +188,7 @@ export default function SA065DeviceManagement() {
                   {PIPELINE_STEPS.map((step, idx) => (
                     <Fragment key={step.label}>
                       <div
-                        className={`min-w-[84px] flex-1 rounded-lg border px-2.5 py-1.5 text-center text-xs font-semibold ${
+                        className={`min-w-[84px] flex-1 rounded-lg border px-2.5 py-1.5 text-center text-[14px] font-semibold ${
                           step.tone === "green"
                             ? "border-emerald-200 bg-emerald-50/80 text-slate-700"
                             : "border-blue-200 bg-blue-50/80 text-slate-700"
@@ -202,7 +202,7 @@ export default function SA065DeviceManagement() {
                     </Fragment>
                   ))}
                 </div>
-                <div className="divide-y divide-slate-100 text-[13px]">
+                <div className="divide-y divide-slate-100 text-[15px]">
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-600">New device queue</span>
                     <span className="font-semibold text-slate-800">02 pending review</span>
@@ -218,7 +218,7 @@ export default function SA065DeviceManagement() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <PrimaryButton>Review approvals</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Lost device</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Lost device</button>
                 </div>
               </div>
             </Panel>
@@ -227,7 +227,7 @@ export default function SA065DeviceManagement() {
           <div className="space-y-2 lg:col-span-4">
             <Panel title={`Selected device · ${selected.id}`}>
               <div className="space-y-1.5">
-                <div className="divide-y divide-slate-100 text-xs">
+                <div className="divide-y divide-slate-100 text-[14px]">
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-500">Employee source</span>
                     <span className="font-semibold text-slate-800">{selected.source}</span>
@@ -255,9 +255,9 @@ export default function SA065DeviceManagement() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <PrimaryButton>Review device</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Revoke access</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Revoke access</button>
                 </div>
-                <div className="divide-y divide-slate-100 border-t border-slate-100 pt-1 text-[13px]">
+                <div className="divide-y divide-slate-100 border-t border-slate-100 pt-1 text-[15px]">
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-500">Trust expiry</span>
                     <span className="font-semibold text-slate-800">Not issued</span>
@@ -271,7 +271,7 @@ export default function SA065DeviceManagement() {
             </Panel>
 
             <Panel title="Device policy">
-              <div className="divide-y divide-slate-100 text-[13px]">
+              <div className="divide-y divide-slate-100 text-[15px]">
                 <div className="flex items-center justify-between py-1.5">
                   <span className="text-slate-600">Unverified devices</span>
                   <span className="font-semibold text-slate-800">Restricted</span>

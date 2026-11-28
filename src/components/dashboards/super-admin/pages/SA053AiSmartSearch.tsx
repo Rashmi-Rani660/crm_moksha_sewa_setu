@@ -78,7 +78,7 @@ export default function SA053AiSmartSearch() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   aria-label="Smart search query"
-                  className="h-[32px] min-w-0 flex-1 rounded-[8px] border border-[#cfd5e2] bg-white px-[12px] text-[12.5px] font-medium text-[#0b0c36] outline-none focus:border-[#1d4fe0]"
+                  className="h-[32px] min-w-0 flex-1 rounded-[8px] border border-[#cfd5e2] bg-white px-[12px] text-[14.5px] font-medium text-[#0b0c36] outline-none focus:border-[#1d4fe0]"
                 />
                 <Sa51Btn primary onClick={() => notice.show(`AI answer generated from scoped approved sources for "${query}" (demo).`)}>
                   Ask AI
@@ -109,7 +109,7 @@ export default function SA053AiSmartSearch() {
                     ))}
                     {!filtered.length && (
                       <tr>
-                        <td colSpan={5} className="py-5 text-center text-[12.5px] font-medium text-[#5b6280]">
+                        <td colSpan={5} className="py-5 text-center text-[14.5px] font-medium text-[#5b6280]">
                           No authorised records match this query.
                         </td>
                       </tr>
@@ -140,7 +140,7 @@ export default function SA053AiSmartSearch() {
                       setChip(c);
                       if (c === "Voice search") notice.show("Voice input requires explicit consent & retention control (demo).");
                     }}
-                    className={`h-[26px] rounded-[7px] px-[10px] text-[12px] font-semibold transition-colors ${on
+                    className={`h-[26px] rounded-[7px] px-[10px] text-[14px] font-semibold transition-colors ${on
                       ? "bg-[#1d4fe0] text-white shadow-[0_2px_5px_rgba(29,79,224,0.25)]"
                       : "border border-[#b9c8f0] bg-white text-[#1d4fe0] hover:bg-[#f2f6ff]"
                       }`}
@@ -162,7 +162,7 @@ export default function SA053AiSmartSearch() {
 
         <div className="flex min-h-0 flex-col gap-[10px]">
           <Panel title="AI answer · cited sources" className="lg:flex-[1.55]" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
-            <div className="rounded-[8px] border border-[#dce4f2] bg-[#f4f7fd] px-[11px] py-[10px] text-[12.5px] leading-[1.45] text-[#1a1d36]">
+            <div className="rounded-[8px] border border-[#dce4f2] bg-[#f4f7fd] px-[11px] py-[10px] text-[14.5px] leading-[1.45] text-[#1a1d36]">
               <p>Legal clearance is required before dispatch. If documents are missing, contact the responsible Admin.</p>
               <p className="mt-[6px] font-semibold text-[#0b0c36]">
                 Sources: <span className="font-medium">SOP-004 · Legal clearance; GUIDE-02 · Checklist (demo references).</span>

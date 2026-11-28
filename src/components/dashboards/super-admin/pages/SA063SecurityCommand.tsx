@@ -118,7 +118,7 @@ export default function SA063SecurityCommand() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-1.5 text-center text-xs font-semibold transition-colors ${
+              className={`px-4 py-1.5 text-center text-[14px] font-semibold transition-colors ${
                 idx > 0 ? "border-l border-slate-200" : ""
               } ${
                 activeTab === tab.id
@@ -141,16 +141,16 @@ export default function SA063SecurityCommand() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search records..."
-                    className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+                    className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
                   />
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Filter</button>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Export</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Filter</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Export</button>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-left text-[13px]">
+                  <table className="w-full border-collapse text-left text-[15px]">
                     <thead>
-                      <tr className="border-y border-slate-200 bg-slate-50/80 text-xs font-semibold text-slate-600">
+                      <tr className="border-y border-slate-200 bg-slate-50/80 text-[14px] font-semibold text-slate-600">
                         <th className="px-2 py-1.5">Event ID</th>
                         <th className="px-2 py-1.5">Detection</th>
                         <th className="px-2 py-1.5">Severity</th>
@@ -174,7 +174,7 @@ export default function SA063SecurityCommand() {
                           <td className="px-2 py-1.5 text-slate-600 whitespace-nowrap">{row.owner}</td>
                           <td className="px-2 py-1.5 text-slate-600 whitespace-nowrap">{row.lastSeen}</td>
                           <td className="px-2 py-1.5 text-right whitespace-nowrap">
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${STATUS_BADGE[row.status]}`}>
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[15px] font-semibold ${STATUS_BADGE[row.status]}`}>
                               {row.status}
                             </span>
                           </td>
@@ -186,13 +186,13 @@ export default function SA063SecurityCommand() {
 
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <PrimaryButton onClick={() => router.push("/dashboard/super-admin/system-security/incidents")}>Review incident</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">
                     Open emergency controls
                   </button>
                   <button
                     type="button"
                     onClick={() => router.push("/dashboard/super-admin/system-security/sessions")}
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                   >
                     Review sessions
                   </button>
@@ -202,25 +202,25 @@ export default function SA063SecurityCommand() {
 
             <Panel title="Security event trend · last 24 hours">
               <div className="space-y-2">
-                <p className="text-[11px] font-medium text-slate-500">
+                <p className="text-[15px] font-medium text-slate-500">
                   Illustrative failed logins by 4-hour interval · total 8
                 </p>
                 <div className="grid grid-cols-6 items-end gap-3 pt-1">
                   {TREND_BARS.map((bar) => (
                     <div key={bar.label} className="flex flex-col items-center gap-1">
-                      <span className="text-[11px] font-semibold text-slate-700">{bar.value}</span>
+                      <span className="text-[15px] font-semibold text-slate-700">{bar.value}</span>
                       <div className={`w-full rounded-t-md bg-blue-600 ${bar.height}`} />
-                      <span className="text-[11px] text-slate-500">{bar.label}</span>
+                      <span className="text-[15px] text-slate-500">{bar.label}</span>
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center justify-between border-t border-slate-100 pt-2 text-[13px]">
+                <div className="flex items-center justify-between border-t border-slate-100 pt-2 text-[15px]">
                   <span className="text-slate-600">Critical alerts</span>
                   <span className="font-semibold text-slate-800">02 · immediate review</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <PrimaryButton>View 7 days</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">
                     View 30 days
                   </button>
                 </div>
@@ -231,7 +231,7 @@ export default function SA063SecurityCommand() {
           <div className="space-y-2 lg:col-span-4">
             <Panel title="Security posture & emergency control">
               <div className="space-y-1.5">
-                <div className="divide-y divide-slate-100 text-xs">
+                <div className="divide-y divide-slate-100 text-[14px]">
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-500">Telemetry last received</span>
                     <span className="font-semibold text-slate-800">26 Nov · 10:24 AM · demo</span>
@@ -242,7 +242,7 @@ export default function SA063SecurityCommand() {
                   </div>
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-500">Unpatched findings</span>
-                    <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                    <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[15px] font-semibold text-amber-700">
                       01 · review
                     </span>
                   </div>
@@ -261,11 +261,11 @@ export default function SA063SecurityCommand() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <PrimaryButton onClick={() => router.push("/dashboard/super-admin/system-security/incidents")}>Review incident</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">
                     Request lockdown
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[15px] text-slate-400">
                   Lockdown: confirm scope, reason, authority and helpline continuity.
                 </p>
               </div>
@@ -273,7 +273,7 @@ export default function SA063SecurityCommand() {
 
             <Panel title="Priority actions & continuity">
               <div className="space-y-2">
-                <div className="divide-y divide-slate-100 text-[13px]">
+                <div className="divide-y divide-slate-100 text-[15px]">
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-600">Export review</span>
                     <span className="font-semibold text-slate-800">03 pending</span>
@@ -300,7 +300,7 @@ export default function SA063SecurityCommand() {
                   <button
                     type="button"
                     onClick={() => router.push("/dashboard/super-admin/system-security/sessions")}
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                   >
                     Review sessions
                   </button>

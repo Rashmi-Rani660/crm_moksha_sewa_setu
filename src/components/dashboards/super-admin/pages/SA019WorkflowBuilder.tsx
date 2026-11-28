@@ -76,7 +76,7 @@ export default function SA019WorkflowBuilder() {
             <div className="mt-[8px]">
               <Flow steps={["Intake", "Eligibility", "Legal clearance", "Approval", "Dispatch", "Closure"]} h={58} />
             </div>
-            <div className="mt-[8px] grid grid-cols-1 gap-x-[12px] rounded-[6px] border border-dashed border-[#e2c071] bg-[#fff9ed] px-[9px] py-[5px] text-[12.3px] leading-[18px] sm:grid-cols-2">
+            <div className="mt-[8px] grid grid-cols-1 gap-x-[12px] rounded-[6px] border border-dashed border-[#e2c071] bg-[#fff9ed] px-[9px] py-[5px] text-[14.3px] leading-[18px] sm:grid-cols-2">
               <p className={ink}>Eligibility / clearance failed</p>
               <p className="text-[#8a5b00]">→ Hold &amp; human review</p>
               <p className={ink}>Dispatch delivery failed</p>
@@ -102,7 +102,7 @@ export default function SA019WorkflowBuilder() {
                   type="button"
                   onClick={() => choose(l.name)}
                   aria-pressed={selected === l.name}
-                  className={`flex h-[28px] w-full items-center gap-[12px] border-b border-[#e1e7f0] text-left text-[13.3px] ${ink} ${selected === l.name ? "bg-[#e9f0fc]" : "hover:bg-[#eef3fb]"}`}
+                  className={`flex h-[28px] w-full items-center gap-[12px] border-b border-[#e1e7f0] text-left text-[15.3px] ${ink} ${selected === l.name ? "bg-[#e9f0fc]" : "hover:bg-[#eef3fb]"}`}
                 >
                   <span className="min-w-0 flex-1 truncate pt-px">{l.name}</span>
                   <span className="shrink-0 pt-px">{l.version} • {l.state}</span>

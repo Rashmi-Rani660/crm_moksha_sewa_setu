@@ -239,7 +239,7 @@ export default function SA008Users() {
                 <TableWrap>
                   <Thead>
                     {["CRM ID", "HRMS ID", "Name", "Mobile", "Department", "Level", "Reporting", "Centre", "MFA", "Status", "Last login"].map((h) => (
-<th key={h} className={`${th} px-[5px] py-[5px] text-[11.8px]`}>{h}</th>
+<th key={h} className={`${th} px-[5px] py-[5px] text-[15.8px]`}>{h}</th>
                     ))}
                   </Thead>
                   <tbody>
@@ -251,26 +251,26 @@ export default function SA008Users() {
                         <td className={`${td} px-[5px] py-[5px]`}>{u.mobile}</td>
                         <td className={`${td} px-[5px] py-[5px]`}>{u.dept}</td>
                         <td className={`${td} px-[5px] py-[5px]`}>
-                          <Pill tone={levelTone[u.level]} className="h-[18px] min-w-[74px] text-[10.5px]">
+                          <Pill tone={levelTone[u.level]} className="h-[18px] min-w-[74px] text-[14.5px]">
                             {u.level}
                           </Pill>
                         </td>
                         <td className={`${td} px-[5px] py-[5px]`}>{u.reporting}</td>
                         <td className={`${td} px-[5px] py-[5px]`}>{u.centre}</td>
                         <td className={`${td} px-[5px] py-[5px]`}>
-                          <Pill tone="green" className="h-[18px] min-w-[58px] text-[10.5px]">
+                          <Pill tone="green" className="h-[18px] min-w-[58px] text-[14.5px]">
                             {u.mfa}
                           </Pill>
                         </td>
                         <td className={`${td} px-[5px] py-[5px]`}>
-                          <StatusPill className="h-[18px] min-w-[62px] text-[10.5px]">{u.status}</StatusPill>
+                          <StatusPill className="h-[18px] min-w-[62px] text-[14.5px]">{u.status}</StatusPill>
                         </td>
-                        <td className={`${td} px-[5px] py-[5px] text-[11.5px]`}>{u.login}</td>
+                        <td className={`${td} px-[5px] py-[5px] text-[15.5px]`}>{u.login}</td>
                       </tr>
                     ))}
                     {!rows.length && (
                       <tr>
-                        <td colSpan={11} className="py-6 text-center text-[13px] font-medium text-[#5b6280]">
+                        <td colSpan={11} className="py-6 text-center text-[15px] font-medium text-[#5b6280]">
                           No users match these filters.
                         </td>
                       </tr>
@@ -279,7 +279,7 @@ export default function SA008Users() {
                 </TableWrap>
 
                 <div className="mt-auto flex flex-wrap items-center justify-between gap-[8px] pt-[8px]">
-                  <p className="text-[11.5px] font-medium text-[#3b4256]">
+                  <p className="text-[15.5px] font-medium text-[#3b4256]">
                     Showing {filtered.length ? (current - 1) * PER_PAGE + 1 : 0}–{(current - 1) * PER_PAGE + rows.length} of {filtered.length} · mobiles masked · no direct deletion
                   </p>
                   <Pager page={current} pages={pages} onChange={setPage} />
@@ -304,13 +304,13 @@ export default function SA008Users() {
               <div className="flex flex-col gap-[8px] pt-[4px]">
                 {activityLog.map((a) => (
                   <div key={a.time + a.text} className="flex items-center gap-[10px] rounded-[8px] border border-[#eef0f5] bg-[#f8faff] px-[12px] py-[8px]">
-                    <Pill tone={a.tone} className="h-[20px] min-w-[48px] text-[11px]">
+                    <Pill tone={a.tone} className="h-[20px] min-w-[48px] text-[15px]">
                       {a.time}
                     </Pill>
-                    <span className="min-w-0 flex-1 text-[13px] font-semibold">{a.text}</span>
+                    <span className="min-w-0 flex-1 text-[15px] font-semibold">{a.text}</span>
                   </div>
                 ))}
-                <p className="pt-[4px] text-[11.5px] font-medium text-[#5b6280]">All security events are retained in the audit trail.</p>
+                <p className="pt-[4px] text-[15.5px] font-medium text-[#5b6280]">All security events are retained in the audit trail.</p>
               </div>
             ) : (
               <div className="flex flex-col gap-[6px] pt-[4px]">
@@ -368,8 +368,8 @@ export default function SA008Users() {
               <Panel title="Security events" bodyClassName="flex flex-col pt-[4px]">
                 <div className="flex flex-col gap-[6px]">
                   {activityLog.slice(0, 3).map((a) => (
-                    <div key={a.time + a.text} className="text-[12.5px] font-semibold leading-tight">
-                      <Pill tone={a.tone} className="mr-[6px] h-[18px] min-w-[44px] text-[10.5px]">
+                    <div key={a.time + a.text} className="text-[14.5px] font-semibold leading-tight">
+                      <Pill tone={a.tone} className="mr-[6px] h-[18px] min-w-[44px] text-[14.5px]">
                         {a.time}
                       </Pill>
                       {a.text}

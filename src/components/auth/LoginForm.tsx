@@ -24,7 +24,7 @@ import {
 } from "@/lib/validation";
 
 const fieldClass =
-  "h-[42px] w-full rounded-lg border-[1.5px] border-[#c6ccd9] bg-white pl-[48px] pr-3 text-[15px] font-medium text-navy-ink shadow-[0_1px_3px_rgba(20,40,100,0.12)] outline-none transition placeholder:text-muted focus:border-navy focus:ring-2 focus:ring-navy/15 lg:h-[35px] lg:pl-[55px] lg:text-[13.6px]";
+  "h-[42px] w-full rounded-lg border-[1.5px] border-[#c6ccd9] bg-white pl-[48px] pr-3 text-[15px] font-medium text-navy-ink shadow-[0_1px_3px_rgba(20,40,100,0.12)] outline-none transition placeholder:text-muted focus:border-navy focus:ring-2 focus:ring-navy/15 lg:h-[35px] lg:pl-[55px] lg:text-[15.6px]";
 
 const labelClass = "mb-1.5 block text-[15.5px] font-bold text-navy-ink lg:mb-[3px] lg:text-[14.4px]";
 
@@ -126,7 +126,7 @@ export default function LoginForm() {
           <h2 className="text-[25px] font-bold leading-tight text-navy-ink lg:text-[22.7px]">
             Login
           </h2>
-          <p className="mt-1 text-[15px] font-medium text-navy-ink lg:text-[14px]">
+          <p className="mt-1 text-[15px] font-medium text-navy-ink lg:text-[16px]">
             Access your account securely
           </p>
         </div>
@@ -196,7 +196,7 @@ export default function LoginForm() {
               <p className="text-[15.5px] font-bold leading-tight text-navy-ink lg:text-[14.7px]">
                 Verification (OTP)
               </p>
-              <p className="mt-0.5 text-[13px] font-medium text-navy-ink lg:text-[11.2px]">
+              <p className="mt-0.5 text-[15px] font-medium text-navy-ink lg:text-[15.2px]">
                 {otpSent
                   ? `OTP sent to +91 ${mobile.slice(0, 2)}XXXXXX${mobile.slice(-2)}`
                   : `Enter the ${authConfig.otpLength}-digit OTP`}
@@ -210,7 +210,7 @@ export default function LoginForm() {
               type="button"
               onClick={sendOtp}
               disabled={countdown > 0}
-              className="inline-flex h-[38px] items-center gap-1.5 whitespace-nowrap rounded-full border-[1.5px] border-navy-ink bg-white px-3.5 text-[13px] font-bold lg:h-[36px] lg:text-[12px] text-navy-ink transition hover:bg-navy-ink hover:text-white disabled:cursor-not-allowed disabled:border-line disabled:text-muted disabled:hover:bg-white disabled:hover:text-muted"
+              className="inline-flex h-[38px] items-center gap-1.5 whitespace-nowrap rounded-full border-[1.5px] border-navy-ink bg-white px-3.5 text-[15px] font-bold lg:h-[36px] lg:text-[14px] text-navy-ink transition hover:bg-navy-ink hover:text-white disabled:cursor-not-allowed disabled:border-line disabled:text-muted disabled:hover:bg-white disabled:hover:text-muted"
             >
               <SendIcon />
               {countdown > 0 ? `Resend ${countdown}s` : "Send OTP"}
@@ -220,7 +220,7 @@ export default function LoginForm() {
 
         {/* Remember / forgot */}
         <div className="mt-5 flex flex-wrap items-center justify-between lg:mt-[22px] gap-x-4 gap-y-2">
-          <label className="flex cursor-pointer select-none items-center gap-2.5 text-[14.5px] font-medium text-navy-ink lg:text-[13px]">
+          <label className="flex cursor-pointer select-none items-center gap-2.5 text-[14.5px] font-medium text-navy-ink lg:text-[15px]">
             <span className="relative inline-flex h-[22px] w-[22px] shrink-0 lg:h-[20px] lg:w-[20px]">
               <input
                 type="checkbox"
@@ -257,14 +257,14 @@ export default function LoginForm() {
           <p
             role="alert"
             aria-live="polite"
-            className={`text-[14px] font-semibold leading-[16px] text-[#c0262d] lg:text-[13px] lg:leading-[15px] ${error ? "" : "hidden"}`}
+            className={`text-[16px] font-semibold leading-[16px] text-[#c0262d] lg:text-[15px] lg:leading-[15px] ${error ? "" : "hidden"}`}
           >
             {error}
           </p>
           {!error && flash && (
             <p
               role="status"
-              className="rounded-md bg-[#fbf1cf] px-2.5 py-[2px] text-[13px] font-medium leading-[15px] text-navy-ink lg:text-[12px] lg:leading-[13px]"
+              className="rounded-md bg-[#fbf1cf] px-2.5 py-[2px] text-[15px] font-medium leading-[15px] text-navy-ink lg:text-[14px] lg:leading-[13px]"
             >
               {flash}
             </p>
@@ -281,7 +281,7 @@ export default function LoginForm() {
           {!submitting && <ArrowRightIcon />}
         </button>
 
-        <div className="mt-5 flex items-center justify-center gap-3 text-[14.5px] font-medium text-navy-ink lg:-mx-[19px] lg:mt-[22px] lg:text-[13.8px]">
+        <div className="mt-5 flex items-center justify-center gap-3 text-[14.5px] font-medium text-navy-ink lg:-mx-[19px] lg:mt-[22px] lg:text-[15.8px]">
           <span className="h-px min-w-3 flex-1 bg-line" />
           <span className="inline-flex items-center gap-2 text-center">
             <ShieldCheckIcon size={22} className="shrink-0" />

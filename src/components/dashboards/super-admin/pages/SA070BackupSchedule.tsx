@@ -100,7 +100,7 @@ export default function SA070BackupSchedule() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-1.5 text-center text-xs font-semibold transition-colors ${
+              className={`px-4 py-1.5 text-center text-[14px] font-semibold transition-colors ${
                 idx > 0 ? "border-l border-slate-200" : ""
               } ${
                 activeTab === tab.id ? "bg-blue-700 text-white" : "bg-white text-slate-700 hover:bg-slate-50"
@@ -121,16 +121,16 @@ export default function SA070BackupSchedule() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search records..."
-                    className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+                    className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
                   />
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Filter</button>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Export</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Filter</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Export</button>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-left text-[13px]">
+                  <table className="w-full border-collapse text-left text-[15px]">
                     <thead>
-                      <tr className="border-y border-slate-200 bg-slate-50/80 text-xs font-semibold text-slate-600">
+                      <tr className="border-y border-slate-200 bg-slate-50/80 text-[14px] font-semibold text-slate-600">
                         <th className="px-2 py-1.5">Schedule ID</th>
                         <th className="px-2 py-1.5">Scope</th>
                         <th className="px-2 py-1.5">Frequency</th>
@@ -154,7 +154,7 @@ export default function SA070BackupSchedule() {
                           <td className="px-2 py-1.5 text-slate-600">{row.destination}</td>
                           <td className="px-2 py-1.5 text-slate-600">{row.retention}</td>
                           <td className="px-2 py-1.5 text-right whitespace-nowrap">
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${STATUS_BADGE[row.status]}`}>
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[15px] font-semibold ${STATUS_BADGE[row.status]}`}>
                               {row.status}
                             </span>
                           </td>
@@ -166,8 +166,8 @@ export default function SA070BackupSchedule() {
 
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <PrimaryButton>Preview schedule</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Request restore</button>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Test configuration</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Request restore</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Test configuration</button>
                 </div>
               </div>
             </Panel>
@@ -175,9 +175,9 @@ export default function SA070BackupSchedule() {
             <Panel title="Backup calendar · November 2026">
               <div className="space-y-2">
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-center text-xs">
+                  <table className="w-full border-collapse text-center text-[14px]">
                     <thead>
-                      <tr className="border-y border-slate-200 bg-slate-50/80 text-[11px] font-semibold text-slate-600">
+                      <tr className="border-y border-slate-200 bg-slate-50/80 text-[15px] font-semibold text-slate-600">
                         <th className="py-1">Mon</th>
                         <th className="py-1">Tue</th>
                         <th className="py-1">Wed</th>
@@ -196,7 +196,7 @@ export default function SA070BackupSchedule() {
                                 <button
                                   type="button"
                                   onClick={() => setSelectedDay(day)}
-                                  className={`w-full rounded py-1 text-xs font-medium transition-colors ${
+                                  className={`w-full rounded py-1 text-[14px] font-medium transition-colors ${
                                     selectedDay === day
                                       ? "bg-blue-600 font-semibold text-white"
                                       : "text-slate-700 hover:bg-slate-100"
@@ -214,12 +214,12 @@ export default function SA070BackupSchedule() {
                     </tbody>
                   </table>
                 </div>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[15px] text-slate-500">
                   {selectedDay} Nov selected · daily schedule, Asia/Kolkata
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
                   <PrimaryButton>Preview schedule</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Next scheduled jobs</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Next scheduled jobs</button>
                 </div>
               </div>
             </Panel>
@@ -228,7 +228,7 @@ export default function SA070BackupSchedule() {
           <div className="space-y-2 lg:col-span-4">
             <Panel title="Proposed restore request">
               <div className="space-y-1.5">
-                <div className="divide-y divide-slate-100 text-xs">
+                <div className="divide-y divide-slate-100 text-[14px]">
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-500">Restore point</span>
                     <span className="font-semibold text-slate-800">26 Nov · 02:00 AM</span>
@@ -256,14 +256,14 @@ export default function SA070BackupSchedule() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <PrimaryButton>Preview schedule</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Request restore</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Request restore</button>
                 </div>
               </div>
             </Panel>
 
             <Panel title="Restoration progress & approval">
               <div className="space-y-2">
-                <div className="divide-y divide-slate-100 text-[13px]">
+                <div className="divide-y divide-slate-100 text-[15px]">
                   <div className="flex items-center justify-between py-1.5">
                     <span className="text-slate-500">Current request</span>
                     <span className="font-semibold text-slate-800">Not started · awaiting approval</span>
@@ -290,7 +290,7 @@ export default function SA070BackupSchedule() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <PrimaryButton>Review approval</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Test restore</button>
+                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Test restore</button>
                 </div>
               </div>
             </Panel>

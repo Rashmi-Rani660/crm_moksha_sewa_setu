@@ -41,7 +41,7 @@ const tone = (text: string): PillTone => {
 
 const fill = (text: string, row: Row | undefined) => text.replace(/\$(\d)/g, (_, i) => row?.[Number(i)] ?? "—");
 
-const btn = "flex h-[34px] shrink-0 items-center justify-center whitespace-nowrap rounded-[8px] border-[1.5px] px-[13px] pt-px text-[13px] font-medium transition-colors";
+const btn = "flex h-[34px] shrink-0 items-center justify-center whitespace-nowrap rounded-[8px] border-[1.5px] px-[13px] pt-px text-[15px] font-medium transition-colors";
 const btnOutline = `${btn} border-[#2f4fe0] bg-white text-[#1d3fc4] hover:bg-[#f1f4ff]`;
 const btnSolid = `${btn} border-[#1d4fe0] bg-[#1d4fe0] text-white shadow-[0_3px_8px_rgba(29,79,224,0.3)] hover:bg-[#1840c0]`;
 
@@ -50,7 +50,7 @@ function Lines({ rows, row }: { rows: Pair[]; row?: Row }) {
   return (
     <ul className="flex flex-col">
       {rows.map(([k, v]) => (
-        <li key={k} className="flex min-h-[28px] items-center gap-[10px] border-b border-[#e6eaf2] py-[3px] text-[13px] font-normal text-[#1a1d36] last:border-b-0">
+        <li key={k} className="flex min-h-[28px] items-center gap-[10px] border-b border-[#e6eaf2] py-[3px] text-[15px] font-normal text-[#1a1d36] last:border-b-0">
           <span className="min-w-0 shrink-0 whitespace-nowrap">{k}</span>
           <span className="min-w-0 flex-1 py-px text-right lg:truncate" title={fill(v, row)}>{fill(v, row)}</span>
         </li>
@@ -62,10 +62,10 @@ function Lines({ rows, row }: { rows: Pair[]; row?: Row }) {
 function Bars({ bars, caption }: { bars: Bar[]; caption?: string }) {
   return (
     <div className="mt-[6px]">
-      {caption && <p className="mb-[2px] text-[11.5px] font-normal text-[#5b6a8a]">{caption}</p>}
+      {caption && <p className="mb-[2px] text-[15.5px] font-normal text-[#5b6a8a]">{caption}</p>}
       <ul className="flex flex-col gap-[5px]">
         {bars.map((b) => (
-          <li key={b.label} className="flex items-center gap-[10px] text-[13px] font-normal text-[#1a1d36]">
+          <li key={b.label} className="flex items-center gap-[10px] text-[15px] font-normal text-[#1a1d36]">
             <span className="w-[124px] shrink-0 lg:truncate">{b.label}</span>
             <span className="h-[9px] min-w-0 flex-1 overflow-hidden rounded-full bg-[#e4ebf5]" role="img" aria-label={`${b.label}: ${b.value} of ${b.max}`}>
               <span style={{ width: `${Math.min(100, (b.value / b.max) * 100)}%` }} className="block h-full rounded-full bg-[#2f7bc8]" />
@@ -85,17 +85,17 @@ function Chart({ points, note }: { points: [string, number][]; note: string }) {
       <div className="flex min-h-0 flex-1 items-end justify-around gap-[14px] border-b border-[#d6dbe6] px-[10px] pt-[6px]">
         {points.map(([label, v]) => (
           <div key={label} className="flex h-full min-w-0 max-w-[90px] flex-1 flex-col items-center justify-end">
-            <span className="mb-[3px] text-[12px] font-normal leading-none text-[#1a1d36]">{v}</span>
+            <span className="mb-[3px] text-[14px] font-normal leading-none text-[#1a1d36]">{v}</span>
             <span style={{ height: `${Math.max(8, (v / max) * 78)}%` }} className="w-full rounded-t-[4px] bg-gradient-to-b from-[#4a8fd8] to-[#2d6cb5]" />
           </div>
         ))}
       </div>
-      <div className="flex justify-around gap-[14px] px-[10px] pt-[3px] text-[12px] font-normal text-[#1a1d36]">
+      <div className="flex justify-around gap-[14px] px-[10px] pt-[3px] text-[14px] font-normal text-[#1a1d36]">
         {points.map(([label]) => (
           <span key={label} className="max-w-[90px] flex-1 text-center">{label}</span>
         ))}
       </div>
-      <p className="mt-[5px] text-[11.5px] font-normal text-[#5b6a8a]">{note}</p>
+      <p className="mt-[5px] text-[15.5px] font-normal text-[#5b6a8a]">{note}</p>
     </div>
   );
 }
@@ -139,7 +139,7 @@ function DataTable({
           >
             {r.map((c, j) => (
               <td key={j} className={`${td} !font-normal`}>
-                {j === statusCol && c !== "—" ? <Pill tone={tone(c)} className="h-[19px] text-[11.5px] !font-medium">{c}</Pill> : c}
+                {j === statusCol && c !== "—" ? <Pill tone={tone(c)} className="h-[19px] text-[15.5px] !font-medium">{c}</Pill> : c}
               </td>
             ))}
           </tr>
@@ -217,14 +217,14 @@ function FormBody({ form, notice }: { form: Form; notice: (m: string) => void })
     <div className="flex h-full flex-col gap-[10px]">
       <div className="grid gap-x-[14px] gap-y-[9px] sm:grid-cols-2">
         {form.fields.map((f, i) => (
-          <label key={f.label} className="flex min-w-0 flex-col gap-[4px] text-[13px] font-normal text-[#1a1d36]">
+          <label key={f.label} className="flex min-w-0 flex-col gap-[4px] text-[15px] font-normal text-[#1a1d36]">
             {f.label}
             {f.options ? (
               <span className="relative block">
                 <select
                   value={values[i]}
                   onChange={(e) => setValues(values.map((v, k) => (k === i ? e.target.value : v)))}
-                  className="h-[34px] w-full cursor-pointer appearance-none rounded-[8px] border border-[#cfd5e2] bg-white pl-[10px] pr-[30px] text-[13px] font-normal text-[#1a1d36] outline-none focus:border-[#5b6fe0]"
+                  className="h-[34px] w-full cursor-pointer appearance-none rounded-[8px] border border-[#cfd5e2] bg-white pl-[10px] pr-[30px] text-[15px] font-normal text-[#1a1d36] outline-none focus:border-[#5b6fe0]"
                 >
                   {Array.from(new Set([f.value, ...f.options])).map((o) => (
                     <option key={o} value={o}>{o}</option>
@@ -236,7 +236,7 @@ function FormBody({ form, notice }: { form: Form; notice: (m: string) => void })
               <input
                 value={values[i]}
                 onChange={(e) => setValues(values.map((v, k) => (k === i ? e.target.value : v)))}
-                className="h-[34px] w-full rounded-[8px] border border-[#cfd5e2] bg-white px-[10px] text-[13px] font-normal text-[#1a1d36] outline-none focus:border-[#5b6fe0]"
+                className="h-[34px] w-full rounded-[8px] border border-[#cfd5e2] bg-white px-[10px] text-[15px] font-normal text-[#1a1d36] outline-none focus:border-[#5b6fe0]"
               />
             )}
           </label>
@@ -272,10 +272,10 @@ export default function SaScreen({ id }: { id: string }) {
           <h1 className="text-[21px] font-medium leading-tight tracking-[-0.5px] text-[#0b0c36] lg:whitespace-nowrap lg:text-[24px] lg:leading-none">
             {s.title}
           </h1>
-          <p className="mt-[6px] text-[13px] font-normal leading-none text-[#1a1d36] lg:text-[14px]">Super Admin / FY 2026–27 / Ghaziabad</p>
+          <p className="mt-[6px] text-[15px] font-normal leading-none text-[#1a1d36] lg:text-[16px]">Super Admin / FY 2026–27 / Ghaziabad</p>
         </div>
         <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:flex-nowrap">
-          <span className="flex h-[30px] shrink-0 items-center rounded-[7px] border border-[#ecd48a] bg-[#fff4d1] px-[12px] pt-px text-[11.5px] font-medium tracking-[0.2px] text-[#8a5300]">DEMO DATA</span>
+          <span className="flex h-[30px] shrink-0 items-center rounded-[7px] border border-[#ecd48a] bg-[#fff4d1] px-[12px] pt-px text-[15.5px] font-medium tracking-[0.2px] text-[#8a5300]">DEMO DATA</span>
           <ScreenSwitch current={s.id} screens={sectionScreens(s.active)} />
         </div>
       </div>
@@ -311,7 +311,7 @@ export default function SaScreen({ id }: { id: string }) {
             <Chart points={s.lowerLeft.chart.points} note={s.lowerLeft.chart.note} />
           ) : (
             <>
-              {s.lowerLeft.caption && <p className="mb-[3px] text-[11.5px] font-normal text-[#5b6a8a]">{s.lowerLeft.caption}</p>}
+              {s.lowerLeft.caption && <p className="mb-[3px] text-[15.5px] font-normal text-[#5b6a8a]">{s.lowerLeft.caption}</p>}
               {s.lowerLeft.rows && <Lines rows={s.lowerLeft.rows} />}
               {s.lowerLeft.bars && <Bars bars={s.lowerLeft.bars} />}
             </>

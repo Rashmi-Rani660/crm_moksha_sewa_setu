@@ -129,7 +129,7 @@ export default function SA011ReportingHierarchy() {
                 ["Unassigned users", "02"],
                 ["Handover required", <Pill key="p" tone="amber">Pending review</Pill>],
                 ["Acting admin", "Not assigned"],
-                ["Department filter", <NativeSelect key="d" label="Department filter" value={dept} options={deptOpts} onChange={setDept} className="!h-[24px] w-[168px] [&_select]:text-[12.6px]" />],
+                ["Department filter", <NativeSelect key="d" label="Department filter" value={dept} options={deptOpts} onChange={setDept} className="!h-[24px] w-[168px] [&_select]:text-[14.6px]" />],
                 ["Open work transfer", "Review before change"],
               ]}
             />
@@ -142,7 +142,7 @@ export default function SA011ReportingHierarchy() {
 }
 
 function Node({ children, on = false, onClick }: { children: string; on?: boolean; onClick?: () => void }) {
-  const cls = `flex h-[34px] items-center rounded-[7px] border px-[14px] pt-px text-[13.6px] shadow-[0_1px_3px_rgba(20,45,90,0.06)] ${ink} ${
+  const cls = `flex h-[34px] items-center rounded-[7px] border px-[14px] pt-px text-[15.6px] shadow-[0_1px_3px_rgba(20,45,90,0.06)] ${ink} ${
     on ? "border-[#ecd29a] bg-[#fff3dc]" : "border-[#cad7ea] bg-[linear-gradient(180deg,#f4f9ff_0%,#e9f1fb_100%)]"
   }`;
   return onClick ? (

@@ -247,7 +247,7 @@ export default function SA061KnowledgeBase() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-1.5 text-center text-xs font-semibold transition-colors ${
+              className={`px-4 py-1.5 text-center text-[14px] font-semibold transition-colors ${
                 idx > 0 ? "border-l border-slate-200" : ""
               } ${
                 isActive
@@ -274,17 +274,17 @@ export default function SA061KnowledgeBase() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search records..."
-                  className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
+                  className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
                 />
                 <button
                   type="button"
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                 >
                   Filter
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                 >
                   Export
                 </button>
@@ -292,9 +292,9 @@ export default function SA061KnowledgeBase() {
 
               {/* Register Table */}
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left text-[13px]">
+                <table className="w-full border-collapse text-left text-[15px]">
                   <thead>
-                    <tr className="border-y border-slate-200 bg-slate-50/80 text-xs font-semibold text-slate-600">
+                    <tr className="border-y border-slate-200 bg-slate-50/80 text-[14px] font-semibold text-slate-600">
                       <th className="px-2 py-1.5">Document ID</th>
                       <th className="px-2 py-1.5">Title</th>
                       <th className="px-2 py-1.5">Category</th>
@@ -333,7 +333,7 @@ export default function SA061KnowledgeBase() {
                           </td>
                           <td className="py-1.5 text-right whitespace-nowrap">
                             <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[15px] font-semibold ${
                                 STATUS_BADGE_CLASS[row.status]
                               }`}
                             >
@@ -347,7 +347,7 @@ export default function SA061KnowledgeBase() {
                       <tr>
                         <td
                           colSpan={6}
-                          className="py-6 text-center text-xs text-slate-500"
+                          className="py-6 text-center text-[14px] text-slate-500"
                         >
                           No matching SOP records found.
                         </td>
@@ -362,13 +362,13 @@ export default function SA061KnowledgeBase() {
                 <PrimaryButton>Upload document</PrimaryButton>
                 <button
                   type="button"
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                 >
                   Review version
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                 >
                   Preview SOP
                 </button>
@@ -384,7 +384,7 @@ export default function SA061KnowledgeBase() {
                 {PIPELINE_STEPS.map((step, idx) => (
                   <Fragment key={step.label}>
                     <div
-                      className={`min-w-[84px] flex-1 rounded-lg border px-2.5 py-1.5 text-center text-xs font-semibold ${
+                      className={`min-w-[84px] flex-1 rounded-lg border px-2.5 py-1.5 text-center text-[14px] font-semibold ${
                         step.tone === "green"
                           ? "border-emerald-200 bg-emerald-50/80 text-slate-700"
                           : "border-blue-200 bg-blue-50/80 text-slate-700"
@@ -400,7 +400,7 @@ export default function SA061KnowledgeBase() {
               </div>
 
               {/* Summary rows */}
-              <div className="divide-y divide-slate-100 text-[13px]">
+              <div className="divide-y divide-slate-100 text-[15px]">
                 <div className="flex items-center justify-between py-1.5">
                   <span className="text-slate-600">Review due</span>
                   <span className="font-semibold text-slate-800">
@@ -420,13 +420,13 @@ export default function SA061KnowledgeBase() {
                 <PrimaryButton>Review queue</PrimaryButton>
                 <button
                   type="button"
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                 >
                   Test retrieval
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                 >
                   Rollback
                 </button>
@@ -439,7 +439,7 @@ export default function SA061KnowledgeBase() {
         <div className="space-y-2.5 lg:col-span-4">
           <Panel title={`Selected SOP · ${selectedSop.title}`}>
             <div className="space-y-3">
-              <div className="divide-y divide-slate-100 text-[13px]">
+              <div className="divide-y divide-slate-100 text-[15px]">
                 <div className="flex items-center justify-between py-2">
                   <span className="text-slate-500">Version / owner</span>
                   <span className="font-semibold text-slate-800">
@@ -448,7 +448,7 @@ export default function SA061KnowledgeBase() {
                 </div>
                 <div className="flex items-center justify-between py-2">
                   <span className="text-slate-500">AI index</span>
-                  <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+                  <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[15px] font-semibold text-emerald-700">
                     {selectedSop.aiIndexStatus}
                   </span>
                 </div>
@@ -461,7 +461,7 @@ export default function SA061KnowledgeBase() {
               </div>
 
               {/* Document preview box */}
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[13px]">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-[15px]">
                 <p className="mb-1.5 font-semibold text-slate-800">
                   Document preview · {selectedSop.id}
                 </p>
@@ -477,13 +477,13 @@ export default function SA061KnowledgeBase() {
                 <PrimaryButton>Open document</PrimaryButton>
                 <button
                   type="button"
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                 >
                   Compare versions
                 </button>
                 <button
                   type="button"
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50"
                 >
                   Upload
                 </button>
@@ -493,12 +493,12 @@ export default function SA061KnowledgeBase() {
 
           {/* Knowledge safeguards */}
           <Panel title="Knowledge safeguards">
-            <div className="divide-y divide-slate-100 text-[13px]">
+            <div className="divide-y divide-slate-100 text-[15px]">
               <div className="flex items-center justify-between py-2">
                 <span className="text-slate-600">
                   Unapproved / expired SOP
                 </span>
-                <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+                <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[15px] font-semibold text-emerald-700">
                   Excluded from AI
                 </span>
               </div>

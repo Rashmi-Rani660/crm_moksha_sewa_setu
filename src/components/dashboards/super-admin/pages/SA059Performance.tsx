@@ -106,7 +106,7 @@ export default function SA059Performance() {
                     ))}
                     {!rows.length && (
                       <tr>
-                        <td colSpan={6} className="py-5 text-center text-[12.5px] font-medium text-[#5b6280]">No records match your search.</td>
+                        <td colSpan={6} className="py-5 text-center text-[14.5px] font-medium text-[#5b6280]">No records match your search.</td>
                       </tr>
                     )}
                   </tbody>

@@ -108,7 +108,7 @@ export default function SA051AiCostUsage() {
                     ))}
                     {!filteredRows.length && (
                       <tr>
-                        <td colSpan={5} className="py-5 text-center text-[12.5px] font-medium text-[#5b6280]">No channels match your search.</td>
+                        <td colSpan={5} className="py-5 text-center text-[14.5px] font-medium text-[#5b6280]">No channels match your search.</td>
                       </tr>
                     )}
                   </tbody>
@@ -131,12 +131,12 @@ export default function SA051AiCostUsage() {
                 const height = Math.round((d.val / 400) * 64);
                 return (
                   <div key={d.day} className="flex flex-col items-center">
-                    <span className="mb-[3px] text-[11px] font-semibold text-[#1a1d36]">{d.val}</span>
+                    <span className="mb-[3px] text-[15px] font-semibold text-[#1a1d36]">{d.val}</span>
                     <div
                       style={{ height }}
                       className="w-full max-w-[82px] rounded-t-[4px] bg-[linear-gradient(180deg,#5b9ae8_0%,#1f6fd6_100%)]"
                     />
-                    <span className="mt-[4px] text-[11px] font-medium text-[#4a5070]">{d.day}</span>
+                    <span className="mt-[4px] text-[15px] font-medium text-[#4a5070]">{d.day}</span>
                   </div>
                 );
               })}

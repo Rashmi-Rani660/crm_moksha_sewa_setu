@@ -76,9 +76,9 @@ const kpiTone: Record<KpiTone, { bg: string; border: string; fg: string }> = {
 
 const ink = "text-[#1a1d36]";
 const primaryBtn =
-  "flex h-[28px] shrink-0 items-center whitespace-nowrap rounded-[6px] bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] px-[11px] pt-px text-[13.8px] font-normal text-white shadow-[0_1px_3px_rgba(9,60,221,0.3)] hover:brightness-110";
+  "flex h-[28px] shrink-0 items-center whitespace-nowrap rounded-[6px] bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] px-[11px] pt-px text-[15.8px] font-normal text-white shadow-[0_1px_3px_rgba(9,60,221,0.3)] hover:brightness-110";
 const outlineBtn =
-  "flex h-[28px] shrink-0 items-center whitespace-nowrap rounded-[6px] border border-[#a9bddf] bg-white px-[10px] pt-px text-[13.8px] font-normal text-[#1e43a8] hover:bg-[#f1f5fd]";
+  "flex h-[28px] shrink-0 items-center whitespace-nowrap rounded-[6px] border border-[#a9bddf] bg-white px-[10px] pt-px text-[15.8px] font-normal text-[#1e43a8] hover:bg-[#f1f5fd]";
 
 /** Pill colour by word: green done states, blue people / transfers, amber the rest. */
 function pillClass(text: string) {
@@ -93,7 +93,7 @@ function pillClass(text: string) {
 }
 
 const Pill = ({ children }: { children: string }) => (
-  <span className={`inline-flex h-[19px] items-center whitespace-nowrap rounded-full px-[9px] pt-px text-[12.6px] font-normal leading-none ${pillClass(children)}`}>
+  <span className={`inline-flex h-[19px] items-center whitespace-nowrap rounded-full px-[9px] pt-px text-[14.6px] font-normal leading-none ${pillClass(children)}`}>
     {children}
   </span>
 );
@@ -185,7 +185,7 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
               <h1 className={`text-[19px] font-medium leading-tight tracking-[-0.2px] lg:whitespace-nowrap lg:text-[21.5px] ${ink}`}>
                 {spec.title}
               </h1>
-              <p className={`mt-[2px] text-[13.8px] ${ink}`}>Super Admin / FY 2026–27 / Ghaziabad</p>
+              <p className={`mt-[2px] text-[15.8px] ${ink}`}>Super Admin / FY 2026–27 / Ghaziabad</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:mt-[4px] lg:flex-nowrap">
@@ -203,8 +203,8 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
                 <Icon strokeWidth={2} style={{ color: t.fg }} className="h-[30px] w-[30px] shrink-0" aria-hidden />
                 <div className="min-w-0">
                   <p className={`whitespace-nowrap text-[24px] font-medium leading-none tracking-[-0.3px] ${ink}`}>{k.value}</p>
-                  <p className={`mt-[3px] truncate text-[14px] leading-[16px] ${ink}`}>{k.label}</p>
-                  <p className="truncate text-[12.2px] leading-[14px] text-[#4a5468]">Demo snapshot</p>
+                  <p className={`mt-[3px] truncate text-[16px] leading-[16px] ${ink}`}>{k.label}</p>
+                  <p className="truncate text-[14.2px] leading-[14px] text-[#4a5468]">Demo snapshot</p>
                 </div>
               </div>
             );
@@ -245,7 +245,7 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search records..."
                   aria-label={`Search ${register.title}`}
-                  className={`h-full min-w-0 flex-1 bg-transparent pt-px text-[14px] outline-none placeholder:text-[#6b7488] ${ink}`}
+                  className={`h-full min-w-0 flex-1 bg-transparent pt-px text-[16px] outline-none placeholder:text-[#6b7488] ${ink}`}
                 />
               </label>
               <button type="button" onClick={() => act("Filter")} className={`${outlineBtn} !h-[31px]`}>Filter</button>
@@ -262,7 +262,7 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
                 <thead>
                   <tr className="h-[29px] bg-[#e2e9f4]">
                     {register.columns.map((c) => (
-                      <th key={c.label} scope="col" className={`whitespace-nowrap px-[7px] pt-px text-[13.8px] font-medium ${ink} ${c.align === "right" ? "text-right" : "text-left"}`}>
+                      <th key={c.label} scope="col" className={`whitespace-nowrap px-[7px] pt-px text-[15.8px] font-medium ${ink} ${c.align === "right" ? "text-right" : "text-left"}`}>
                         {c.label}
                       </th>
                     ))}
@@ -283,7 +283,7 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
                   ))}
                   {rows.length === 0 && (
                     <tr className="h-[36px] border-b border-[#dce4ee]">
-                      <td colSpan={register.columns.length} className="px-[7px] text-[13.3px] text-[#4a5468]">No records match “{q}”.</td>
+                      <td colSpan={register.columns.length} className="px-[7px] text-[15.3px] text-[#4a5468]">No records match “{q}”.</td>
                     </tr>
                   )}
                 </tbody>
@@ -313,12 +313,12 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
                   {lower.steps.map((step, idx) => (
                     <div key={step} className="contents">
                       {idx > 0 && (
-                        <span aria-hidden className="w-[18px] shrink-0 text-center text-[13px] text-[#2b3a67]">
+                        <span aria-hidden className="w-[18px] shrink-0 text-center text-[15px] text-[#2b3a67]">
                           →
                         </span>
                       )}
                       <div
-                        className={`flex h-[42px] min-w-0 flex-1 items-center justify-center rounded-[6px] border px-[6px] text-center text-[13.8px] font-medium ${ink} ${
+                        className={`flex h-[42px] min-w-0 flex-1 items-center justify-center rounded-[6px] border px-[6px] text-center text-[15.8px] font-medium ${ink} ${
                           idx % 2 === 0
                             ? "border-[#c9d8ee] bg-[linear-gradient(180deg,#f4f9ff_0%,#e6f0fc_100%)]"
                             : "border-[#cfe4d6] bg-[linear-gradient(180deg,#f7fdf8_0%,#eaf6ee_100%)]"
@@ -340,7 +340,7 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
             {lower.kind === "list" && (
               <>
                 <KVList rows={lower.rows} />
-                {lower.note && <p className="mt-[3px] text-[13.4px] leading-[18px] text-[#253f93]">{lower.note}</p>}
+                {lower.note && <p className="mt-[3px] text-[15.4px] leading-[18px] text-[#253f93]">{lower.note}</p>}
                 <Actions items={lower.actions} onAct={act} primary={false} />
               </>
             )}
@@ -364,10 +364,10 @@ export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
               <>
                 <div className="flex items-center pt-[4px]">
                   <div className={`flex h-[46px] min-w-0 flex-1 items-center justify-center rounded-[6px] border border-[#c9d8ee] bg-[linear-gradient(180deg,#f4f9ff_0%,#e6f0fc_100%)] px-[8px] text-center text-[14.2px] ${ink}`}>{lower.from}</div>
-                  <span aria-hidden className={`w-[13px] shrink-0 text-center text-[13px] ${ink}`}>→</span>
+                  <span aria-hidden className={`w-[13px] shrink-0 text-center text-[15px] ${ink}`}>→</span>
                   <div className={`flex h-[46px] min-w-0 flex-1 items-center justify-center rounded-[6px] border border-[#cfe4d6] bg-[linear-gradient(180deg,#f7fdf8_0%,#eaf6ee_100%)] px-[8px] text-center text-[14.2px] ${ink}`}>{lower.to}</div>
                 </div>
-                <div className="mt-[6px] grid grid-cols-2 gap-[10px] rounded-[6px] border border-dashed border-[#e2c071] bg-[#fff9ed] px-[6px] py-[5px] text-[13px] leading-[18px]">
+                <div className="mt-[6px] grid grid-cols-2 gap-[10px] rounded-[6px] border border-dashed border-[#e2c071] bg-[#fff9ed] px-[6px] py-[5px] text-[15px] leading-[18px]">
                   {[lower.yes, lower.no].map(([head, line]) => (
                     <div key={head}>
                       <p className="text-[#8a5b00]">{head}</p>

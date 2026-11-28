@@ -7,8 +7,8 @@ import { siteConfig } from "@/lib/config/site";
 export default function EncodencyBadge({
   className = "",
   nameClassName = "",
-  legalClassName = "text-[6px]",
-  sloganClassName = "text-[5px]",
+  legalClassName = "text-[10px]",
+  sloganClassName = "text-[9px]",
 }: {
   className?: string;
   nameClassName?: string;

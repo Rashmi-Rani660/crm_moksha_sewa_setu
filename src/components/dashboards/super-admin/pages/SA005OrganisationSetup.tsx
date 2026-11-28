@@ -124,12 +124,12 @@ export default function SA005OrganisationSetup() {
             <div className="flex flex-col gap-[4px]">
               {info.map(([k, v]) =>
                 editing && !v.includes("Verification") && !v.includes("Verify") ? (
-                  <div key={k} className="flex items-center justify-between gap-[8px] border-b border-[#eef0f5] pb-[4px] text-[12.6px]">
+                  <div key={k} className="flex items-center justify-between gap-[8px] border-b border-[#eef0f5] pb-[4px] text-[14.6px]">
                     <span className="font-medium text-[#1a1d36]">{k}</span>
                     <input
                       defaultValue={v}
                       aria-label={k}
-                      className="h-[22px] w-[190px] rounded border border-[#cfd5e2] px-[6px] text-right text-[12.5px] font-medium outline-none focus:border-[#5b6fe0]"
+                      className="h-[22px] w-[190px] rounded border border-[#cfd5e2] px-[6px] text-right text-[14.5px] font-medium outline-none focus:border-[#5b6fe0]"
                     />
                   </div>
                 ) : (
@@ -155,17 +155,17 @@ export default function SA005OrganisationSetup() {
             <div className="rounded-[10px] border border-[#dce6f7] bg-[#f4f8ff] px-[14px] py-[10px] text-center">
               {structure.map((s, i) => (
                 <div key={s} className="flex flex-col items-center">
-                  {i > 0 && <span className="text-[12px] leading-none text-[#1d4fe0]">↓</span>}
-                  <span className="text-[12.8px] font-semibold leading-[1.35] text-[#0b0c36]">{s}</span>
+                  {i > 0 && <span className="text-[14px] leading-none text-[#1d4fe0]">↓</span>}
+                  <span className="text-[14.8px] font-semibold leading-[1.35] text-[#0b0c36]">{s}</span>
                 </div>
               ))}
             </div>
-            <p className="mt-[10px] text-[12px] font-medium leading-snug text-[#3b4256]">
+            <p className="mt-[10px] text-[14px] font-medium leading-snug text-[#3b4256]">
               Departments and reporting assignments mapped separately from HRMS.
             </p>
             <div className="mt-[8px] flex flex-wrap gap-[6px]">
               {deptPills.map((d) => (
-                <Pill key={d} tone="gray" className="h-[22px] px-[10px] text-[11.5px]">
+                <Pill key={d} tone="gray" className="h-[22px] px-[10px] text-[15.5px]">
                   {d}
                 </Pill>
               ))}
@@ -202,9 +202,9 @@ export default function SA005OrganisationSetup() {
           <Panel title="Service coverage" bodyClassName="flex flex-col pt-[4px]">
             <div className="flex flex-col gap-[5px]">
               {coverage.map((c) => (
-                <div key={c.city} className="flex items-center justify-between gap-[8px] border-b border-[#eef0f5] pb-[5px] text-[13px] last:border-b-0 last:pb-0">
+                <div key={c.city} className="flex items-center justify-between gap-[8px] border-b border-[#eef0f5] pb-[5px] text-[15px] last:border-b-0 last:pb-0">
                   <span className="font-medium text-[#1a1d36]">{c.city}</span>
-                  <Pill tone={c.tone} className="h-[19px] text-[11px]">
+                  <Pill tone={c.tone} className="h-[19px] text-[15px]">
                     {c.status}
                   </Pill>
                 </div>

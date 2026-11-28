@@ -158,7 +158,7 @@ export default function SA052CommunicationTemplates() {
                     ))}
                     {!rows.length && (
                       <tr>
-                        <td colSpan={6} className="py-5 text-center text-[12.5px] font-medium text-[#5b6280]">No templates match your search.</td>
+                        <td colSpan={6} className="py-5 text-center text-[14.5px] font-medium text-[#5b6280]">No templates match your search.</td>
                       </tr>
                     )}
                   </tbody>
@@ -189,7 +189,7 @@ export default function SA052CommunicationTemplates() {
         <div className="flex min-h-0 flex-col gap-[10px]">
           <Panel title={`Selected template · ${selected.id}`} className="lg:flex-[1.55]" bodyClassName="flex flex-col gap-[10px] pt-[6px]">
             <div className="flex flex-col gap-[10px]">
-              <div className="rounded-[8px] border border-[#dce4f2] bg-[#f4f7fd] px-[11px] py-[10px] text-[12.5px] leading-[1.45] text-[#1a1d36]">
+              <div className="rounded-[8px] border border-[#dce4f2] bg-[#f4f7fd] px-[11px] py-[10px] text-[14.5px] leading-[1.45] text-[#1a1d36]">
                 {selected.body}
               </div>
               <Sa51KvList

@@ -109,7 +109,7 @@ export default function SA018CreateTask() {
               <Btn onClick={() => notice.show(`Draft saved: "${f.title}" (demo).`)}>Save draft</Btn>
               <Btn href={saRoutes.tasks}>Cancel</Btn>
             </Buttons>
-            <div className={`mt-[6px] flex items-center justify-between border-b border-[#e1e7f0] pb-[3px] text-[13.3px] ${ink}`}>
+            <div className={`mt-[6px] flex items-center justify-between border-b border-[#e1e7f0] pb-[3px] text-[15.3px] ${ink}`}>
               <span>Attachments</span>
               <span className="truncate pl-[10px]">{files.length ? files.join(", ") : "No files selected"}</span>
             </div>

@@ -189,9 +189,9 @@ export default function AdminDashboard() {
             <div key={s.label}>
               {i > 0 && <At x={200} y={cy - 14.5} w={160} h={1} className="bg-[#e8ebf1]" />}
               <At x={179} y={cy - 7}><Dot color={s.color} size={14} /></At>
-              <At x={206} y={cy - 7} className={`${cell} text-[13px] font-semibold`}>{s.label}</At>
-              <At x={268} y={cy - 7} w={44} className={`${cell} text-right text-[14px] font-bold`}>{s.value}</At>
-              <At x={314} y={cy - 7} w={45} className={`${cell} text-right text-[14px] font-semibold`}>{s.pct}</At>
+              <At x={206} y={cy - 7} className={`${cell} text-[15px] font-semibold`}>{s.label}</At>
+              <At x={268} y={cy - 7} w={44} className={`${cell} text-right text-[16px] font-bold`}>{s.value}</At>
+              <At x={314} y={cy - 7} w={45} className={`${cell} text-right text-[16px] font-semibold`}>{s.pct}</At>
             </div>
           );
         })}
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
           return (
             <div key={t.label}>
               <At x={17} y={y}><Ico icon={t.icon} color={t.color} size={26} stroke={1.9} /></At>
-              <At x={61} y={y + 3} className={`${cell} text-[12.6px] font-semibold`}>{t.label}</At>
+              <At x={61} y={y + 3} className={`${cell} text-[14.6px] font-semibold`}>{t.label}</At>
               <At x={232} y={y + 3} w={53} className={`${cell} text-right text-[14.5px] font-bold`}>{t.value}%</At>
               <At x={61} y={y + 21}><Bar value={t.value} w={171} h={6} color="#1d8f1d" track="#d8dee8" /></At>
             </div>
@@ -217,15 +217,15 @@ export default function AdminDashboard() {
       <Card at={[937, 234, 322, 196]} label="Service Type Overview">
         <CardTitle x={18} y={9} size={18}>Service Type Overview</CardTitle>
         <At x={16} y={31} w={294} h={20} className="rounded-[5px] bg-[#e9edf4]" />
-        <At x={21} y={36} className={`${cell} text-[12.8px] font-bold`}>Service Type</At>
-        <At x={155} y={36} w={70} className={`${cell} text-center text-[12.8px] font-bold`}>Requests</At>
-        <At x={240} y={36} w={70} className={`${cell} text-center text-[12.8px] font-bold`}>Completed</At>
+        <At x={21} y={36} className={`${cell} text-[14.8px] font-bold`}>Service Type</At>
+        <At x={155} y={36} w={70} className={`${cell} text-center text-[14.8px] font-bold`}>Requests</At>
+        <At x={240} y={36} w={70} className={`${cell} text-center text-[14.8px] font-bold`}>Completed</At>
         {serviceTypes.map((r, i) => {
           const cy = 62 + i * 22.4;
           return (
             <div key={r.label}>
               <At x={21} y={cy - 9}><Ico icon={r.icon} color={r.color} size={18} stroke={2} /></At>
-              <At x={57} y={cy - 6} className={`${cell} text-[11px] font-semibold`}>{r.label}</At>
+              <At x={57} y={cy - 6} className={`${cell} text-[15px] font-semibold`}>{r.label}</At>
               <At x={155} y={cy - 7} w={70} className={`${cell} text-center text-[14.5px] font-bold`}>{r.requests}</At>
               <At x={240} y={cy - 7} w={70} className={`${cell} text-center text-[14.5px] font-semibold`}>{r.completed}</At>
               <At x={52} y={cy + 11} w={252} h={1} className="bg-[#edf0f5]" />
@@ -247,8 +247,8 @@ export default function AdminDashboard() {
           return (
             <div key={r.label}>
               <At x={21} y={cy - 12}>{r.icon === MapPin ? <Ico icon={MapPin} color={r.color} size={23} stroke={2} /> : <Ico icon={r.icon} color={r.color} size={24} stroke={1.9} />}</At>
-              <At x={67} y={cy - 7} className={`${cell} text-[13px] font-semibold`}>{r.label}</At>
-              <At x={150} y={cy - 7} w={146} className={`${cell} text-right ${i === 4 ? "text-[13.5px] font-semibold" : "text-[15px] font-bold"}`}>{r.value}</At>
+              <At x={67} y={cy - 7} className={`${cell} text-[15px] font-semibold`}>{r.label}</At>
+              <At x={150} y={cy - 7} w={146} className={`${cell} text-right ${i === 4 ? "text-[15.5px] font-semibold" : "text-[15px] font-bold"}`}>{r.value}</At>
               {i < 4 && <At x={64} y={cy + 15} w={233} h={1} className="bg-[#edf0f5]" />}
             </div>
           );
@@ -260,17 +260,17 @@ export default function AdminDashboard() {
         <CardTitle x={14} y={9} size={18}>My Team (48)</CardTitle>
         <ViewAll right={13} y={9} size={13.5} to="Team Management" />
         <At x={12} y={31} w={406} h={19} className="rounded-[4px] bg-[#e7ebf3]" />
-        <At x={26} y={35} className={`${cell} text-[13px] font-bold`}>Department</At>
+        <At x={26} y={35} className={`${cell} text-[15px] font-bold`}>Department</At>
         {["Team", "Active", "On Duty"].map((h, i) => (
-          <At key={h} x={[203, 275, 346][i]} y={35} w={60} className={`${cell} text-center text-[13px] font-bold`}>{h}</At>
+          <At key={h} x={[203, 275, 346][i]} y={35} w={60} className={`${cell} text-center text-[15px] font-bold`}>{h}</At>
         ))}
         {team.map((r, i) => {
           const cy = 64 + i * 21.8;
           return (
             <div key={r[0]}>
-              <At x={26} y={cy - 6} className={`${cell} text-[13px] font-semibold`}>{r[0]}</At>
+              <At x={26} y={cy - 6} className={`${cell} text-[15px] font-semibold`}>{r[0]}</At>
               {r.slice(1).map((v, j) => (
-                <At key={j} x={[203, 275, 346][j]} y={cy - 6} w={60} className={`${cell} text-center text-[13.5px] font-semibold`}>{v}</At>
+                <At key={j} x={[203, 275, 346][j]} y={cy - 6} w={60} className={`${cell} text-center text-[15.5px] font-semibold`}>{v}</At>
               ))}
               {i < 4 && <At x={14} y={cy + 10} w={402} h={1} className="bg-[#edf0f5]" />}
             </div>
@@ -287,7 +287,7 @@ export default function AdminDashboard() {
           return (
             <div key={a.text}>
               <At x={29} y={cy - 10}><Ico icon={a.icon} color={a.color} size={20} stroke={1.9} /></At>
-              <At x={70} y={cy - 6} className={`${cell} text-[13.5px] font-semibold`}>{a.text}</At>
+              <At x={70} y={cy - 6} className={`${cell} text-[15.5px] font-semibold`}>{a.text}</At>
               <At x={315} y={cy - 9.5}><Pill tone={a.tone} w={102} h={19} size={13}>{a.tag}</Pill></At>
               {i < 4 && <At x={20} y={cy + 12.5} w={398} h={1} className="bg-[#edf0f5]" />}
             </div>
@@ -305,9 +305,9 @@ export default function AdminDashboard() {
           return (
             <div key={time}>
               <At x={25} y={cy - 5.5} w={11} h={11} className="rounded-full border-[1.8px] border-[#3d74e0] bg-white" />
-              <At x={50} y={cy - 6} className={`${cell} text-[13.5px] font-semibold`}>{time}</At>
+              <At x={50} y={cy - 6} className={`${cell} text-[15.5px] font-semibold`}>{time}</At>
               <At x={117} y={cy - 9} w={1} h={17} className="bg-[#c9cfdb]" />
-              <At x={131} y={cy - 6} className={`${cell} text-[13.5px] font-semibold`}>{text}</At>
+              <At x={131} y={cy - 6} className={`${cell} text-[15.5px] font-semibold`}>{text}</At>
               {i < 4 && <At x={45} y={cy + 13} w={386} h={1} className="bg-[#edf0f5]" />}
             </div>
           );
@@ -325,7 +325,7 @@ export default function AdminDashboard() {
               <At x={19} y={cy - 12} w={26} h={26} className="flex items-center justify-center rounded-full" style={{ background: a.outline ? "transparent" : a.bg }}>
                 <Ico icon={a.icon} color={a.outline ? a.bg : "#fff"} size={a.outline ? 24 : 16} stroke={a.outline ? 1.9 : 2.6} />
               </At>
-              <At x={64} y={cy - 6} className={`${cell} text-[13.4px] font-semibold`}>{a.text}</At>
+              <At x={64} y={cy - 6} className={`${cell} text-[15.4px] font-semibold`}>{a.text}</At>
               <At x={360} y={cy - 6} w={81} className={`${cell} text-right text-[14.8px] font-semibold`}>{a.time}</At>
               {i < 4 && <At x={14} y={cy + 14} w={428} h={1} className="bg-[#edf0f5]" />}
             </div>
@@ -344,7 +344,7 @@ export default function AdminDashboard() {
             className="h-[67px] rounded-[10px] border border-[#e1e5ee] bg-white shadow-[0_2px_6px_rgba(30,50,110,0.08)]"
           >
             <span className="absolute left-1/2 top-[9px] -translate-x-1/2"><Ico icon={a.icon} color={a.color} size={26} stroke={1.9} /></span>
-            <span className="absolute inset-x-0 top-[43px] whitespace-nowrap text-center text-[13.2px] font-semibold leading-none tracking-[-0.3px]">{a.label}</span>
+            <span className="absolute inset-x-0 top-[43px] whitespace-nowrap text-center text-[15.2px] font-semibold leading-none tracking-[-0.3px]">{a.label}</span>
           </TileLink>
         ))}
       </Card>
@@ -360,9 +360,9 @@ export default function AdminDashboard() {
             <span className="absolute left-1/2 top-[13px] -translate-x-1/2">
               <Ico icon={t.icon} color={t.color} size={30} stroke={2} />
             </span>
-            <p className="absolute inset-x-0 top-[52px] whitespace-nowrap text-center text-[13.5px] font-bold leading-none tracking-[-0.3px]">{t.name}</p>
-            <p className="absolute inset-x-0 top-[74px] whitespace-nowrap text-center text-[12.6px] font-semibold leading-none tracking-[-0.3px]">Target: {t.target}</p>
-            <p className="absolute inset-x-0 top-[96px] whitespace-nowrap text-center text-[12.4px] font-semibold leading-none tracking-[-0.3px]">
+            <p className="absolute inset-x-0 top-[52px] whitespace-nowrap text-center text-[15.5px] font-bold leading-none tracking-[-0.3px]">{t.name}</p>
+            <p className="absolute inset-x-0 top-[74px] whitespace-nowrap text-center text-[14.6px] font-semibold leading-none tracking-[-0.3px]">Target: {t.target}</p>
+            <p className="absolute inset-x-0 top-[96px] whitespace-nowrap text-center text-[14.4px] font-semibold leading-none tracking-[-0.3px]">
               Achieved: <span className="text-[#137a1a]">{t.achieved}</span>
             </p>
             <span className="absolute left-[10px] right-[10px] top-[118px]"><Bar value={t.value} w={i === 2 ? 126 : 121} h={11} color="#1d8f1d" track="#d8dee8" /></span>

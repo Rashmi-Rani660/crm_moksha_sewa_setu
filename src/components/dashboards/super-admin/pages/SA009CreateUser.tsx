@@ -162,7 +162,7 @@ export default function SA009CreateUser() {
                   <ReadOnly value={submitted ? "Submitted" : "Pending approval"} />
                 </Field>
               </div>
-              <p className="mt-auto pt-[4px] text-[11.5px] font-medium text-[#3b4256]">
+              <p className="mt-auto pt-[4px] text-[15.5px] font-medium text-[#3b4256]">
                 Elevated access requires independent approval and passkey.
               </p>
             </Panel>
@@ -173,15 +173,15 @@ export default function SA009CreateUser() {
                   <KV
                     key={r.label}
                     k={r.label}
-                    v={r.pill ? <Pill tone="green" className="h-[18px] text-[10.5px]">{r.value}</Pill> : r.value}
+                    v={r.pill ? <Pill tone="green" className="h-[18px] text-[14.5px]">{r.value}</Pill> : r.value}
                     className="py-[4px]"
                   />
                 ))}
               </div>
-              <p className="mt-[6px] text-[11px] font-medium text-[#3b4256]">
+              <p className="mt-[6px] text-[15px] font-medium text-[#3b4256]">
                 Password reset on compromise; no arbitrary periodic expiry.
               </p>
-              <div className="mt-auto rounded-[8px] border border-[#dce6f7] bg-[#f4f8ff] px-[10px] py-[6px] text-[11.5px] font-semibold text-[#0b0c36]">
+              <div className="mt-auto rounded-[8px] border border-[#dce6f7] bg-[#f4f8ff] px-[10px] py-[6px] text-[15.5px] font-semibold text-[#0b0c36]">
                 MFA enforced - independent elevation approval
               </div>
             </Panel>
@@ -200,7 +200,7 @@ export default function SA009CreateUser() {
                 <TableWrap>
                   <Thead>
                     {["Module", "View", "Create", "Edit", "Approve"].map((h) => (
-<th key={h} className={`${th} px-[6px] py-[5px] text-[12px]`}>{h}</th>
+<th key={h} className={`${th} px-[6px] py-[5px] text-[14px]`}>{h}</th>
                     ))}
                   </Thead>
                   <tbody>
@@ -250,7 +250,7 @@ export default function SA009CreateUser() {
                   </PrimaryButton>
                   <div className="ml-auto flex items-center gap-[5px]">
                     {pipeline.map((p) => (
-                      <Pill key={p} tone="gray" className="h-[20px] px-[8px] text-[11px]">
+                      <Pill key={p} tone="gray" className="h-[20px] px-[8px] text-[15px]">
                         {p}
                       </Pill>
                     ))}
@@ -278,7 +278,7 @@ export default function SA009CreateUser() {
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="min-w-0">
-      <p className="mb-[2px] text-[11.5px] font-medium text-[#3b4256]">{label}</p>
+      <p className="mb-[2px] text-[15.5px] font-medium text-[#3b4256]">{label}</p>
       {children}
     </div>
   );
@@ -290,7 +290,7 @@ function ReadOnly({ value }: { value: string }) {
       readOnly
       value={value}
       aria-label={value}
-      className="h-[30px] w-full rounded-[7px] border border-[#d6dbe6] bg-[#f8fafc] px-[9px] text-[12.5px] font-medium text-[#0b0c36] outline-none"
+      className="h-[30px] w-full rounded-[7px] border border-[#d6dbe6] bg-[#f8fafc] px-[9px] text-[14.5px] font-medium text-[#0b0c36] outline-none"
     />
   );
 }

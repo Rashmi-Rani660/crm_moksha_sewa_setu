@@ -183,7 +183,7 @@ export default function SA007Departments() {
                 <TableWrap>
                   <Thead>
                     {["CRM ID", "HRMS ID", "Department", "Admin", "Accounts", "Tasks", "Mode"].map((h) => (
-<th key={h} className={`${th} px-[6px] py-[6px] text-[12.5px]`}>{h}</th>
+<th key={h} className={`${th} px-[6px] py-[6px] text-[14.5px]`}>{h}</th>
                     ))}
                   </Thead>
                   <tbody>
@@ -205,7 +205,7 @@ export default function SA007Departments() {
                         <td className={`${td} px-[6px] py-[6px] font-semibold`}>{d.accounts}</td>
                         <td className={`${td} px-[6px] py-[6px] font-semibold`}>{d.tasks}</td>
                         <td className={`${td} px-[6px] py-[6px]`}>
-                          <StatusPill className="h-[19px] min-w-[54px] text-[11px]">{d.mode}</StatusPill>
+                          <StatusPill className="h-[19px] min-w-[54px] text-[15px]">{d.mode}</StatusPill>
                         </td>
                       </tr>
                     ))}
@@ -219,7 +219,7 @@ export default function SA007Departments() {
                     Review access
                   </PrimaryButton>
                 </div>
-                <p className="mt-auto hidden pt-[6px] text-[11.5px] font-medium text-[#5b6280] lg:block">
+                <p className="mt-auto hidden pt-[6px] text-[15.5px] font-medium text-[#5b6280] lg:block">
                   Departments come from HRMS; CRM access is mapped separately. Never delete linked departments — archive after handover.
                 </p>
               </Panel>
@@ -238,14 +238,14 @@ export default function SA007Departments() {
                   ))}
                 </div>
                 <div className="mt-[6px]">
-                  <div className="flex items-center justify-between text-[11.5px] font-semibold">
+                  <div className="flex items-center justify-between text-[15.5px] font-semibold">
                     <span>SLA compliance</span>
                     <b>96%</b>
                   </div>
                   <Bar pct={96} color="#1f9a2b" />
                 </div>
                 <div className="mt-[6px]">
-                  <div className="flex items-center justify-between text-[11.5px] font-semibold">
+                  <div className="flex items-center justify-between text-[15.5px] font-semibold">
                     <span>Training status</span>
                     <b>92%</b>
                   </div>

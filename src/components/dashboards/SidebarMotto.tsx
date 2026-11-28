@@ -14,10 +14,10 @@ export default function SidebarMotto({ className = "" }: { className?: string })
         width={660}
         height={422}
         sizes="222px"
-        className="absolute left-1/2 top-[8px] h-[118px] w-[84%] -translate-x-1/2 object-cover [mask-image:radial-gradient(ellipse_62%_58%_at_50%_50%,#000_55%,transparent_100%)]"
+        className="absolute left-1/2 top-[28px] h-[92px] w-[68%] -translate-x-1/2 object-cover [mask-image:radial-gradient(ellipse_62%_58%_at_50%_50%,#000_55%,transparent_100%)]"
       />
 
-      <p className="absolute inset-x-0 top-[132px] text-center text-[15.5px] font-medium leading-[19px] tracking-[0.1px] text-white">
+      <p className="absolute inset-x-0 top-[128px] text-center text-[11.5px] font-medium leading-[16px] tracking-[0.1px] text-white">
         Serving Humanity
         <br />
         Preserving Nature
