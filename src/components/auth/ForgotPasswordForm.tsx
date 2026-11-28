@@ -193,7 +193,7 @@ export default function ForgotPasswordForm() {
         <form
           onSubmit={handleSendOtp}
           noValidate
-          className="mx-auto flex w-full max-w-[460px] flex-1 flex-col px-6 pb-4 pt-9 sm:px-0 lg:max-w-none lg:pl-[46px] lg:pr-[40px] lg:pt-[51px]"
+          className="mx-auto flex w-full max-w-[460px] flex-1 flex-col px-6 pb-4 pt-9 sm:px-0 lg:max-w-none lg:pl-[68px] lg:pr-[64px] lg:pt-[51px]"
         >
           {/* Title */}
           <div className="text-center lg:pt-[3px]">

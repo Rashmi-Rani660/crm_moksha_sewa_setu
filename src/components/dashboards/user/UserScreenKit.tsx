@@ -12,23 +12,23 @@ const SB = 210; // user sidebar width (shells.tsx)
 export const userInk = "text-[#1a1d36]";
 
 export const userPrimaryBtn =
-  "inline-flex h-[28px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] px-[11px] pt-px text-[13.8px] font-normal text-white shadow-[0_1px_3px_rgba(9,60,221,0.3)] hover:brightness-110 disabled:cursor-not-allowed disabled:bg-[linear-gradient(90deg,#95b6f2_0%,#95b6f2_100%)] disabled:shadow-none disabled:hover:brightness-100";
+  "inline-flex h-[30px] shrink-0 items-center justify-center whitespace-nowrap rounded-[8px] bg-[linear-gradient(90deg,#086eed_0%,#093cdd_100%)] px-[12px] pt-px text-[14.5px] font-semibold text-white shadow-[0_1px_3px_rgba(9,60,221,0.3)] hover:brightness-110 disabled:cursor-not-allowed disabled:bg-[linear-gradient(90deg,#95b6f2_0%,#95b6f2_100%)] disabled:shadow-none disabled:hover:brightness-100";
 
 export const userOutlineBtn =
-  "inline-flex h-[28px] shrink-0 items-center justify-center whitespace-nowrap rounded-[6px] border border-[#a9bddf] bg-white px-[10px] pt-px text-[13.8px] font-normal text-[#1e43a8] hover:bg-[#f1f5fd]";
+  "inline-flex h-[30px] shrink-0 items-center justify-center whitespace-nowrap rounded-[8px] border border-[#a9bddf] bg-white px-[12px] pt-px text-[14.5px] font-semibold text-[#1e43a8] hover:bg-[#f1f5fd]";
 
 export const userInputCls =
-  "h-[31px] w-full rounded-[6px] border border-[#c9d2e0] bg-white px-[10px] text-[14px] text-[#1a1d36] outline-none placeholder:text-[#6b7488] focus:border-[#5b7fe0]";
+  "h-[34px] w-full rounded-[7px] border border-[#c9d2e0] bg-white px-[10px] text-[15px] font-medium text-[#1a1d36] outline-none placeholder:text-[#6b7488] focus:border-[#5b7fe0]";
 
 export const userTextareaCls =
-  "w-full rounded-[6px] border border-[#c9d2e0] bg-white p-[9px] text-[14px] text-[#1a1d36] outline-none placeholder:text-[#6b7488] focus:border-[#5b7fe0]";
+  "w-full rounded-[7px] border border-[#c9d2e0] bg-white p-[9px] text-[15px] font-medium text-[#1a1d36] outline-none placeholder:text-[#6b7488] focus:border-[#5b7fe0]";
 
 export function UserFrame({ active, children }: { active?: string; children: ReactNode }) {
   return (
     <DashboardCanvas role="user" active={active}>
       <Box at={[SB, 60, 1600 - SB, 841]} as="div" fit="fluid" className="flex flex-col lg:px-[18px] lg:pt-[8px]">
         <div className="flex min-h-0 flex-1 flex-col gap-3 lg:gap-0">{children}</div>
-        <footer className="mt-4 flex flex-col items-center gap-2 border-t border-[#e3e7ef] pt-3 text-[13px] font-semibold text-[#1d1f33] sm:flex-row sm:justify-between lg:mt-0 lg:h-[40px] lg:gap-0 lg:pt-0 lg:text-[14px]">
+        <footer className="mt-4 flex flex-col items-center gap-2 border-t border-[#e3e7ef] pt-3 text-[15px] font-semibold text-[#1d1f33] sm:flex-row sm:justify-between lg:mt-0 lg:h-[40px] lg:gap-0 lg:pt-0 lg:text-[16px]">
           <p className="whitespace-nowrap">
             © {siteConfig.copyrightYear} {siteConfig.trust}
             <span className="mx-[12px] inline-block h-[16px] w-[1.5px] translate-y-[3px] bg-[#3a3d55]" />
@@ -47,15 +47,15 @@ export function UserFrame({ active, children }: { active?: string; children: Rea
 export function UserHeader({ code, title }: { code: UserScreenCode; title: string }) {
   const router = useRouter();
   return (
-    <div className="flex flex-col gap-3 lg:h-[48px] lg:flex-row lg:items-start lg:gap-[12px]">
+    <div className="flex flex-col gap-3 lg:h-[50px] lg:flex-row lg:items-start lg:gap-[14px]">
       <div className="min-w-0">
-        <h1 className={`text-[19px] font-medium leading-tight tracking-[-0.2px] lg:whitespace-nowrap lg:text-[21.5px] ${userInk}`}>
+        <h1 className="text-[21px] font-medium leading-tight tracking-[-0.5px] text-[#0b0c36] lg:whitespace-nowrap lg:text-[24px] lg:leading-none">
           {title}
         </h1>
-        <p className={`mt-[2px] text-[13.8px] ${userInk}`}>User 07 / FY 2026–27 / Ghaziabad • My authorised work</p>
+        <p className="mt-[5px] text-[15px] font-normal leading-none text-[#141a4a] lg:text-[16px]">User 07 / FY 2026–27 / Ghaziabad • My authorised work</p>
       </div>
       <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:mt-[4px] lg:flex-nowrap">
-        <label className="relative block h-[30px] w-full sm:w-[328px]">
+        <label className="relative block h-[32px] w-full sm:w-[328px]">
           <span className="sr-only">Open screen</span>
           <select
             value={code}
@@ -63,7 +63,7 @@ export function UserHeader({ code, title }: { code: UserScreenCode; title: strin
               const next = userScreenPicker.find((s) => s.code === e.target.value);
               if (next) router.push(next.href);
             }}
-            className={`h-full w-full cursor-pointer appearance-none truncate rounded-[6px] border border-[#c9d2e0] bg-white pl-[12px] pr-[30px] pt-px text-[14px] shadow-[0_1px_2px_rgba(20,45,90,0.06)] outline-none focus:border-[#5b7fe0] ${userInk}`}
+            className={`h-full w-full cursor-pointer appearance-none truncate rounded-[7px] border border-[#c9d2e0] bg-white pl-[12px] pr-[30px] pt-px text-[14.5px] shadow-[0_1px_2px_rgba(20,45,90,0.06)] outline-none focus:border-[#5b7fe0] ${userInk}`}
           >
             {userScreenPicker.map((s) => (
               <option key={s.code} value={s.code}>
@@ -98,12 +98,12 @@ export function UserKpiRow({ items }: { items: readonly [UserKpi, UserKpi, UserK
           <div
             key={`${k.value}-${k.label}`}
             style={{ background: s.bg, borderColor: s.border }}
-            className="flex min-h-[64px] min-w-0 flex-col justify-center rounded-[8px] border px-[14px] py-[8px] shadow-[0_1px_3px_rgba(20,45,90,0.05)]"
+            className="flex min-h-[66px] min-w-0 flex-col justify-center rounded-[11px] border px-[14px] py-[8px] shadow-[0_3px_9px_rgba(30,50,110,0.08)]"
           >
-            <p className={`truncate text-[24px] font-medium leading-none tracking-[-0.3px] ${k.valueRed ? "text-[#b42318]" : userInk}`}>
+            <p className={`truncate text-[22px] font-bold leading-none tracking-[-0.4px] ${k.valueRed ? "text-[#b42318]" : "text-[#0b0c36]"}`}>
               {k.value}
             </p>
-            <p className="mt-[4px] truncate text-[14px] leading-[16px] text-[#4a5468]">{k.label}</p>
+            <p className="mt-[3px] truncate text-[15.4px] font-semibold leading-[1.15] tracking-[-0.25px] text-[#1a1d36]">{k.label}</p>
           </div>
         );
       })}
@@ -115,9 +115,9 @@ export function UserPanel({ title, children, className = "" }: { title: string; 
   return (
     <section
       aria-label={title}
-      className={`flex min-h-0 min-w-0 flex-col overflow-hidden rounded-[7px] border border-[#d6deea] bg-[#f8fbff] shadow-[0_1px_4px_rgba(20,45,90,0.08)] ${className}`}
+      className={`flex min-h-0 min-w-0 flex-col overflow-hidden rounded-[12px] border border-[#e1e5ee] bg-white shadow-[0_3px_10px_rgba(30,50,110,0.07)] ${className}`}
     >
-      <h2 className={`flex h-[34px] shrink-0 items-center border-b border-[#e0e8f2] bg-[#fbfcfe] px-[12px] pt-px text-[15.6px] font-semibold ${userInk}`}>
+      <h2 className="flex h-[35px] shrink-0 items-center border-b border-[#e1e5ee] bg-[#f4f7fc] px-[12px] pt-px text-[15px] font-bold tracking-[-0.3px] text-[#0b0c36]">
         {title}
       </h2>
       <div className="min-h-0 flex-1 overflow-auto overscroll-contain px-[12px] pb-[10px] pt-[8px] [scrollbar-width:thin]">{children}</div>
@@ -146,7 +146,7 @@ export function UserPill({ tone, children }: { tone?: UserPillTone; children: st
           ? "blue"
           : "amber");
   return (
-    <span className={`inline-flex h-[19px] items-center whitespace-nowrap rounded-full px-[9px] pt-px text-[12.6px] font-normal leading-none ${pillTones[autoTone]}`}>
+    <span className={`inline-flex h-[20px] items-center whitespace-nowrap rounded-full px-[9px] pt-px text-[14px] font-semibold leading-none ${pillTones[autoTone]}`}>
       {children}
     </span>
   );
@@ -156,9 +156,9 @@ export function UserKVList({ rows }: { rows: readonly (readonly [string, ReactNo
   return (
     <dl>
       {rows.map(([k, v]) => (
-        <div key={k} className={`flex min-h-[26px] items-center gap-[12px] border-b border-[#e1e7f0] py-[2px] text-[14.2px] ${userInk}`}>
-          <dt className="min-w-0 flex-1 truncate pt-px">{k}</dt>
-          <dd className="shrink-0 whitespace-nowrap pt-px">{v}</dd>
+        <div key={k} className={`flex min-h-[26px] items-center gap-[12px] border-b border-[#eef0f5] py-[3px] text-[15px] ${userInk} last:border-b-0`}>
+          <dt className="min-w-0 flex-1 truncate pt-px font-medium">{k}</dt>
+          <dd className="shrink-0 whitespace-nowrap pt-px font-bold text-[#0b0c36]">{v}</dd>
         </div>
       ))}
     </dl>
@@ -171,12 +171,12 @@ export function UserFlowSteps({ steps }: { steps: readonly string[] }) {
       {steps.map((step, idx) => (
         <div key={step} className="contents">
           {idx > 0 && (
-            <span aria-hidden className="w-[18px] shrink-0 text-center text-[13px] text-[#2b3a67]">
+            <span aria-hidden className="w-[18px] shrink-0 text-center text-[14px] text-[#2b3a67]">
               →
             </span>
           )}
           <div
-            className={`flex h-[42px] min-w-0 flex-1 items-center justify-center rounded-[6px] border px-[6px] text-center text-[13.8px] font-medium ${userInk} ${
+            className={`flex h-[42px] min-w-0 flex-1 items-center justify-center rounded-[6px] border px-[6px] text-center text-[14.5px] font-medium ${userInk} ${
               idx % 2 === 0
                 ? "border-[#c9d8ee] bg-[linear-gradient(180deg,#f4f9ff_0%,#e6f0fc_100%)]"
                 : "border-[#cfe4d6] bg-[linear-gradient(180deg,#f7fdf8_0%,#eaf6ee_100%)]"

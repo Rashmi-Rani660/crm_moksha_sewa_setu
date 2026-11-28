@@ -6,7 +6,7 @@ import type { CSSProperties, ReactNode } from "react";
  * `fw` / `fh` = how much of the window width / height the card may fill.
  */
 export const authLayouts = {
-  login: { w: 1400, h: 794, hero: 844, fw: 0.965, fh: 0.84 },
+  login: { w: 1476, h: 794, hero: 844, fw: 0.965, fh: 0.84 },
 } as const;
 
 export type AuthVariant = keyof typeof authLayouts;

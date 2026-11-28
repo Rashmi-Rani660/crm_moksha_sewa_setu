@@ -26,13 +26,13 @@ export function UserFrame({ code, active, title, children }: { code: string; act
     <DashboardCanvas role="user" active={active}>
       <Box at={[SB, 60, 1600 - SB, 841]} as="div" fit="fluid" className="flex flex-col lg:px-[18px] lg:pb-[6px] lg:pt-[10px]">
         <div className="flex min-h-0 flex-1 flex-col gap-3 lg:gap-[10px]">
-          <div className="flex flex-col gap-3 lg:h-[48px] lg:shrink-0 lg:flex-row lg:items-start lg:gap-[14px]">
+          <div className="flex flex-col gap-3 lg:h-[50px] lg:shrink-0 lg:flex-row lg:items-start lg:gap-[14px]">
             <div className="min-w-0">
-              <h1 className="text-[21px] font-medium leading-tight tracking-[-0.4px] text-[#0b0c36] lg:whitespace-nowrap lg:text-[23px] lg:leading-none">{title}</h1>
-              <p className="mt-[6px] text-[13px] font-normal leading-none text-[#1a1d36] lg:text-[14px]">User 07 / FY 2026–27 / Ghaziabad • My authorised work</p>
+              <h1 className="text-[21px] font-medium leading-tight tracking-[-0.5px] text-[#0b0c36] lg:whitespace-nowrap lg:text-[24px] lg:leading-none">{title}</h1>
+              <p className="mt-[5px] text-[15px] font-normal leading-none text-[#141a4a] lg:text-[16px]">User 07 / FY 2026–27 / Ghaziabad • My authorised work</p>
             </div>
             <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:flex-nowrap">
-              <span className="flex h-[30px] shrink-0 items-center rounded-[7px] border border-[#ecd48a] bg-[#fff4d1] px-[12px] pt-px text-[11.5px] font-medium tracking-[0.2px] text-[#8a5300]">DEMO DATA</span>
+              <span className="flex h-[32px] shrink-0 items-center rounded-[7px] border border-[#ecd48a] bg-[#fff4d1] px-[12px] pt-px text-[13px] font-semibold tracking-[0.2px] text-[#8a5300]">DEMO DATA</span>
               <ScreenSwitch current={code} screens={siblings} />
             </div>
           </div>
@@ -68,16 +68,16 @@ export type Tile = { value: string; label: string; tone: TileTone };
 export function Tiles({ items }: { items: Tile[] }) {
   return (
     <div
-      className={`grid grid-cols-2 gap-[10px] sm:grid-cols-3 lg:h-[82px] lg:shrink-0 lg:gap-[12px] ${
+      className={`grid grid-cols-2 gap-[10px] sm:grid-cols-3 lg:h-[76px] lg:shrink-0 lg:gap-[12px] ${
         items.length === 4 ? "lg:grid-cols-4" : items.length === 5 ? "lg:grid-cols-5" : "lg:grid-cols-6"
       }`}
     >
       {items.map((t) => {
         const c = tiles[t.tone];
         return (
-          <div key={t.label} style={{ background: c.bg, borderColor: c.border }} className="flex min-h-[70px] min-w-0 flex-col justify-center rounded-[11px] border px-[14px] py-[8px] shadow-[0_3px_9px_rgba(30,50,110,0.08)]">
-            <p className="truncate text-[27px] font-normal leading-none tracking-[-0.3px] text-[#0b0c36]">{t.value}</p>
-            <p className="mt-[5px] truncate text-[13.5px] font-normal leading-none text-[#1a1d36]">{t.label}</p>
+          <div key={t.label} style={{ background: c.bg, borderColor: c.border }} className="flex min-h-[68px] min-w-0 flex-col justify-center rounded-[11px] border px-[14px] py-[8px] shadow-[0_3px_9px_rgba(30,50,110,0.08)]">
+            <p className="truncate text-[22px] font-bold leading-none tracking-[-0.4px] text-[#0b0c36]">{t.value}</p>
+            <p className="mt-[4px] truncate text-[15.4px] font-semibold leading-[1.15] tracking-[-0.25px] text-[#1a1d36]">{t.label}</p>
           </div>
         );
       })}
@@ -89,7 +89,7 @@ export function Tiles({ items }: { items: Tile[] }) {
 
 export function Card({ title, children, className = "", bodyClassName = "" }: { title: string; children: ReactNode; className?: string; bodyClassName?: string }) {
   return (
-    <Panel title={title} className={`[&_h2]:!font-medium ${className}`} bodyClassName={bodyClassName}>
+    <Panel title={title} className={className} bodyClassName={bodyClassName}>
       {children}
     </Panel>
   );
@@ -97,7 +97,7 @@ export function Card({ title, children, className = "", bodyClassName = "" }: { 
 
 /* --------------------------------- buttons --------------------------------- */
 
-const btnBase = "inline-flex h-[32px] shrink-0 items-center justify-center whitespace-nowrap rounded-[8px] border-[1.5px] px-[12px] pt-px text-[13px] font-normal transition-colors disabled:cursor-not-allowed disabled:opacity-50";
+const btnBase = "inline-flex h-[32px] shrink-0 items-center justify-center whitespace-nowrap rounded-[8px] border-[1.5px] px-[12px] pt-px text-[14.5px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50";
 export const btnSolid = `${btnBase} border-[#1d4fe0] bg-[#1d4fe0] text-white hover:bg-[#1840c0]`;
 export const btnOutline = `${btnBase} border-[#2f4fe0] bg-white text-[#1d3fc4] hover:bg-[#f1f4ff]`;
 
@@ -126,7 +126,7 @@ export const tone = (text: string): PillTone => {
 };
 
 export function P({ children }: { children: string }) {
-  return <Pill tone={tone(children)} className="h-[20px] text-[12px] !font-normal">{children}</Pill>;
+  return <Pill tone={tone(children)} className="h-[20px] text-[14px] font-semibold">{children}</Pill>;
 }
 
 /** A cell / value: text starting with `*` is drawn as a pill. */
@@ -140,9 +140,9 @@ export function Lines({ rows }: { rows: [string, ReactNode][] }) {
   return (
     <ul className="flex flex-col">
       {rows.map(([k, v]) => (
-        <li key={k} className="flex min-h-[29px] items-center gap-[10px] border-b border-[#e6eaf2] py-[3px] text-[13.5px] font-normal text-[#1a1d36]">
-          <span className="min-w-0 shrink-0 whitespace-nowrap">{k}</span>
-          <span className="min-w-0 flex-1 text-right">
+        <li key={k} className="flex min-h-[28px] items-center gap-[10px] border-b border-[#eef0f5] py-[3px] text-[15px] text-[#1a1d36] last:border-b-0">
+          <span className="min-w-0 flex-1 truncate font-medium">{k}</span>
+          <span className="shrink-0 whitespace-nowrap text-right font-bold text-[#0b0c36]">
             <V v={v} />
           </span>
         </li>
@@ -154,8 +154,8 @@ export function Lines({ rows }: { rows: [string, ReactNode][] }) {
 export function Note({ children, boxed = false, className = "" }: { children: ReactNode; boxed?: boolean; className?: string }) {
   return (
     <p
-      className={`text-[13px] font-normal leading-[1.6] text-[#1a1d36] ${
-        boxed ? "rounded-[8px] border border-[#d6dbe6] bg-[#f8faff] px-[14px] py-[12px]" : "rounded-[6px] bg-[#eef3fb] px-[8px] py-[4px] text-[12.5px]"
+      className={`text-[14.5px] font-medium leading-[1.55] text-[#1a1d36] ${
+        boxed ? "rounded-[8px] border border-[#d6dbe6] bg-[#f8faff] px-[14px] py-[12px]" : "rounded-[6px] bg-[#eef3fb] px-[10px] py-[5px] text-[14px]"
       } ${className}`}
     >
       {children}
@@ -180,13 +180,13 @@ export function Table({
     <TableWrap>
       <Thead>
         {cols.map((c) => (
-          <th key={c} className={`${th} !font-normal`}>{c}</th>
+          <th key={c} className={th}>{c}</th>
         ))}
       </Thead>
       <tbody>
         {rows.length === 0 && (
           <tr>
-            <td colSpan={cols.length} className={`${td} !font-normal py-[14px] text-center text-[#5b6a8a]`}>No records match.</td>
+            <td colSpan={cols.length} className={`${td} py-[14px] text-center text-[#5b6a8a]`}>No records match.</td>
           </tr>
         )}
         {rows.map((r, i) => (
@@ -199,7 +199,7 @@ export function Table({
             className={`border-b border-[#e6eaf2] ${onSelect ? "cursor-pointer outline-none hover:bg-[#f6f8fe] focus-visible:bg-[#eef2ff]" : ""} ${onSelect && selected === i ? "bg-[#eef3ff]" : ""}`}
           >
             {r.map((c, j) => (
-              <td key={j} className={`${td} !py-[7px] !text-[13px] !font-normal`}>
+              <td key={j} className={`${td} !py-[7px]`}>
                 <V v={c} />
               </td>
             ))}
@@ -219,7 +219,7 @@ export function Flow({ steps, green = [] }: { steps: string[]; green?: number[] 
       {steps.map((s, i) => (
         <div key={s} className="flex min-w-0 flex-1 basis-[140px] items-center lg:basis-0">
           <span
-            className={`flex h-[40px] min-w-0 flex-1 items-center justify-center rounded-[8px] border px-2 text-center text-[13px] font-normal text-[#1a1d36] shadow-[0_2px_4px_rgba(30,50,110,0.06)] ${
+            className={`flex h-[40px] min-w-0 flex-1 items-center justify-center rounded-[8px] border px-2 text-center text-[14.5px] font-medium text-[#1a1d36] shadow-[0_2px_4px_rgba(30,50,110,0.06)] ${
               green.includes(i) ? "border-[#cfe9cd] bg-gradient-to-b from-[#f5fcf4] to-[#e3f5e1]" : "border-[#d6e1f5] bg-gradient-to-b from-[#f8fbff] to-[#e6eefb]"
             }`}
           >
@@ -234,7 +234,7 @@ export function Flow({ steps, green = [] }: { steps: string[]; green?: number[] 
 
 /* ---------------------------------- form ----------------------------------- */
 
-const fieldCls = "h-[34px] w-full rounded-[7px] border border-[#cfd5e2] px-[10px] text-[13px] font-normal text-[#1a1d36] outline-none placeholder:text-[#6b7390] focus:border-[#5b6fe0]";
+const fieldCls = "h-[34px] w-full rounded-[7px] border border-[#cfd5e2] px-[10px] text-[15px] font-medium text-[#1a1d36] outline-none placeholder:text-[#6b7390] focus:border-[#5b6fe0]";
 
 export function Field({
   label,
@@ -260,7 +260,7 @@ export function Field({
     />
   );
   return label ? (
-    <label className="flex min-w-0 flex-col gap-[4px] text-[13px] font-normal text-[#1a1d36]">
+    <label className="flex min-w-0 flex-col gap-[4px] text-[14.5px] font-semibold text-[#0b0c36]">
       {label}
       {input}
     </label>
@@ -283,7 +283,7 @@ export function SelectBox<T extends string>({ label, value, options, onChange, h
   return hideLabel ? (
     box
   ) : (
-    <label className="flex min-w-0 flex-col gap-[4px] text-[13px] font-normal text-[#1a1d36]">
+    <label className="flex min-w-0 flex-col gap-[4px] text-[14.5px] font-semibold text-[#0b0c36]">
       {label}
       {box}
     </label>
@@ -294,16 +294,16 @@ export function SearchBox({ value, onChange, placeholder = "Search" }: { value: 
   return (
     <label className="flex h-[34px] w-full items-center rounded-[7px] border border-[#cfd5e2] bg-white px-[8px] focus-within:border-[#5b6fe0] lg:w-[150px] lg:shrink-0">
       <Search strokeWidth={2} className="h-[15px] w-[15px] shrink-0 text-[#5b6280]" />
-      <input type="search" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} aria-label={placeholder} className="ml-[6px] h-full min-w-0 flex-1 bg-transparent text-[13px] font-normal outline-none placeholder:text-[#6b7390]" />
+      <input type="search" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} aria-label={placeholder} className="ml-[6px] h-full min-w-0 flex-1 bg-transparent text-[15px] font-medium outline-none placeholder:text-[#6b7390]" />
     </label>
   );
 }
 
 export function TextArea({ value, onChange, label, rows = 2 }: { value: string; onChange: (v: string) => void; label: string; rows?: number }) {
   return (
-    <label className="flex flex-col gap-[4px] text-[13px] font-normal text-[#1a1d36]">
+    <label className="flex flex-col gap-[4px] text-[14.5px] font-semibold text-[#0b0c36]">
       {label}
-      <textarea value={value} rows={rows} onChange={(e) => onChange(e.target.value)} className="w-full resize-none rounded-[7px] border border-[#cfd5e2] bg-white px-[10px] py-[7px] text-[13px] font-normal text-[#1a1d36] outline-none focus:border-[#5b6fe0]" />
+      <textarea value={value} rows={rows} onChange={(e) => onChange(e.target.value)} className="w-full resize-none rounded-[7px] border border-[#cfd5e2] bg-white px-[10px] py-[7px] text-[15px] font-medium text-[#1a1d36] outline-none focus:border-[#5b6fe0]" />
     </label>
   );
 }
@@ -311,7 +311,7 @@ export function TextArea({ value, onChange, label, rows = 2 }: { value: string; 
 /** Centred checkbox with its label underneath (as drawn in the design). */
 export function CheckItem({ label, checked, onChange, disabled = false }: { label: string; checked: boolean; onChange?: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <label className={`flex flex-col items-center gap-[4px] py-[3px] text-center text-[13px] font-normal text-[#1a1d36] ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}>
+    <label className={`flex flex-col items-center gap-[4px] py-[3px] text-center text-[14.5px] font-medium text-[#1a1d36] ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}>
       <span className="relative inline-flex h-[15px] w-[15px]">
         <input
           type="checkbox"
@@ -330,7 +330,7 @@ export function CheckItem({ label, checked, onChange, disabled = false }: { labe
 export function Progress({ value, label }: { value: number; label: string }) {
   return (
     <div>
-      <p className="mb-[4px] text-[12.5px] font-normal text-[#1a1d36]">{label}</p>
+      <p className="mb-[4px] text-[14.5px] font-medium text-[#1a1d36]">{label}</p>
       <div className="h-[8px] overflow-hidden rounded-full bg-[#e1e8f3]" role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100} aria-label={label}>
         <div style={{ width: `${value}%` }} className="h-full rounded-full bg-[#3a7bd5] transition-[width]" />
       </div>
@@ -346,7 +346,7 @@ export function DropZone({ text, onFiles }: { text: string; onFiles: (names: str
         e.preventDefault();
         onFiles(Array.from(e.dataTransfer.files).map((f) => f.name));
       }}
-      className="flex h-[36px] cursor-pointer items-center justify-center rounded-[8px] border border-dashed border-[#8aa0c8] bg-[#f6f9fe] px-2 text-center text-[13px] font-normal text-[#1a1d36] hover:bg-[#eef3fb]"
+      className="flex h-[36px] cursor-pointer items-center justify-center rounded-[8px] border border-dashed border-[#8aa0c8] bg-[#f6f9fe] px-2 text-center text-[14.5px] font-medium text-[#1a1d36] hover:bg-[#eef3fb]"
     >
       {text}
       <input type="file" accept="application/pdf,image/*" className="sr-only" onChange={(e) => onFiles(Array.from(e.target.files ?? []).map((f) => f.name))} />
