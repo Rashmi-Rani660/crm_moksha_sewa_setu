@@ -8,24 +8,24 @@
  */
 
 import { useState } from "react";
+import { useOperations } from "@/lib/crm/useOperations";
+import { at, count, text, records, EMPTY } from "@/lib/crm/data";
+import { humanize, shortDateTime } from "@/lib/format";
 import { useNotice } from "@/components/dashboards/super-admin/kit";
 import { screenPicker1120 } from "@/components/dashboards/super-admin/routes";
 import { Btn, Buttons, Check, Col, Columns, DataTable, KVList, Panel, Pill, Screen } from "@/components/dashboards/super-admin/screen-kit";
 
 const tabs = ["Overview", "Timeline", "Documents", "Tasks", "Communication", "Expenses", "Closure"] as const;
 
-const initialTimeline = [
-  ["10:15 AM", "Request received", "WhatsApp"],
-  ["10:25 AM", "Eligibility verified", "Verification User 01"],
-  ["10:40 AM", "Case approval recorded", "Operations Admin"],
-  ["11:00 AM", "Field team accepted task", "Field Team 01"],
-  ["11:20 AM", "Service commenced", "Field Team 01"],
-];
+
 
 export default function SA016CaseDetails() {
   const notice = useNotice();
   const [tab, setTab] = useState<string>(tabs[0]);
-  const [timeline, setTimeline] = useState(initialTimeline);
+  const live = useOperations("cases", notice.show);
+  const record = live.detail.data;
+  const timeline = live.timeline.map(item => [shortDateTime(text(item.at,"")), text(item.summary), text(at(item,"actor.name"))]);
+  const tasks = records(record?.tasks);
   const [closure, setClosure] = useState({ delivery: false, expenses: false });
 
   return (
@@ -35,10 +35,10 @@ export default function SA016CaseDetails() {
       active="case-workflow"
       picker={screenPicker1120}
       kpis={[
-        { value: "0004", label: "Case ID" },
-        { value: "In service", label: "Stage" },
-        { value: "High", label: "Priority" },
-        { value: "01:10", label: "SLA left" },
+        { value: text(record?.caseNo), label: "Case ID" },
+        { value: humanize(text(record?.stage,"")), label: "Stage" },
+        { value: humanize(text(record?.priority,"")), label: "Priority" },
+        { value: shortDateTime(text(at(record,"sla.resolutionDueAt"),"")), label: "SLA left" },
         { value: "₹0", label: "Service fee" },
       ]}
       tabs={tabs}
@@ -51,15 +51,15 @@ export default function SA016CaseDetails() {
             <KVList
               rowH={25}
               rows={[
-                ["Linked request", "MSR-26-27-0004"],
-                ["Beneficiary", "EWS family (demo)"],
-                ["Location", "Ghaziabad"],
-                ["Case owner", "Field Team 01"],
-                ["Legal / eligibility clearance", <Pill key="v" tone="green">Verified</Pill>],
-                ["Vehicle", "MV-01 • assigned"],
-                ["Assigned staff", "Field Team 01"],
-                ["Volunteer", "Volunteer 01 · limited access"],
-                ["Driver / GPS", "Driver 01 · demo, last update 11:20"],
+                ["Linked request", text(record?.requestNo)],
+                ["Beneficiary", humanize(text(record?.beneficiaryCategory,""))],
+                ["Location", text(at(record,"beneficiary.city"))],
+                ["Case owner", text(at(record,"owner.name"))],
+                ["Legal / eligibility clearance", <Pill key="v" tone="green">{humanize(text(at(record,"request.legal"),""))}</Pill>],
+                ["Vehicle", EMPTY],
+                ["Assigned staff", text(at(record,"owner.name"))],
+                ["Volunteer", EMPTY],
+                ["Driver / GPS", EMPTY],
               ]}
             />
           </Panel>
@@ -69,16 +69,13 @@ export default function SA016CaseDetails() {
           </Panel>
 
           <div className="flex flex-wrap gap-[8px] lg:h-[29px] lg:shrink-0">
-            <Btn primary onClick={() => notice.show("Case stage changes follow valid transitions only (demo).")}>Update case</Btn>
+            <Btn primary disabled={!live.canAct("Update case")} onClick={() => live.act("Update case")}>Update case</Btn>
             <Btn
-              onClick={() => {
-                const now = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-                setTimeline([...timeline, [now, "Case note added", "Super Admin"]]);
-              }}
+              disabled onClick={() => notice.show(EMPTY)}
             >
               Add case note
             </Btn>
-            <Btn onClick={() => setTab("Closure")}>Review closure</Btn>
+            <Btn disabled={!live.canAct("Submit closure")} onClick={() => live.act("Submit closure")}>Review closure</Btn>
           </div>
         </Col>
 
@@ -87,16 +84,16 @@ export default function SA016CaseDetails() {
             <KVList
               rowH={22}
               rows={[
-                ["Assigned tasks", "03"],
-                ["Completed tasks", "01"],
-                ["Pending tasks", "02"],
+                ["Assigned tasks", record ? count(tasks.length) : EMPTY],
+                ["Completed tasks", record ? count(tasks.filter(t => t.status === "COMPLETED").length) : EMPTY],
+                ["Pending tasks", text(record?.openTasks)],
                 ["Document access", "Restricted"],
                 ["Closure checklist", <Pill key="c" tone="amber">Pending</Pill>],
-                ["Supporting evidence", "2 files · restricted"],
+                ["Supporting evidence", record ? count(live.documents.length) : EMPTY],
               ]}
             />
             <Buttons className="!mt-[6px]">
-              <Btn onClick={() => notice.show("Evidence preview is limited to authorised users (demo).")}>Preview evidence</Btn>
+              <Btn onClick={() => notice.show(live.documents.map(doc => `${text(doc.title)}: ${text(doc.url)}`).join("\n") || EMPTY)}>Preview evidence</Btn>
             </Buttons>
           </Panel>
 
@@ -104,11 +101,11 @@ export default function SA016CaseDetails() {
             <KVList
               rowH={21}
               rows={[
-                ["Family update", "Logged / demo"],
-                ["Last contact", "11:15 AM"],
-                ["Approved case expense", "₹2,500 (demo)"],
-                ["Pending expense", "₹500 (demo)"],
-                ["Charge to beneficiary", "₹0"],
+                ["Family update", EMPTY],
+                ["Last contact", EMPTY],
+                ["Approved case expense", EMPTY],
+                ["Pending expense", EMPTY],
+                ["Charge to beneficiary", EMPTY],
               ]}
             />
             <Buttons className="!mt-[6px]">
@@ -118,8 +115,8 @@ export default function SA016CaseDetails() {
           </Panel>
 
           <Panel title="Service closure" bodyClassName="!pt-[6px]">
-            <Check label="Legal documents complete" checked disabled />
-            <Check label="Service delivery evidence" checked={closure.delivery} onChange={(v) => setClosure({ ...closure, delivery: v })} />
+            <Check label="Legal documents complete" checked={at(record,"request.legal") === "CLEARED"} disabled />
+            <Check label="Service delivery evidence" checked={closure.delivery} onChange={(v) => { setClosure({ ...closure, delivery: v }); if (v) void live.act("Service delivered"); }} />
             <Check label="Expense reconciliation" checked={closure.expenses} onChange={(v) => setClosure({ ...closure, expenses: v })} />
             <Check label="Closure approved" checked={false} disabled />
           </Panel>

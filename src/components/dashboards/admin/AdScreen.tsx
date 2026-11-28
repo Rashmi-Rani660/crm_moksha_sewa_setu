@@ -12,7 +12,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Fragment, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useState, type CSSProperties, type ReactNode } from "react";
 import {
   ArrowRight,
   Bell,
@@ -34,6 +34,10 @@ import EncodencyBadge from "@/components/ui/EncodencyBadge";
 import { siteConfig } from "@/lib/config/site";
 import { adScreens, actionTargets, screenByCode } from "./registry";
 import type { BarColor, Block, Cell, Field, Panel, Screen } from "./types";
+import { useDslData } from "@/lib/crm/useDslData";
+import { useScreenActions } from "@/lib/crm/useScreenActions";
+import { bindAdminScreen } from "@/lib/crm/bindScreens";
+import { fieldName } from "@/lib/crm/formFields";
 
 const ink = "text-[#1a1d36]";
 
@@ -154,6 +158,10 @@ type Ctx = {
   statusOptions: string[];
   act: (label: string) => void;
   isMain: boolean;
+  canAct?: (label: string) => boolean;
+  setField?: (label: string, value: string) => void;
+  empty?: string;
+  recordId?: string;
 };
 
 function KvRows({ rows, dense }: { rows: [string, Cell][]; bold?: boolean; dense?: boolean }) {
@@ -171,9 +179,9 @@ function KvRows({ rows, dense }: { rows: [string, Cell][]; bold?: boolean; dense
   );
 }
 
-function FormGrid({ fields }: { fields: Field[] }) {
+function FormGrid({ fields, onField }: { fields: Field[]; onField?: (label: string, value: string) => void }) {
   const [values, setValues] = useState(() => fields.map((f) => f.value));
-  const set = (i: number, v: string) => setValues((vs) => vs.map((x, k) => (k === i ? v : x)));
+  const set = (i: number, v: string) => { if (onField) onField(fields[i].label, v); else setValues((vs) => vs.map((x,k) => k === i ? v : x)); };
   const box = `h-[34px] w-full rounded-[7px] border border-[#cfd6e3] bg-white px-[10px] pt-px text-[15px] font-medium ${ink} outline-none focus:border-[#4a6fe0]`;
   return (
     <div className="grid gap-x-[10px] gap-y-[6px] sm:grid-cols-2">
@@ -182,7 +190,7 @@ function FormGrid({ fields }: { fields: Field[] }) {
           {f.label}
           {f.kind === "select" ? (
             <span className="relative block">
-              <select value={values[i]} onChange={(e) => set(i, e.target.value)} className={`${box} cursor-pointer appearance-none pr-[28px]`}>
+              <select name={onField ? fieldName(f.label) : undefined} value={onField ? f.value : values[i]} onChange={(e) => set(i, e.target.value)} className={`${box} cursor-pointer appearance-none pr-[28px]`}>
                 {Array.from(new Set([f.value, ...(f.options ?? [])])).map((o) => (
                   <option key={o} value={o}>{o}</option>
                 ))}
@@ -191,7 +199,8 @@ function FormGrid({ fields }: { fields: Field[] }) {
             </span>
           ) : f.kind === "textarea" ? (
             <textarea
-              value={values[i]}
+              name={onField ? fieldName(f.label) : undefined}
+              value={onField ? f.value : values[i]}
               onChange={(e) => set(i, e.target.value)}
               placeholder={f.value ? undefined : "Enter authorised notes"}
               rows={2}
@@ -199,7 +208,8 @@ function FormGrid({ fields }: { fields: Field[] }) {
             />
           ) : (
             <input
-              value={values[i]}
+              name={onField ? fieldName(f.label) : undefined}
+              value={onField ? f.value : values[i]}
               readOnly={f.kind === "readonly"}
               onChange={(e) => set(i, e.target.value)}
               className={`${box} ${f.kind === "readonly" ? "bg-[#eef1f6] text-[#3b4256]" : ""}`}
@@ -247,14 +257,14 @@ function ReplyBox({ placeholder }: { placeholder: string }) {
   );
 }
 
-function Textarea({ label, placeholder }: { label: string; placeholder: string }) {
+function Textarea({ label, placeholder, onField }: { label: string; placeholder: string; onField?: (label: string, value: string) => void }) {
   const [v, setV] = useState("");
   return (
     <label className="flex flex-col gap-[3px] text-[14.5px] font-semibold text-[#0b0c36]">
       {label}
       <textarea
         value={v}
-        onChange={(e) => setV(e.target.value)}
+        onChange={(e) => { setV(e.target.value); onField?.(label,e.target.value); }}
         placeholder={placeholder}
         rows={2}
         className={`h-[42px] w-full resize-none rounded-[7px] border border-[#cfd6e3] bg-white px-[10px] py-[5px] text-[15px] font-medium ${ink} outline-none focus:border-[#4a6fe0]`}
@@ -341,7 +351,7 @@ function BlockView({ b, ctx }: { b: Block; ctx: Ctx }) {
             <tbody>
               {order.length === 0 && (
                 <tr>
-                  <td colSpan={b.cols.length} className="px-[8px] py-[12px] text-center text-[15px] text-[#5b6a8a]">No records match the filter.</td>
+                  <td colSpan={b.cols.length} className="px-[8px] py-[12px] text-center text-[15px] text-[#5b6a8a]">{ctx.empty ?? "No records match the filter."}</td>
                 </tr>
               )}
               {order.map((ri) => {
@@ -423,9 +433,9 @@ function BlockView({ b, ctx }: { b: Block; ctx: Ctx }) {
             const href = target ? screenByCode(target)?.href : undefined;
             const cls = i === 0 && !b.outlineAll ? btnSolid : btnOutline;
             return href ? (
-              <Link key={l} href={href} className={cls}>{l}</Link>
+              <Link key={l} href={ctx.recordId && ["Open case","View profile","View work history","Review closure"].includes(l) ? `${href}?id=${ctx.recordId}` : href} className={cls}>{l}</Link>
             ) : (
-              <button key={l} type="button" onClick={() => ctx.act(l)} className={cls}>{l}</button>
+              <button key={l} type="button" disabled={ctx.canAct ? !ctx.canAct(l) : false} onClick={() => ctx.act(l)} className={cls}>{l}</button>
             );
           })}
         </div>
@@ -534,16 +544,16 @@ function BlockView({ b, ctx }: { b: Block; ctx: Ctx }) {
         </div>
       );
     case "form":
-      return <FormGrid fields={b.fields} />;
+      return <FormGrid fields={b.fields} onField={ctx.setField} />;
     case "bars": {
-      const max = Math.max(...b.items.map(([, v]) => v));
+      const max = Math.max(1, ...b.items.map(([, v]) => Number.isFinite(v) ? v : 0));
       return (
         <div className="flex h-full min-h-[96px] flex-col">
           <div className="flex min-h-0 flex-1 items-end gap-[6px] px-[2px]">
             {b.items.map(([label, v]) => (
               <div key={label} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end">
-                <span className="text-[13.5px] font-semibold leading-none text-[#0b0c36]">{v}</span>
-                <span style={{ height: `${Math.max(10, (v / max) * 72)}%` }} className="mt-[3px] w-full rounded-t-[3px] bg-[linear-gradient(180deg,#78a9ee,#5a8fe0)]" />
+                <span className="text-[13.5px] font-semibold leading-none text-[#0b0c36]">{Number.isFinite(v) ? v : "—"}</span>
+                <span style={{ height: `${Number.isFinite(v) && v > 0 ? Math.max(10, (v / max) * 72) : 0}%` }} className="mt-[3px] w-full rounded-t-[3px] bg-[linear-gradient(180deg,#78a9ee,#5a8fe0)]" />
                 <span className="mt-[2px] whitespace-nowrap text-[13px] font-semibold leading-none text-[#3b4256]">{label}</span>
               </div>
             ))}
@@ -611,7 +621,7 @@ function BlockView({ b, ctx }: { b: Block; ctx: Ctx }) {
         </div>
       );
     case "textarea":
-      return <Textarea label={b.label} placeholder={b.placeholder} />;
+      return <Textarea label={b.label} placeholder={b.placeholder} onField={ctx.setField} />;
     case "calendar":
       return <Calendar firstDay={b.firstDay} days={b.days} marks={b.marks} />;
   }
@@ -665,12 +675,16 @@ export default function AdScreen({ code }: { code: string }) {
   return <ScreenView key={s.code} s={s} active={s.code === "AD-001" ? undefined : s.sectionSlug} />;
 }
 
-function ScreenView({ s, active }: { s: Screen; active?: string }) {
+function ScreenView({ s: original, active }: { s: Screen; active?: string }) {
   const router = useRouter();
   const notice = useNotice();
-  const [tab, setTab] = useState(s.tabs[0]);
+  const [tab, setTab] = useState(original.tabs[0]);
   const [dept, setDept] = useState<string>(departments[0]);
   const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState(original.selected ?? 0);
+  const live = useDslData(original.code, tab, query, selected, notice.show);
+  const actions = useScreenActions(live, notice.show);
+  const s = bindAdminScreen(original, live, actions);
   const filterBlock = s.rows[0].panels[0].blocks.find((b) => b.t === "filter");
   const allLabel = (filterBlock?.t === "filter" && filterBlock.all) || "All assigned records";
   const [status, setStatus] = useState(allLabel);
@@ -678,35 +692,35 @@ function ScreenView({ s, active }: { s: Screen; active?: string }) {
   // main table = first table of the first panel
   const mainPanel = s.rows[0].panels[0];
   const mainTable = mainPanel.blocks.find((b) => b.t === "table");
-  const rows = useMemo(() => (mainTable?.t === "table" ? mainTable.rows : []), [mainTable]);
-  const pillCol = useMemo(() => {
+  const rows = mainTable?.t === "table" ? mainTable.rows : [];
+  const pillCol = (() => {
     if (mainTable?.t === "table" && mainTable.status !== undefined) return mainTable.status;
     // status filter uses the last column that carries pills
     for (let j = (rows[0]?.length ?? 0) - 1; j >= 0; j--) if (rows.some((r) => /^[ragbpx]:/.test(r[j] ?? ""))) return j;
     return -1;
-  }, [rows, mainTable]);
-  const statusOptions = useMemo(
-    () => [allLabel, ...Array.from(new Set(pillCol < 0 ? [] : rows.map((r) => plain(r[pillCol]))))],
-    [rows, pillCol, allLabel],
-  );
+  })();
+  const statusOptions = [allLabel, ...Array.from(new Set(pillCol < 0 ? [] : rows.map((r) => plain(r[pillCol]))))];
   const visible = rows
     .map((r, i) => ({ r, i }))
     .filter(({ r }) => (status === allLabel || plain(r[pillCol]) === status) && (!query.trim() || r.join(" ").toLowerCase().includes(query.trim().toLowerCase())))
     .map(({ i }) => i);
-  const [selected, setSelected] = useState(s.selected ?? 0);
   const selId = rows[selected] ? plain(rows[selected][0]) : undefined;
 
   const tabIndex = s.tabs.indexOf(tab);
   const ctxFor = (isMain: boolean): Ctx => ({
     visible,
     selected,
-    onSelect: setSelected,
+    onSelect: (index) => { setSelected(index);if (live.enabled) live.chooseIndex(index); },
     query,
     setQuery,
     status,
     setStatus,
     statusOptions,
-    act: (label) => notice.show(actionMessage(label, selId)),
+    act: (label) => live.enabled ? void actions.act(label) : notice.show(actionMessage(label, selId)),
+    canAct: live.enabled ? actions.canAct : undefined,
+    setField: live.enabled ? actions.setField : undefined,
+    empty: live.enabled ? live.empty : undefined,
+    recordId: live.enabled ? String(live.selectedRecord?.id ?? "") : undefined,
     isMain,
   });
 

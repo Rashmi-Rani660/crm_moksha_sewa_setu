@@ -9,6 +9,8 @@
  */
 
 import { useState } from "react";
+import { useResource } from "@/lib/crm/useResource";
+import { EMPTY, count, text, records } from "@/lib/crm/data";
 import { useNotice } from "@/components/dashboards/super-admin/kit";
 import { screenPicker1120 } from "@/components/dashboards/super-admin/routes";
 import { Btn, Buttons, Check, Col, Columns, DataTable, Field, Flow, KVList, NativeSelect, Panel, Screen, TextBox, ink } from "@/components/dashboards/super-admin/screen-kit";
@@ -16,34 +18,22 @@ import { Btn, Buttons, Check, Col, Columns, DataTable, Field, Flow, KVList, Nati
 const tabs = ["Templates", "Workflow Builder", "Simulation", "Version History"] as const;
 const modeOpts = ["Approval-based", "Manual", "Automatic"] as const;
 
-const library = [
-  { name: "Free cremation support", version: "v1.2", state: "Draft" },
-  { name: "Unclaimed body workflow", version: "v1.0", state: "Published" },
-  { name: "Family assistance", version: "v1.0", state: "Published" },
-  { name: "Document verification", version: "v1.1", state: "Review" },
-];
-
-const steps = [
-  ["Intake", "Helpline", "Automatic", "Request record"],
-  ["Eligibility", "Verification User", "Manual", "Evidence check"],
-  ["Legal clearance", "Authorised verifier", "Manual", "Mandatory where applicable"],
-  ["Case approval", "Operations Admin", "Approval", "Independent decision"],
-  ["Dispatch", "Field coordinator", "Approval", "Assignment accepted"],
-  ["Closure", "Case owner", "Manual", "Evidence & audit"],
-];
-
 const safeguards = ["Validate all required gates", "Prevent circular transitions", "Independent approval", "Retain version for open cases", "Rollback plan required"];
 
 export default function SA019WorkflowBuilder() {
   const notice = useNotice();
   const [tab, setTab] = useState<string>(tabs[0]);
-  const [selected, setSelected] = useState(library[0].name);
-  const t = library.find((x) => x.name === selected)!;
-  const [name, setName] = useState(t.name);
+  const live = useResource("/tasks/templates", "workflows", notice.show, {}, { paginated: false, summary: null });
+  const library = live.rows.map(row => ({ id: text(row.id), name: text(row.name), version: text(row.version), state: text(row.status) }));
+  const [selected, setSelected] = useState("");
+  const t = library.find((x) => x.name === selected) ?? library[0] ?? { id: "", name: EMPTY, version: EMPTY, state: EMPTY };
+  const steps = records(live.detail.data?.steps).map(step => [text(step.title), EMPTY, text(step.typeCode), text(step.dueInMinutes)]);
+  const [name, setName] = useState("");
   const [mode, setMode] = useState<string>(modeOpts[0]);
 
   const choose = (n: string) => {
     setSelected(n);
+    live.select(library.find(row => row.name === n)?.id ?? null);
     setName(n);
   };
 
@@ -54,11 +44,11 @@ export default function SA019WorkflowBuilder() {
       active="case-workflow"
       picker={screenPicker1120}
       kpis={[
-        { value: "04", label: "Templates" },
-        { value: "02", label: "Published" },
-        { value: "01", label: "Draft" },
-        { value: "01", label: "Under review" },
-        { value: "02", label: "Mandatory gates" },
+        { value: live.list.data ? count(library.length) : EMPTY, label: "Templates" },
+        { value: EMPTY, label: "Published" },
+        { value: EMPTY, label: "Draft" },
+        { value: EMPTY, label: "Under review" },
+        { value: EMPTY, label: "Mandatory gates" },
       ]}
       tabs={tabs}
       tab={tab}
@@ -68,10 +58,10 @@ export default function SA019WorkflowBuilder() {
         <Col>
           <Panel title={`Selected template — ${t.name}`}>
             <div className="grid grid-cols-1 gap-x-[13px] gap-y-[7px] sm:grid-cols-2">
-              <Field label="Template name"><TextBox value={name} onChange={setName} label="Template name" /></Field>
+              <Field label="Template name"><TextBox value={name || t.name} onChange={setName} label="Template name" /></Field>
               <Field label="Version"><TextBox value={`${t.version} (${t.state.toLowerCase()})`} readOnly label="Version" /></Field>
               <Field label="Mode"><NativeSelect label="Mode" value={mode} options={modeOpts} onChange={setMode} className="w-full" /></Field>
-              <Field label="Scope"><TextBox value="Ghaziabad" readOnly label="Scope" /></Field>
+              <Field label="Scope"><TextBox value={EMPTY} readOnly label="Scope" /></Field>
             </div>
             <div className="mt-[8px]">
               <Flow steps={["Intake", "Eligibility", "Legal clearance", "Approval", "Dispatch", "Closure"]} h={58} />
@@ -86,9 +76,9 @@ export default function SA019WorkflowBuilder() {
               <DataTable head={["Step", "Owner", "Mode", "Gate / output"]} rowH={30} rows={steps.map((s) => ({ key: s[0], cells: s }))} />
             </div>
             <Buttons>
-              <Btn primary onClick={() => { setTab("Simulation"); notice.show(`Simulation run for "${name}" — all mandatory gates passed (demo).`); }}>Run simulation</Btn>
-              <Btn onClick={() => notice.show("Submitted for independent approval before publishing (demo).")}>Submit for approval</Btn>
-              <Btn onClick={() => notice.show(`Draft saved: ${name} ${t.version} (demo).`)}>Save draft</Btn>
+              <Btn primary disabled onClick={() => setTab("Simulation")}>Run simulation</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Submit for approval</Btn>
+              <Btn disabled={!live.can("workflows.edit") || live.mutation.busy || !live.detail.data} onClick={() => live.action("", "workflows.edit", { name: name || t.name }, "PATCH")}>Save draft</Btn>
             </Buttons>
           </Panel>
         </Col>
@@ -114,8 +104,8 @@ export default function SA019WorkflowBuilder() {
           <Panel title="Publishing safeguards">
             {safeguards.map((s) => <Check key={s} label={s} checked disabled />)}
             <Buttons className="!mt-[8px]">
-              <Btn primary onClick={() => setTab("Version History")}>View versions</Btn>
-              <Btn onClick={() => notice.show("Compare v1.2 (draft) with v1.1 (demo).")}>Compare changes</Btn>
+              <Btn primary disabled onClick={() => setTab("Version History")}>View versions</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Compare changes</Btn>
             </Buttons>
             <div className="mt-[6px]">
               <KVList
@@ -127,8 +117,8 @@ export default function SA019WorkflowBuilder() {
               />
             </div>
             <Buttons className="!mt-[8px]">
-              <Btn onClick={() => notice.show("Branch edits stay in draft until approved (demo).")}>Edit branch</Btn>
-              <Btn onClick={() => notice.show("Node review: owner, gate and output (demo).")}>Review node</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Edit branch</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Review node</Btn>
             </Buttons>
           </Panel>
         </Col>

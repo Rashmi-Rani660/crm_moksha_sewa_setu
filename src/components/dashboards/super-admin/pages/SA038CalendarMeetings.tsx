@@ -1,5 +1,9 @@
 "use client";
 
+import { usePlanner } from "@/lib/crm/useWorkforce";
+import { useNotice } from "@/components/dashboards/super-admin/kit";
+import { count, records, text, EMPTY } from "@/lib/crm/data";
+import { humanize, shortDateTime } from "@/lib/format";
 import RegisterScreen, { type ScreenSpec } from "@/components/dashboards/super-admin/RegisterScreen";
 
 /** SA-038 — Calendar & Meetings */
@@ -69,5 +73,9 @@ const spec: ScreenSpec = {
 };
 
 export default function SA038CalendarMeetings() {
-  return <RegisterScreen spec={spec} />;
+  const notice = useNotice();
+  const live = usePlanner(notice.show);
+  const rows = records(live.planner.data);
+  const wired: ScreenSpec = { ...spec,kpis: spec.kpis.map((k,i) => ({ ...k,value: i === 0 ? live.planner.data ? count(rows.length) : EMPTY : i === 1 ? live.planner.data ? count(rows.filter(row => row.type === "MEETING").length) : EMPTY : i === 2 ? live.planner.data ? count(rows.filter(row => row.type === "REMINDER").length) : EMPTY : k.value })) as ScreenSpec["kpis"],register: { ...spec.register,rows: rows.map(row => [shortDateTime(text(row.startAt,"")),text(row.title),humanize(text(row.type,"")),text(row.ownerName),text(row.link),humanize(text(row.status,""))]) } };
+  return <><RegisterScreen spec={wired} onAction={(label) => { if (label === "Create event" || label === "Set reminder") void live.add(); }} />{notice.node}</>;
 }

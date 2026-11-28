@@ -24,6 +24,9 @@ import {
 import { ScreenSwitch, sectionScreens } from "@/components/dashboards/super-admin/screen-switch";
 import { screens } from "./data";
 import type { Action, Bar, Pair, Screen, Tbl } from "./types";
+import { useDslData } from "@/lib/crm/useDslData";
+import { useScreenActions } from "@/lib/crm/useScreenActions";
+import { bindResourceScreen } from "@/lib/crm/bindScreens";
 
 /* ---------------------------------- helpers --------------------------------- */
 
@@ -50,16 +53,17 @@ function Value({ v }: { v: string }) {
   return v.startsWith("*") ? <Pill tone={tone(v.slice(1))} className="h-[19px] text-[15.5px] !font-medium">{v.slice(1)}</Pill> : <>{v}</>;
 }
 
-function Buttons({ actions, notice, className = "" }: { actions: Action[]; notice: (m: string) => void; className?: string }) {
+function Buttons({ actions, notice, className = "", act, canAct }: { actions: Action[]; notice: (m: string) => void; className?: string; act?: (label: string) => void; canAct?: (label: string) => boolean }) {
   return (
     <div className={`flex flex-wrap gap-[8px] ${className}`}>
       {actions.map((a, i) => (
         <button
           key={a.label}
           type="button"
+          disabled={canAct ? !canAct(a.label) : false}
           onClick={() => {
             if (a.confirm && !window.confirm(a.confirm)) return;
-            notice(a.notice);
+            if (act) act(a.label); else notice(a.notice);
           }}
           className={i === 0 ? btnSolid : btnOutline}
         >
@@ -161,11 +165,14 @@ function Readonly({ label, value }: { label: string; value: string }) {
 /* ----------------------------------- page ---------------------------------- */
 
 export default function SaScreen2({ id }: { id: string }) {
-  const s: Screen = screens[id];
+  const original: Screen = screens[id];
   const notice = useNotice();
-  const [tab, setTab] = useState(s.tabs[0]);
-  const [selected, setSelected] = useState(s.main.selected ?? 0);
+  const [tab, setTab] = useState(original.tabs[0]);
+  const [selected, setSelected] = useState(original.main.selected ?? 0);
   const [reply, setReply] = useState("");
+  const live = useDslData(id, tab, "", selected, notice.show);
+  const actions = useScreenActions(live, notice.show);
+  const s = bindResourceScreen(original, live);
   const tabIndex = s.tabs.indexOf(tab);
   const view = tabIndex > 0 ? s.tabViews[tabIndex - 1] : undefined;
   const row = s.main.table.rows[selected];
@@ -186,7 +193,7 @@ export default function SaScreen2({ id }: { id: string }) {
         return (
           <>
             <Lines rows={side.rows} row={row} />
-            <Buttons actions={side.actions} notice={notice.show} className="mt-[10px]" />
+            <Buttons act={live.enabled ? actions.act : undefined} canAct={live.enabled ? actions.canAct : undefined} actions={side.actions} notice={notice.show} className="mt-[10px]" />
           </>
         );
       case "fields":
@@ -198,7 +205,7 @@ export default function SaScreen2({ id }: { id: string }) {
               ))}
             </div>
             <Lines rows={side.rows} row={row} />
-            {side.actions && <Buttons actions={side.actions} notice={notice.show} className="mt-[10px]" />}
+            {side.actions && <Buttons act={live.enabled ? actions.act : undefined} canAct={live.enabled ? actions.canAct : undefined} actions={side.actions} notice={notice.show} className="mt-[10px]" />}
           </>
         );
       case "thread":
@@ -226,7 +233,7 @@ export default function SaScreen2({ id }: { id: string }) {
                 className="mt-[8px] h-[32px] w-full rounded-[8px] border border-[#cfd5e2] bg-white px-[10px] text-[15px] font-normal text-[#1a1d36] outline-none placeholder:text-[#6b7390] focus:border-[#5b6fe0]"
               />
             )}
-            <Buttons actions={side.actions} notice={(m) => { notice.show(m); setReply(""); }} className="mt-[8px]" />
+            <Buttons act={live.enabled ? actions.act : undefined} canAct={live.enabled ? actions.canAct : undefined} actions={side.actions} notice={(m) => { notice.show(m); setReply(""); }} className="mt-[8px]" />
           </>
         );
       case "table":
@@ -234,7 +241,7 @@ export default function SaScreen2({ id }: { id: string }) {
           <>
             <DataTable t={side.table} compact />
             <div className="mt-[2px]"><Lines rows={side.rows} /></div>
-            <Buttons actions={side.actions} notice={notice.show} className="mt-[8px]" />
+            <Buttons act={live.enabled ? actions.act : undefined} canAct={live.enabled ? actions.canAct : undefined} actions={side.actions} notice={notice.show} className="mt-[8px]" />
           </>
         );
     }
@@ -272,8 +279,8 @@ export default function SaScreen2({ id }: { id: string }) {
             <DataTable t={view.table} />
           ) : (
             <div className="flex h-full flex-col gap-[10px]">
-              <DataTable t={s.main.table} selected={selected} onSelect={setSelected} />
-              <Buttons actions={s.main.actions} notice={notice.show} />
+              <DataTable t={s.main.table} selected={selected} onSelect={(index) => { setSelected(index);if (live.enabled) live.chooseIndex(index); }} />
+              <Buttons act={live.enabled ? actions.act : undefined} canAct={live.enabled ? actions.canAct : undefined} actions={s.main.actions} notice={notice.show} />
               {s.main.nested && (
                 <section className="rounded-[10px] border border-[#e1e5ee] bg-white px-[10px] pb-[6px] pt-[8px]">
                   <h3 className="mb-[4px] text-[16px] font-medium text-[#0b0c36]">{s.main.nested.title}</h3>

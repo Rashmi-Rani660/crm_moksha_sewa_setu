@@ -1,9 +1,18 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 /** US-006 … US-010 — demo data only; actions show what would happen once the backend exists. */
 
 import Link from "next/link";
 import { useState } from "react";
+import { useOperations } from "@/lib/crm/useOperations";
+import { useRecordId } from "@/lib/crm/useResource";
+import { useWorkforce } from "@/lib/crm/useWorkforce";
+import { authorizedRequest } from "@/lib/api/authorized";
+import { useDebounced } from "@/lib/api/useCrmQuery";
+import { at, count, records, text, EMPTY, type CrmRecord } from "@/lib/crm/data";
+import { humanize, shortDateTime } from "@/lib/format";
 import { useNotice } from "@/components/dashboards/super-admin/kit";
 import { Btn, Btns, Card, CheckItem, DropZone, Field, Flow, Lines, Note, Progress, SearchBox, SelectBox, Table, TextArea, Tiles, UserFrame, btnOutline, btnSolid } from "./kit";
 import { usRoutes } from "./routes";
@@ -22,15 +31,36 @@ const authorityHint: Record<(typeof categories)[number], string> = {
 
 export function US006CreateRequest() {
   const notice = useNotice();
+  const live = useOperations("requests",notice.show);
+  const recordId = useRecordId();
+  const record = recordId ? live.detail.data : null;
   const [mobileSearch, setMobileSearch] = useState("");
-  const [f, setF] = useState({ source: "Helpline", requester: "Demo requester", mobile: "98XXXXXX01", city: "Ghaziabad", locality: "Mohan Nagar", authority: "", notes: "Assistance requested for dignified final rites." });
+  const [draft, setF] = useState<Record<string,string>>({});
+  const f = { source: draft.source ?? text(record?.channel,""),requester: draft.requester ?? text(at(record,"requester.name"),""),mobile: draft.mobile ?? text(at(record,"requester.mobile"),""),city: draft.city ?? text(at(record,"location.city"),""),locality: draft.locality ?? text(at(record,"location.area"),""),authority: draft.authority ?? "",notes: draft.notes ?? text(record?.notes,"") };
   const [category, setCategory] = useState<(typeof categories)[number]>("Unclaimed body");
   const [priority, setPriority] = useState<(typeof priorities)[number]>("Urgent");
   const [checks, setChecks] = useState({ contact: true, privacy: false, noPaid: true });
-  const [savedAt, setSavedAt] = useState("09:50");
-  const set = (k: keyof typeof f) => (v: string) => setF({ ...f, [k]: v });
-  const required = [f.source, f.requester, f.mobile, f.city, f.locality];
-  const now = () => new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false });
+  const [savedAt, setSavedAt] = useState(EMPTY);
+  const set = (k: keyof typeof f) => (v: string) => setF({ ...draft, [k]: v });
+  async function submit() {
+    if (!checks.privacy || !checks.contact) return notice.show("Confirm the contact and privacy notice first.");
+    if (!/^\d{10}$/.test(f.mobile)) return notice.show("Enter a valid 10-digit mobile number.");
+    const pincode = record ? text(at(record,"location.pincode"),"") : window.prompt("Service PIN code (6 digits):")?.trim();
+    const channel = live.master("REQUEST_CHANNEL").find(row => text(row.label).toLowerCase() === f.source.toLowerCase() || row.code === f.source.toUpperCase());
+    const beneficiary = live.master("BENEFICIARY_CATEGORY").find(row => text(row.label).toLowerCase() === category.toLowerCase() || row.code === ({ "EWS family": "EWS","Unclaimed body": "UNCLAIMED","Unsupported person": "UNSUPPORTED" }[category]));
+    if (!pincode || !channel || !beneficiary) return notice.show("Choose a configured request channel and beneficiary category.");
+    const body = { requester: { name: f.requester,mobile: f.mobile },location: { city: f.city,area: f.locality,pincode },beneficiaryCategory: beneficiary.code,priority: priority === "Urgent" ? "CRITICAL" : priority.toUpperCase(),notes: f.notes };
+    const saved = record ? await live.mutation.run<CrmRecord>('/requests/' + recordId, { method: "PATCH",body: { ...body,version: record.version } }, "Saved.") : await live.createRequest({ ...body,channel: channel.code,consentDataProcessing: true });
+    if (saved) {
+      let current = saved;
+      if (f.authority && live.can("requests.edit")) {
+        const legal = await live.mutation.run<CrmRecord>('/requests/' + saved.id + '/legal', { body: { version: current.version,state: "PENDING",referenceNo: f.authority } });
+        if (legal) current = legal;
+      }
+      if (!record && live.can("requests.edit")) await live.mutation.run('/requests/' + saved.id + '/start-verification', { body: { version: current.version } }, "Verification started.");
+      setSavedAt(shortDateTime(text(saved.updatedAt ?? saved.createdAt,"")));
+    }
+  }
 
   return (
     <UserFrame code="US-006" active="sewa-requests" title="Create & Update Sewa Request">
@@ -39,8 +69,8 @@ export function US006CreateRequest() {
           <div className="flex flex-col gap-[8px] sm:flex-row">
             <div className="min-w-0 flex-1"><Field value={mobileSearch} onChange={setMobileSearch} placeholder="Find existing contact by mobile" /></div>
             <Btns className="shrink-0">
-              <Btn onClick={() => notice.show(mobileSearch.trim() ? `No existing contact found for ${mobileSearch} (demo).` : "Enter a mobile number to search first.")}>Find contact</Btn>
-              <Btn onClick={() => notice.show("AI auto-fill suggestions added — review each field before saving (demo).")}>AI auto-fill</Btn>
+              <Btn onClick={async () => { if (!mobileSearch.trim()) return; const result = await authorizedRequest<CrmRecord[]>(`/requests?search=${encodeURIComponent(mobileSearch)}&limit=20`); notice.show(result.data.map(row => text(row.requestNo)).join("\n") || "No matching requests."); }}>Find contact</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>AI auto-fill</Btn>
             </Btns>
           </div>
           <Note>Free Sewa only • Auto-save draft • Required fields marked *</Note>
@@ -58,31 +88,25 @@ export function US006CreateRequest() {
           </div>
           <TextArea label="Request notes" value={f.notes} onChange={set("notes")} />
           <Btns>
-            <Btn solid onClick={() => (setSavedAt(now()), notice.show("Draft saved securely (demo)."))}>Save draft</Btn>
+            <Btn solid disabled onClick={() => notice.show(EMPTY)}>Save draft</Btn>
             <Btn
-              onClick={() =>
-                required.some((v) => !v.trim())
-                  ? notice.show("Fill all required (*) fields before submitting.")
-                  : !checks.noPaid
-                    ? notice.show("Confirm “No paid package or cash collection” before submitting.")
-                    : notice.show("Submitted for verification — request ID REQ-26-1106 generated (demo).")
-              }
+              disabled={live.mutation.busy || !live.can(record ? "requests.edit" : "requests.create")} onClick={submit}
             >
               Submit for verification
             </Btn>
-            <Btn onClick={() => notice.show("Voice input: speak the notes; text is shown for review before saving (demo).")}>Voice input</Btn>
-            <Btn onClick={() => notice.show(`Last draft (saved ${savedAt}) restored.`)}>Resume draft</Btn>
+            <Btn disabled onClick={() => notice.show(EMPTY)}>Voice input</Btn>
+            <Btn disabled onClick={() => notice.show(EMPTY)}>Resume draft</Btn>
           </Btns>
         </Card>
         <Card title="Smart assistance & checks" bodyClassName="flex flex-col gap-[6px]">
-          <Lines rows={[["Existing contact", "Search before creating"], ["Duplicate match", "*Review"], ["Service coverage", f.city.trim().toLowerCase() === "ghaziabad" ? "*Active" : "*Coming soon"], ["Consent / notice", "Record as applicable"], ["Data entry", "AI suggestions need review"]]} />
+          <Lines rows={[["Existing contact", "Search before creating"], ["Duplicate match", "*Review"], ["Service coverage", record ? humanize(text(record.coverage,"")) : EMPTY], ["Consent / notice", "Record as applicable"], ["Data entry", "AI suggestions need review"]]} />
           <CheckItem label="Contact / authority details confirmed" checked={checks.contact} onChange={(v) => setChecks({ ...checks, contact: v })} />
           <CheckItem label="Privacy notice provided where applicable" checked={checks.privacy} onChange={(v) => setChecks({ ...checks, privacy: v })} />
           <CheckItem label="No paid package or cash collection" checked={checks.noPaid} onChange={(v) => setChecks({ ...checks, noPaid: v })} />
           <Note boxed>Category-specific legal documents will appear on the verification screen. No promise of service before authorised checks.</Note>
           <div><Link href={usRoutes.verification} className={btnSolid}>Open verification</Link></div>
           <Note>Draft status: saved at {savedAt} · demo. Review AI suggestions before submission.</Note>
-          <div><Btn onClick={() => notice.show("Possible duplicate: REQ-26-1101 (same locality, 12 min ago) — compare before creating (demo).")}>Review duplicate</Btn></div>
+          <div><Btn onClick={() => notice.show(records(record?.possibleDuplicates).map(row => text(row.requestNo)).join("\n") || EMPTY)}>Review duplicate</Btn></div>
         </Card>
       </div>
       {notice.node}
@@ -93,31 +117,24 @@ export function US006CreateRequest() {
 /* --------------------------------- US-007 ---------------------------------- */
 
 type Doc = { name: string; status: "Verified" | "Missing" | "Review" };
-const initialDocs: Doc[] = [
-  { name: "Authority reference", status: "Verified" },
-  { name: "Identity / record", status: "Verified" },
-  { name: "Death record", status: "Verified" },
-  { name: "Police release (if required)", status: "Missing" },
-  { name: "Supporting record", status: "Review" },
-];
+
 
 export function US007Verification() {
   const notice = useNotice();
-  const [docs, setDocs] = useState(initialDocs);
+  const live = useOperations("requests",notice.show);
+  const docs: (Doc & { id: string; url: string })[] = live.documents.map(row => ({ id: text(row.id),url: text(row.url,""),name: text(row.title ?? row.docType),status: at(row,"verification.state") === "VERIFIED" ? "Verified" : "Review" }));
   const [sel, setSel] = useState(0);
   const received = docs.filter((d) => d.status !== "Missing").length;
-  const upload = (i: number, file?: string) => {
-    setDocs(docs.map((d, k) => (k === i ? { ...d, status: "Review" } : d)));
-    notice.show(`${file ?? docs[i].name} uploaded — file scan and authorised review pending (demo).`);
-  };
+  const upload = () => { if (live.id) live.upload.pick('/requests/' + live.id + '/documents'); };
+
   return (
     <UserFrame code="US-007" active="sewa-requests" title="Verification & Documents">
       <Tiles
         items={[
-          { value: `${String(received).padStart(2, "0")} / 05`, label: "Documents received", tone: "blue" },
-          { value: "03", label: "Verified by authority", tone: "green" },
+          { value: `${String(received).padStart(2, "0")} / ${docs.length}`, label: "Documents received", tone: "blue" },
+          { value: live.detail.data ? count(docs.filter(doc => doc.status === "Verified").length) : EMPTY, label: "Verified by authority", tone: "green" },
           { value: String(docs.filter((d) => d.status === "Review").length).padStart(2, "0"), label: "Review due", tone: "orange" },
-          { value: "Blocked", label: "Legal gate", tone: "red" },
+          { value: humanize(text(at(live.detail.data,"legal.state"),"")), label: "Legal gate", tone: "red" },
         ]}
       />
       <div className={`${rows2} lg:[grid-template-rows:minmax(0,2.75fr)_minmax(0,1fr)]`}>
@@ -131,32 +148,32 @@ export function US007Verification() {
                 d.name,
                 `*${d.status}`,
                 d.status === "Missing" ? (
-                  <Btn key={d.name} className="!h-[30px]" onClick={() => upload(i)}>Upload</Btn>
+                  <Btn key={d.name} className="!h-[30px]" onClick={() => upload()}>Upload</Btn>
                 ) : (
                   <Btn key={d.name} className="!h-[30px]" onClick={() => setSel(i)}>Preview</Btn>
                 ),
               ])}
             />
             <Btns>
-              <Btn solid onClick={() => { const i = docs.findIndex((d) => d.status === "Missing"); if (i < 0) notice.show("All documents received."); else upload(i); }}>Upload document</Btn>
-              <Btn onClick={() => notice.show(received < 5 ? "Submitted for authorised review — missing documents are flagged (demo)." : "Submitted for authorised review (demo).")}>Submit for review</Btn>
-              <Btn onClick={() => notice.show("Escalated to your reporting Admin (demo).")}>Escalate</Btn>
+              <Btn solid onClick={() => { const i = docs.findIndex((d) => d.status === "Missing"); if (i < 0) notice.show("All documents received."); else upload(); }}>Upload document</Btn>
+              <Btn disabled={!live.canAct("Submit for approval")} onClick={() => live.act("Submit for approval")}>Submit for review</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Escalate</Btn>
             </Btns>
-            <DropZone text="Drop PDF / image here or browse · secure upload" onFiles={(n) => { const i = docs.findIndex((d) => d.status === "Missing"); if (n.length) upload(i < 0 ? sel : i, n[0]); }} />
+            <DropZone text="Drop PDF / image here or browse · secure upload" onFiles={() => {}} onFileObjects={(files) => { if (files[0] && live.id) void live.upload.uploadFile(`/requests/${live.id}/documents`,files[0]); }} />
             <Progress value={(received / 5) * 100} label={`Documents received: ${received} of 5 · demo`} />
           </Card>
           <Card title="Selected document • preview" bodyClassName="flex flex-col gap-[8px]">
             <div className="rounded-[8px] border border-[#d6dbe6] bg-[#f8faff] px-[14px] py-[12px] text-[13px] font-normal leading-[1.9] text-[#1a1d36]">
-              <p className="border-b border-[#5b6280] pb-[6px] font-medium">{docs[sel].status === "Missing" ? "Document not uploaded" : `Sample ${docs[sel].name.toLowerCase()}`}</p>
-              <p className="mt-[6px]">Reference: DEMO-00{sel + 1}</p>
-              <p>Case: REQ-26-1101</p>
+              <p className="border-b border-[#5b6280] pb-[6px] font-medium">{docs[sel]?.name ?? EMPTY}</p>
+              <p className="mt-[6px]">Reference: {docs[sel]?.id ?? EMPTY}</p>
+              <p>Case: {text(live.detail.data?.requestNo)}</p>
               <p>Document image not supplied</p>
               <p className="mt-[8px]">Secure viewer required in production</p>
             </div>
             <Lines rows={[["Review owner", "Authorised Admin"], ["User action", "Upload / submit only"], ["Dispatch", "*Blocked"]]} />
             <Btns>
-              <Btn onClick={() => notice.show("Clarification request sent to the reviewer (demo).")}>Request clarification</Btn>
-              <Btn onClick={() => notice.show("Zoomed preview opens in the secure viewer (demo).")}>Zoom preview</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Request clarification</Btn>
+              <Btn onClick={() => { const url = docs[sel]?.url; if (url && /^https?:\/\//.test(url)) window.open(url,"_blank","noopener,noreferrer"); }}>Zoom preview</Btn>
             </Btns>
           </Card>
         </div>
@@ -172,27 +189,26 @@ export function US007Verification() {
 
 /* --------------------------------- US-008 ---------------------------------- */
 
-const cases = [
-  { id: "MS-26-1101", cat: "Unclaimed body", stage: "Clearance pending", next: "Review documents", act: "Review docs", href: usRoutes.verification, emergency: "Yes", gate: "Blocked", step: "Submit missing document" },
-  { id: "MS-26-1099", cat: "EWS family", stage: "In service", next: "Update progress", act: "Quick update", href: "", emergency: "No", gate: "Cleared", step: "Update progress" },
-  { id: "MS-26-1098", cat: "Unsupported person", stage: "In service", next: "Evidence upload", act: "Evidence", href: usRoutes.completion, emergency: "No", gate: "Cleared", step: "Upload completion evidence" },
-];
+
 
 export function US008MyCases() {
   const notice = useNotice();
   const [sel, setSel] = useState(0);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("All statuses");
+  const search = useDebounced(q.trim());
+  const live = useOperations("cases",notice.show,{ search: search || undefined,active: true,stage: status === "In service" ? "IN_SERVICE" : undefined });
+  const cases = live.rows.map(row => ({ recordId: text(row.id),id: row.displayId,cat: humanize(text(row.beneficiaryCategory,"")),stage: row.displayStatus,next: EMPTY,act: "Open",href: usRoutes.caseDetails + '?id=' + row.id,emergency: row.isEmergency ? "Yes" : "No",gate: EMPTY,step: EMPTY }));
   const visible = cases.map((c, i) => ({ c, i })).filter(({ c }) => (status === "All statuses" || c.stage === status) && `${c.id} ${c.cat}`.toLowerCase().includes(q.toLowerCase()));
-  const cur = cases[sel];
+  const cur = cases[sel] ?? cases[0] ?? { recordId: "",id: EMPTY,cat: EMPTY,stage: EMPTY,next: EMPTY,act: EMPTY,href: "",emergency: EMPTY,gate: EMPTY,step: EMPTY };
   return (
     <UserFrame code="US-008" active="my-cases" title="My Assigned Cases">
       <Tiles
         items={[
-          { value: "03", label: "Assigned active cases", tone: "blue" },
-          { value: "01", label: "Emergency", tone: "red" },
-          { value: "02", label: "In progress", tone: "sky" },
-          { value: "01", label: "Awaiting clearance", tone: "orange" },
+          { value: live.metric("active"), label: "Assigned active cases", tone: "blue" },
+          { value: live.metric("emergencyActive"), label: "Emergency", tone: "red" },
+          { value: live.metric("byStage.IN_SERVICE"), label: "In progress", tone: "sky" },
+          { value: EMPTY, label: "Awaiting clearance", tone: "orange" },
         ]}
       />
       <div className={`${rows2} lg:[grid-template-rows:minmax(0,1.6fr)_minmax(0,1fr)]`}>
@@ -205,28 +221,28 @@ export function US008MyCases() {
             <Table
               cols={["Case ID", "Category", "Current stage", "Next action", "Action"]}
               selected={visible.findIndex((v) => v.i === sel)}
-              onSelect={(k) => setSel(visible[k].i)}
+              onSelect={(k) => { setSel(visible[k].i);live.select(cases[visible[k].i]?.recordId ?? null); }}
               rows={visible.map(({ c }) => [
                 c.id,
                 c.cat,
                 `*${c.stage}`,
                 c.next,
                 <span key={c.id} className="flex gap-[4px]">
-                  <Link href={usRoutes.caseDetails} className={`${btnOutline} !h-[30px]`}>Open</Link>
+                  <Link href={`${usRoutes.caseDetails}?id=${c.recordId}`} className={`${btnOutline} !h-[30px]`}>Open</Link>
                   {c.href ? (
                     <Link href={c.href} className={`${btnOutline} !h-[30px]`}>{c.act}</Link>
                   ) : (
-                    <Btn className="!h-[30px]" onClick={() => notice.show(`${c.id}: progress update saved to the case timeline (demo).`)}>{c.act}</Btn>
+                    <Btn className="!h-[30px]" disabled onClick={() => notice.show(EMPTY)}>{c.act}</Btn>
                   )}
                 </span>,
               ])}
             />
-            <div><Link href={usRoutes.caseDetails} className={btnSolid}>View selected case</Link></div>
+            <div><Link href={`${usRoutes.caseDetails}?id=${cur.recordId}`} className={btnSolid}>View selected case</Link></div>
           </Card>
           <Card title="Case at a glance" bodyClassName="flex flex-col gap-[10px]">
-            <Lines rows={[["Selected", cur.id], ["Emergency", cur.emergency === "Yes" ? "*Yes" : "No"], ["Owner", "User 07"], ["Location", "Ghaziabad"], ["Legal gate", cur.gate === "Blocked" ? "*Blocked" : "*Verified"], ["Next step", cur.step]]} />
+            <Lines rows={[["Selected", cur.id], ["Emergency", cur.emergency === "Yes" ? "*Yes" : "No"], ["Owner",text(at(live.detail.data,"owner.name"))], ["Location",text(at(live.detail.data,"beneficiary.city"))], ["Legal gate", cur.gate], ["Next step", cur.step]]} />
             <Btns>
-              <Link href={usRoutes.caseDetails} className={btnSolid}>Open details</Link>
+              <Link href={`${usRoutes.caseDetails}?id=${cur.recordId}`} className={btnSolid}>Open details</Link>
               <Link href={usRoutes.verification} className={btnOutline}>Documents</Link>
             </Btns>
           </Card>
@@ -234,10 +250,10 @@ export function US008MyCases() {
         <div className="grid gap-[10px] lg:min-h-0 lg:grid-cols-[670fr_480fr] lg:[grid-template-rows:minmax(0,1fr)]">
           <Card title="My case stages" bodyClassName="flex flex-col gap-[10px]">
             <Flow steps={["Assigned", "Verification", "In service", "Evidence", "Review"]} green={[1, 3]} />
-            <Lines rows={[["Awaiting clearance", "01"], ["In service", "02"]]} />
+            <Lines rows={[["Awaiting clearance",EMPTY],["In service",live.metric("byStage.IN_SERVICE")]]} />
           </Card>
           <Card title="Recent activity">
-            <Lines rows={[["09:45", "Case assigned"], ["09:50", "Document review requested"], ["10:00", "Admin follow-up due"]]} />
+            <Lines rows={live.timeline.slice(-3).map(row => [shortDateTime(text(row.at,"")),text(row.summary)])} />
           </Card>
         </div>
       </div>
@@ -249,39 +265,38 @@ export function US008MyCases() {
 /* --------------------------------- US-009 ---------------------------------- */
 
 export function US009CaseDetails() {
+  const router = useRouter();
   const notice = useNotice();
-  const [note, setNote] = useState("Awaiting required authority clearance.");
-  const [timeline, setTimeline] = useState(["09:45 · Assigned by Admin 01", "09:50 · Supporting documents received", "10:00 · Legal verification pending", "Next · Authorised clearance required"]);
+  const live = useOperations("cases",notice.show);
+  const workforce = useWorkforce(notice.show);
+  const record = live.detail.data;
+  const [note, setNote] = useState("");
+  const timeline = live.timeline.map(row => `${shortDateTime(text(row.at,""))} ? ${text(row.summary)}`);
   return (
     <UserFrame code="US-009" active="my-cases" title="Case Details, Progress & Escalation">
       <Tiles
         items={[
-          { value: "MS-26-1101", label: "Case", tone: "blue" },
-          { value: "Emergency", label: "Priority", tone: "red" },
-          { value: "Blocked", label: "Legal gate", tone: "red" },
-          { value: "User 07", label: "Owner", tone: "sky" },
+          { value: text(record?.caseNo), label: "Case", tone: "blue" },
+          { value: humanize(text(record?.priority,"")), label: "Priority", tone: "red" },
+          { value: humanize(text(at(record,"request.legal"),"")), label: "Legal gate", tone: "red" },
+          { value: text(at(record,"owner.name")), label: "Owner", tone: "sky" },
         ]}
       />
       <div className={`${rows2} lg:[grid-template-rows:minmax(0,1.45fr)_minmax(0,1fr)]`}>
         <div className="grid gap-[10px] lg:min-h-0 lg:grid-cols-[640fr_500fr] lg:[grid-template-rows:minmax(0,1fr)]">
           <Card title="Case summary & quick update" bodyClassName="flex flex-col gap-[6px]">
-            <Lines rows={[["Linked request", "REQ-26-1101"], ["Beneficiary", "Unclaimed body"], ["Service", "Free cremation support"], ["Location", "Ghaziabad"], ["Contact", "Authority · masked"], ["Current stage", "Verification"]]} />
+            <Lines rows={[["Linked request", text(record?.requestNo)], ["Beneficiary", humanize(text(record?.beneficiaryCategory,""))], ["Service", Array.isArray(record?.services) ? record.services.join(" / ") : EMPTY], ["Location", text(at(record,"beneficiary.city"))], ["Contact", text(at(record,"beneficiary.requesterMobile"))], ["Current stage", humanize(text(record?.stage,""))]]} />
             <TextArea label="Progress note" value={note} onChange={setNote} />
             <Btns>
               <Btn
                 solid
-                onClick={() => {
-                  if (!note.trim()) return notice.show("Write a progress note first.");
-                  const t = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false });
-                  setTimeline([...timeline.slice(0, -1), `${t} · ${note.trim()}`, timeline[timeline.length - 1]]);
-                  notice.show("Update saved to the case timeline and daily report (demo).");
-                }}
+                disabled onClick={() => notice.show(EMPTY)}
               >
                 Save update
               </Btn>
-              <Link href={usRoutes.verification} className={btnOutline}>Open documents</Link>
-              <Btn onClick={() => window.confirm("Escalate MS-26-1101 to your reporting Admin?") && notice.show("Escalated to reporting Admin — clearance is not overridden (demo).")}>Escalate to Admin</Btn>
-              <Btn onClick={() => notice.show("Voice note: recording is converted to text for review before saving (demo).")}>Voice note</Btn>
+              <Link href={`${usRoutes.verification}?id=${text(record?.requestId,"")}`} className={btnOutline}>Open documents</Link>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Escalate to Admin</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Voice note</Btn>
             </Btns>
           </Card>
           <Card title="Timeline & pending actions" bodyClassName="flex flex-col gap-[6px]">
@@ -292,25 +307,25 @@ export function US009CaseDetails() {
             </ul>
             <Lines rows={[["Vehicle", "Not released"], ["Field coordination", "Awaiting approval"], ["SLA", "Server timer required"]]} />
             <Btns>
-              <Btn solid onClick={() => notice.show("Resource request sent for approval (demo).")}>Request resource</Btn>
-              <Btn onClick={() => notice.show("Calling reporting Admin through the official line (demo).")}>Call reporting Admin</Btn>
+              <Btn solid onClick={() => router.push(`/dashboard/user/resources-expenses?id=${live.id ?? ""}`)}>Request resource</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Call reporting Admin</Btn>
             </Btns>
           </Card>
         </div>
         <div className="grid gap-[10px] lg:min-h-0 lg:grid-cols-2 lg:[grid-template-rows:minmax(0,1fr)]">
           <Card title="Communication & evidence" bodyClassName="flex flex-col gap-[8px]">
-            <Lines rows={[["Last official contact", "09:50 · demo"], ["Evidence", "Restricted access"], ["Expenses", "Submit separately"]]} />
-            <div><Link href={usRoutes.completion} className={btnSolid}>Add evidence</Link></div>
+            <Lines rows={[["Last official contact", EMPTY], ["Evidence", "Restricted access"], ["Expenses", "Submit separately"]]} />
+            <div><Link href={`${usRoutes.completion}?id=${live.id ?? ""}`} className={btnSolid}>Add evidence</Link></div>
             <Btns>
-              <Btn onClick={() => notice.show("Official call to the masked contact (demo).")}>Call contact</Btn>
-              <Btn onClick={() => notice.show("WhatsApp reply with an approved template (demo).")}>WhatsApp reply</Btn>
-              <Btn onClick={() => notice.show("Vehicle request sent — dispatch waits for legal clearance (demo).")}>Request vehicle</Btn>
-              <Btn onClick={() => notice.show("Material request sent to the store (demo).")}>Request material</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Call contact</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>WhatsApp reply</Btn>
+              <Btn onClick={() => router.push(`/dashboard/user/resources-expenses?id=${live.id ?? ""}`)}>Request vehicle</Btn>
+              <Btn onClick={() => router.push(`/dashboard/user/resources-expenses?id=${live.id ?? ""}`)}>Request material</Btn>
             </Btns>
           </Card>
           <Card title="Safety & escalation" bodyClassName="flex flex-col gap-[10px]">
             <Note>Urgent assistance: notify reporting Admin. Emergency escalation does not bypass mandatory legal clearance.</Note>
-            <div><Btn solid onClick={() => window.confirm("Raise an urgent alert to your reporting Admin?") && notice.show("Urgent alert raised (demo).")}>Raise urgent alert</Btn></div>
+            <div><Btn solid disabled={!workforce.can("attendance.create") || workforce.mutation.busy} onClick={() => workforce.action("safety")}>Raise urgent alert</Btn></div>
           </Card>
         </div>
       </div>
@@ -325,31 +340,27 @@ type Ev = { name: string; status: "Uploaded" | "Missing" };
 
 export function US010CaseCompletion() {
   const notice = useNotice();
-  const [evidence, setEvidence] = useState<Ev[]>([
-    { name: "Service record", status: "Uploaded" },
-    { name: "Handover record", status: "Uploaded" },
-    { name: "Completion evidence", status: "Missing" },
-  ]);
+  const live = useOperations("cases",notice.show);
+  const record = live.detail.data;
+  const evidence: (Ev & { url: string })[] = live.documents.map(row => ({ name: text(row.title ?? row.docType),status: "Uploaded",url: text(row.url,"") }));
   const [material, setMaterial] = useState(false);
-  const [remarks, setRemarks] = useState("Service completion recorded; supporting evidence awaiting upload.");
-  const [feedback, setFeedback] = useState("Not requested yet");
+  const [remarks, setRemarks] = useState("");
+  const [feedback, setFeedback] = useState("");
   const [publicity, setPublicity] = useState(false);
-  const evDone = evidence.every((e) => e.status === "Uploaded");
-  const steps = [true, true, true, evDone, material];
+  const evDone = evidence.length > 0 && evidence.every(e => e.status === "Uploaded");
+  const steps = [record?.stage === "SERVICE_DELIVERED",at(record,"request.legal") === "CLEARED",false,evDone,material];
   const done = steps.filter(Boolean).length;
   const uploaded = evidence.filter((e) => e.status === "Uploaded").length;
-  const upload = (file?: string) => {
-    setEvidence(evidence.map((e) => (e.status === "Missing" ? { ...e, status: "Uploaded" } : e)));
-    notice.show(`${file ?? "Completion evidence"} uploaded — verification by Admin pending (demo).`);
-  };
+  const upload = () => { if (live.id) live.upload.pick(`/cases/${live.id}/documents`); };
+
   return (
     <UserFrame code="US-010" active="my-cases" title="Case Completion, Evidence & Feedback">
       <Tiles
         items={[
-          { value: "MS-26-1098", label: "Case", tone: "blue" },
-          { value: `${String(uploaded).padStart(2, "0")} / 03`, label: "Evidence", tone: "orange" },
-          { value: "Pending", label: "Review", tone: "orange" },
-          { value: "Not submitted", label: "Closure", tone: "sky" },
+          { value: text(record?.caseNo), label: "Case", tone: "blue" },
+          { value: `${String(uploaded).padStart(2, "0")} / ${evidence.length}`, label: "Evidence", tone: "orange" },
+          { value: humanize(text(record?.stage,"")), label: "Review", tone: "orange" },
+          { value: humanize(text(record?.stage,"")), label: "Closure", tone: "sky" },
         ]}
       />
       <div className={`${rows2} lg:[grid-template-rows:minmax(0,3.3fr)_minmax(0,1fr)]`}>
@@ -363,8 +374,8 @@ export function US010CaseCompletion() {
             <CheckItem label="Material and expense records submitted" checked={material} onChange={setMaterial} />
             <TextArea label="Completion remarks" value={remarks} onChange={setRemarks} />
             <Btns className="mt-[4px]">
-              <Btn solid onClick={() => notice.show("Draft saved (demo).")}>Save draft</Btn>
-              <Btn onClick={() => notice.show(done < 5 ? "Submission is disabled until all required evidence and records are complete." : "Submitted for Admin approval — you cannot approve your own closure (demo).")}>Submit for approval</Btn>
+              <Btn solid disabled onClick={() => notice.show(EMPTY)}>Save draft</Btn>
+              <Btn disabled={!live.canAct("Submit closure")} onClick={() => live.act("Submit closure", { summary: remarks, ...(feedback.trim() ? { familyFeedback: { rating: Number(window.prompt("Family rating (1 to 5):")), comment: feedback.trim() } } : {}) })}>Submit for approval</Btn>
             </Btns>
           </Card>
           <Card title="Evidence & feedback" bodyClassName="flex flex-col gap-[6px]">
@@ -376,14 +387,14 @@ export function US010CaseCompletion() {
                 e.status === "Missing" ? (
                   <Btn key={e.name} className="!h-[30px]" onClick={() => upload()}>Upload</Btn>
                 ) : (
-                  <Btn key={e.name} className="!h-[30px]" onClick={() => notice.show(`${e.name}: secure preview (demo).`)}>Preview</Btn>
+                  <Btn key={e.name} className="!h-[30px]" onClick={() => { if (/^https?:\/\//.test(e.url)) window.open(e.url,"_blank","noopener,noreferrer"); }}>Preview</Btn>
                 ),
               ])}
             />
             <TextArea label="Optional family feedback" value={feedback} onChange={setFeedback} />
             <CheckItem label="Separate consent recorded for publicity" checked={publicity} onChange={setPublicity} />
-            <div><Btn solid onClick={() => notice.show("Feedback saved — it is optional and never a condition of free Sewa (demo).")}>Add feedback</Btn></div>
-            <DropZone text="Drop completion evidence or browse · upload required" onFiles={(n) => n.length && upload(n[0])} />
+            <div><Btn solid disabled onClick={() => notice.show(EMPTY)}>Add feedback</Btn></div>
+            <DropZone text="Drop completion evidence or browse · upload required" onFiles={() => {}} onFileObjects={(files) => { if (files[0] && live.id) void live.upload.uploadFile(`/cases/${live.id}/documents`,files[0]); }} />
           </Card>
         </div>
         <Card title="Closure workflow" bodyClassName="flex flex-col gap-[8px]">

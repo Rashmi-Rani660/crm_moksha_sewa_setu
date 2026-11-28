@@ -43,6 +43,8 @@ import {
 } from "@/components/dashboards/super-admin/kit";
 import type { AccessLevel } from "@/lib/api/auth";
 import { authorizedRequest } from "@/lib/api/authorized";
+import { useCrmAccess } from "@/lib/api/useCrmAccess";
+import { useCrmMutation } from "@/lib/api/useCrmMutation";
 import { errorMessage } from "@/lib/api/client";
 import { qs, useCrmQuery, useDebounced } from "@/lib/api/useCrmQuery";
 import { ACCESS_LEVEL_LABEL, clock, humanize, pad2, shortDateTime } from "@/lib/format";
@@ -115,6 +117,8 @@ const auditTone = (action: string) =>
 
 export default function SA008Users() {
   const notice = useNotice();
+  const { can } = useCrmAccess();
+  const mutation = useCrmMutation(notice.show);
   const [tab, setTab] = useState<Tab>("User list");
   const [query, setQuery] = useState("");
   const [level, setLevel] = useState<(typeof levels)[number]>("All access levels");
@@ -157,14 +161,15 @@ export default function SA008Users() {
   const activityLog = (audit.data ?? []).map((a) => ({ time: clock(a.at), text: `${a.entityLabel ? `${a.entityLabel} · ` : ""}${a.summary}`, tone: auditTone(a.action) }));
 
   async function suspendSelected() {
+    if (mutation.busy || !can("users.edit")) return;
     if (!selected) return notice.show("Select a user in the register first.");
     if (selected.status !== "ACTIVE") return notice.show("Only an active account can be suspended.");
     const reason = window.prompt(`Reason for suspending ${selected.name} (required):`)?.trim();
     if (!reason) return;
+    if (reason.length < 5) return notice.show("Enter a reason of at least 5 characters.");
     try {
       const detail = await authorizedRequest<{ version: number }>(`/users/${selected.id}`);
-      await authorizedRequest(`/users/${selected.id}/suspend`, { body: { version: detail.data.version, reason } });
-      notice.show(`${selected.name} suspended; their sessions were signed out.`);
+      await mutation.run(`/users/${selected.id}/suspend`, { body: { version: detail.data.version, reason } }, `${selected.name} suspended; their sessions were signed out.`);
       setSelected(null);
       list.reload();
       summary.reload();
@@ -288,7 +293,7 @@ export default function SA008Users() {
                   <PrimaryButton outline onClick={() => notice.show(selected ? `Access changes for ${selected.name} are submitted for independent approval.` : "Select a user in the register first.")}>
                     Edit access
                   </PrimaryButton>
-                  <PrimaryButton outline onClick={suspendSelected}>
+                  <PrimaryButton disabled={mutation.busy || !can("users.edit")} outline onClick={suspendSelected}>
                     Suspend account
                   </PrimaryButton>
                   <PrimaryButton outline onClick={() => setTab("Activity logs")}>

@@ -161,12 +161,12 @@ function Actions({ items, onAct, primary = true }: { items: string[]; onAct: (a:
 
 /* ---------------------------------- screen --------------------------------- */
 
-export default function RegisterScreen({ spec }: { spec: ScreenSpec }) {
+export default function RegisterScreen({ spec, onAction }: { spec: ScreenSpec; onAction?: (action: string) => void }) {
   const [tab, setTab] = useState(spec.tabs[0]);
   const [q, setQ] = useState("");
 
   // TODO: wire each action to its API; until then the buttons do nothing.
-  const act = (what: string) => void what;
+  const act = (what: string) => onAction?.(what);
   const { register, side, lower } = spec;
   const total = register.columns.reduce((a, c) => a + c.w, 0);
   const query = q.trim().toLowerCase();

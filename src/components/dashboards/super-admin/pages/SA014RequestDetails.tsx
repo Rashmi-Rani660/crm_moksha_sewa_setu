@@ -8,32 +8,41 @@
  */
 
 import { useState } from "react";
+import { useOperations } from "@/lib/crm/useOperations";
+import { at, text, records, EMPTY } from "@/lib/crm/data";
+import { humanize, shortDateTime } from "@/lib/format";
 import { useNotice } from "@/components/dashboards/super-admin/kit";
 import { screenPicker1120 } from "@/components/dashboards/super-admin/routes";
 import { Btn, Buttons, Check, Col, Columns, DataTable, Field, KVList, NativeSelect, Panel, Pill, Screen, SubLabel, TextBox, ink } from "@/components/dashboards/super-admin/screen-kit";
 
 const tabs = ["Request Details", "Documents", "Eligibility & Legal", "Communication", "Audit History"] as const;
-const categoryOpts = ["Unclaimed body", "Unsupported person", "EWS family"] as const;
-const serviceOpts = ["Dignified cremation", "Body transportation", "Documentation assistance", "Family coordination"] as const;
-const verifierOpts = ["Verification User 01", "Verification User 02", "Operations Admin"] as const;
-
-const initialChecklist = [
-  { item: "Death / hospital record", status: "Verified", owner: "Verification User 01" },
-  { item: "Authority referral", status: "Verified", owner: "Verification User 01" },
-  { item: "Legal clearance / handover", status: "Pending", owner: "Competent authority" },
-  { item: "Eligibility / case approval", status: "Pending", owner: "Operations Admin" },
-];
-
 export default function SA014RequestDetails() {
   const notice = useNotice();
+  const live = useOperations("requests", notice.show);
+  const record = live.detail.data;
+  const categoryOpts = live.master("BENEFICIARY_CATEGORY").map(row => text(row.code));
+  const serviceOpts = live.master("SERVICE").map(row => text(row.code));
+  const verifierOpts = live.people.map(row => text(row.name));
   const [tab, setTab] = useState<string>(tabs[0]);
-  const [category, setCategory] = useState<string>(categoryOpts[0]);
-  const [service, setService] = useState<string>(serviceOpts[0]);
-  const [verifier, setVerifier] = useState<string>(verifierOpts[0]);
-  const [checklist] = useState(initialChecklist);
-  const [remarks, setRemarks] = useState("Await authorised handover and clearance.");
-  const [checks, setChecks] = useState({ evidence: true, legal: false, eligibility: false });
-  const [hold, setHold] = useState(false);
+  const [category, setCategory] = useState<string>("");
+  const [service, setService] = useState<string>("");
+  const [verifier, setVerifier] = useState<string>("");
+  const checklist = records(record?.checklist).map(item => ({ item: text(item.label), status: item.done ? "Verified" : "Pending", owner: EMPTY }));
+  const [remarks, setRemarks] = useState("");
+  const checks = { evidence: checklist.length > 0 && checklist.every(item => item.status === "Verified"), legal: at(record,"legal.state") === "CLEARED", eligibility: !!record?.verification };
+  const setChecks = (next: typeof checks) => {
+    if (next.legal !== checks.legal && next.legal) void live.act("Record legal clearance");
+    else if (next.evidence !== checks.evidence) void live.act("Save checklist", { items: records(record?.checklist).map(item => ({ key: item.key, done: next.evidence })) });
+    else if (next.eligibility) void live.act("Verify request");
+  };
+  const hold = record?.status === "ON_HOLD";
+  async function save() {
+    const result = await live.action("", "requests.edit", { notes: remarks, ...(category ? { beneficiaryCategory: category } : {}), ...(service ? { services: [service] } : {}) }, "PATCH");
+    const owner = live.people.find(person => person.name === verifier);
+    if (result && owner && owner.id !== at(record, "owner.id") && live.can("requests.assign")) {
+      await live.mutation.run(`/requests/${live.id}/assign`, { body: { version: result.version, ownerId: owner.id } }, "Assigned.");
+    }
+  }
 
   return (
     <Screen
@@ -42,11 +51,11 @@ export default function SA014RequestDetails() {
       active="sewa-operations"
       picker={screenPicker1120}
       kpis={[
-        { value: "0001", label: "Request ID" },
-        { value: "Critical", label: "Priority" },
-        { value: "Active", label: "Coverage" },
-        { value: `${checklist.filter((c) => c.status === "Verified").length} / 4`, label: "Documents" },
-        { value: hold ? "On hold" : "Pending", label: "Eligibility" },
+        { value: text(record?.requestNo), label: "Request ID" },
+        { value: humanize(text(record?.priority, "")), label: "Priority" },
+        { value: humanize(text(record?.coverage, "")), label: "Coverage" },
+        { value: `${checklist.filter((c) => c.status === "Verified").length} / ${checklist.length}`, label: "Documents" },
+        { value: record ? humanize(text(record.status, "")) : EMPTY, label: "Eligibility" },
       ]}
       tabs={tabs}
       tab={tab}
@@ -56,14 +65,14 @@ export default function SA014RequestDetails() {
         <Col>
           <Panel title="Request & beneficiary details" h={300}>
             <div className="grid grid-cols-1 gap-x-[13px] gap-y-[8px] sm:grid-cols-2">
-              <Field label="Request ID"><TextBox value="MSR-26-27-0001" readOnly label="Request ID" /></Field>
-              <Field label="Source"><TextBox value="AI inbound call" readOnly label="Source" /></Field>
-              <Field label="Beneficiary category"><NativeSelect label="Beneficiary category" value={category} options={categoryOpts} onChange={setCategory} className="w-full" /></Field>
-              <Field label="Service requested"><NativeSelect label="Service requested" value={service} options={serviceOpts} onChange={setService} className="w-full" /></Field>
-              <Field label="City / centre"><TextBox value="Ghaziabad / HO" readOnly label="City / centre" /></Field>
-              <Field label="Contact reference"><TextBox value="Masked / authorised authority" readOnly label="Contact reference" /></Field>
-              <Field label="Assigned verifier"><NativeSelect label="Assigned verifier" value={verifier} options={verifierOpts} onChange={setVerifier} className="w-full" /></Field>
-              <Field label="Received at"><TextBox value="26 Nov 2026 · 10:15 AM" readOnly label="Received at" /></Field>
+              <Field label="Request ID"><TextBox value={text(record?.requestNo)} readOnly label="Request ID" /></Field>
+              <Field label="Source"><TextBox value={humanize(text(record?.channel, ""))} readOnly label="Source" /></Field>
+              <Field label="Beneficiary category"><NativeSelect label="Beneficiary category" value={category || text(record?.beneficiaryCategory, "")} options={categoryOpts} onChange={setCategory} className="w-full" /></Field>
+              <Field label="Service requested"><NativeSelect label="Service requested" value={service || text((record?.services as string[] | undefined)?.[0], "")} options={serviceOpts} onChange={setService} className="w-full" /></Field>
+              <Field label="City / centre"><TextBox value={text(at(record,"centre.name"))} readOnly label="City / centre" /></Field>
+              <Field label="Contact reference"><TextBox value={text(at(record,"requester.mobile"))} readOnly label="Contact reference" /></Field>
+              <Field label="Assigned verifier"><NativeSelect label="Assigned verifier" value={verifier || text(at(record,"owner.name"), "")} options={verifierOpts} onChange={setVerifier} className="w-full" /></Field>
+              <Field label="Received at"><TextBox value={shortDateTime(text(record?.createdAt,""))} readOnly label="Received at" /></Field>
             </div>
           </Panel>
 
@@ -74,17 +83,13 @@ export default function SA014RequestDetails() {
               rows={checklist.map((c) => ({ key: c.item, cells: [c.item, c.status, c.owner] }))}
             />
             <Buttons>
-              <Btn primary onClick={() => notice.show("Missing-document request sent to the authorised contact (demo).")}>Request missing documents</Btn>
+              <Btn primary disabled={!live.can("requests.edit") || !live.id} onClick={() => live.upload.pick(`/requests/${live.id}/documents`)}>Request missing documents</Btn>
               <Btn
-                onClick={() =>
-                  checks.legal && checks.eligibility
-                    ? notice.show("Submitted for human approval (demo).")
-                    : notice.show("Record legal clearance and eligibility before approval.")
-                }
+                disabled={!live.canAct("Submit for approval")} onClick={() => live.act("Submit for approval")}
               >
                 Submit for approval
               </Btn>
-              <Btn onClick={() => setHold((h) => !h)}>{hold ? "Release hold" : "Place on hold"}</Btn>
+              <Btn disabled={!live.canAct(hold ? "Release hold" : "Place on hold")} onClick={() => live.act(hold ? "Release hold" : "Place on hold")}>{hold ? "Release hold" : "Place on hold"}</Btn>
             </Buttons>
           </Panel>
         </Col>
@@ -94,7 +99,7 @@ export default function SA014RequestDetails() {
             <KVList
               rowH={26}
               rows={[
-                ["SLA remaining", "00:35:00"],
+                ["SLA remaining", shortDateTime(text(at(record,"sla.responseDueAt"), ""))],
                 ["Legal clearance", <Pill key="l" tone={checks.legal ? "green" : "amber"}>{checks.legal ? "Recorded" : "Pending"}</Pill>],
                 ["Dispatch", checks.legal ? "Allowed after approval" : "Blocked until clearance"],
                 ["Final verification", "Human decision"],
@@ -117,16 +122,16 @@ export default function SA014RequestDetails() {
               <Check label="Eligibility confirmed" checked={checks.eligibility} onChange={(v) => setChecks({ ...checks, eligibility: v })} />
             </div>
             <Buttons className="!mt-[6px]">
-              <Btn primary onClick={() => notice.show("Draft saved (demo).")}>Save draft</Btn>
-              <Btn onClick={() => notice.show("Escalated to Operations Admin (demo).")}>Escalate</Btn>
+              <Btn primary disabled={!live.canAct("Save draft")} onClick={save}>Save draft</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Escalate</Btn>
             </Buttons>
             <SubLabel>Verification history</SubLabel>
             <KVList
               rowH={24}
               rows={[
-                ["10:20 • Hospital record", "Verifier 01"],
-                ["10:25 • Authority referral", "Verifier 01"],
-                ["Final approver", "Operations Admin"],
+                [shortDateTime(text(live.timeline[0]?.at,"")),text(live.timeline[0]?.summary)],
+                [shortDateTime(text(live.timeline[1]?.at,"")),text(live.timeline[1]?.summary)],
+                ["Final approver",text(at(record,"verification.verifiedBy"))],
               ]}
             />
             <Buttons className="!mt-[6px]">

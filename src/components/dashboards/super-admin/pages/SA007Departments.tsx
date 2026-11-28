@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 /**
  * SA-007 — Department Management.
  * Rebuild matched to the SA-007 reference design: 6 KPI tiles, 5 tabs, a top
@@ -11,19 +13,12 @@
  */
 
 import { useState } from "react";
-import {
-  Bell,
-  Building2,
-  CircleCheck,
-  Cog,
-  Layers,
-  Network,
-  Radio,
-  ShieldCheck,
-  Users,
-  UsersRound,
-  type LucideIcon,
-} from "lucide-react";
+import { Network, ShieldCheck, UsersRound } from "lucide-react";
+import { useResource } from "@/lib/crm/useResource";
+import { useCrmQuery } from "@/lib/api/useCrmQuery";
+import { EMPTY, count, text, at, choose, type CrmRecord } from "@/lib/crm/data";
+import { humanize } from "@/lib/format";
+import { Bell, Building2, CircleCheck, Cog, Layers, Radio, Users, type LucideIcon } from "lucide-react";
 import {
   KpiRow,
   KpiTile,
@@ -58,41 +53,18 @@ type Dept = {
   color: string;
 };
 
-const depts: Dept[] = [
-  { crm: "DPT-01", hrms: "HR-101", name: "Operations & Sewa", admin: "Demo Admin 01", accounts: "46", tasks: "12", mode: "Auto", status: "Active", icon: Cog, color: "#f0a020" },
-  { crm: "DPT-02", hrms: "HR-102", name: "CSR & Partnerships", admin: "Demo Admin 02", accounts: "22", tasks: "05", mode: "Manual", status: "Active", icon: UsersRound, color: "#7a3fe0" },
-  { crm: "DPT-03", hrms: "HR-103", name: "Finance & Donations", admin: "Demo Admin 03", accounts: "24", tasks: "08", mode: "Auto", status: "Active", icon: CircleCheck, color: "#1f9a2b" },
-  { crm: "DPT-04", hrms: "HR-104", name: "Communication & Outreach", admin: "Demo Admin 04", accounts: "30", tasks: "06", mode: "Auto", status: "Active", icon: Layers, color: "#2f6fe0" },
-  { crm: "DPT-05", hrms: "HR-105", name: "Volunteer Management", admin: "Demo Admin 05", accounts: "28", tasks: "04", mode: "Manual", status: "Active", icon: UsersRound, color: "#d6336c" },
-  { crm: "DPT-06", hrms: "HR-106", name: "IT, Automation & CRM", admin: "Demo Admin 06", accounts: "18", tasks: "03", mode: "Auto", status: "In Progress", icon: Network, color: "#0f9f8f" },
-  { crm: "DPT-07", hrms: "HR-107", name: "Admin & Support Services", admin: "Demo Admin 07", accounts: "18", tasks: "02", mode: "Auto", status: "Active", icon: ShieldCheck, color: "#7a3fe0" },
-];
-
-const detailRows: Record<string, readonly (readonly [string, string])[]> = {
-  "DPT-01": [
-    ["HRMS source", "HR-101 · Synced"],
-    ["Admin", "Demo Admin 01"],
-    ["Reports to", "Super Admin"],
-    ["Account scope", "Department + centre"],
-    ["Open tasks", "12"],
-    ["SLA", "96%"],
-    ["Training", "92%"],
-    ["Budget", "₹2.4 L · demo"],
-  ],
-};
-
 const reporting: readonly (readonly [string, string])[] = [
-  ["Department", "Operations & Sewa"],
-  ["Access level", "Admin"],
-  ["Module permissions", "Sewa, Cases, Finance"],
-  ["Location scope", "Ghaziabad centre"],
+  ["Department", EMPTY],
+  ["Access level", EMPTY],
+  ["Module permissions", EMPTY],
+  ["Location scope", EMPTY],
 ] as const;
 
 const automation: readonly (readonly [string, string])[] = [
-  ["Assignment mode", "Auto + manual override"],
-  ["Training", "92% complete"],
-  ["Pending work", "05 items"],
-  ["Deactivation", "Archive after handover"],
+  ["Assignment mode", EMPTY],
+  ["Training", EMPTY],
+  ["Pending work", EMPTY],
+  ["Deactivation", EMPTY],
 ] as const;
 
 function Bar({ pct, color = "#2f6fe0" }: { pct: number; color?: string }) {
@@ -104,21 +76,24 @@ function Bar({ pct, color = "#2f6fe0" }: { pct: number; color?: string }) {
 }
 
 export default function SA007Departments() {
+  const router = useRouter();
   const notice = useNotice();
+  const live = useResource("/departments", "departments", notice.show, {}, { summary: null });
+  const users = useCrmQuery<CrmRecord>(live.can("users.view") ? "/users/summary" : null);
+  const admins = useCrmQuery<CrmRecord[]>(live.can("users.view") ? "/users?accessLevel=ADMIN&status=ACTIVE&limit=100" : null);
+  const appearance = [{ icon: Cog,color: "#f0a020" },{ icon: UsersRound,color: "#7a3fe0" },{ icon: CircleCheck,color: "#1f9a2b" },{ icon: Layers,color: "#2f6fe0" },{ icon: UsersRound,color: "#d6336c" },{ icon: Network,color: "#0f9f8f" },{ icon: ShieldCheck,color: "#7a3fe0" }];
+  const depts: Dept[] = live.rows.map((row,index) => ({ crm: text(row.code),hrms: row.source === "CMS" ? "CMS" : EMPTY,name: text(row.name),admin: text(at(row,"head.name")),accounts: count(row.activeUsers),tasks: EMPTY,mode: EMPTY,status: humanize(text(row.status,"")),...appearance[index % appearance.length] }));
   const [tab, setTab] = useState<Tab>("Departments");
-  const [selected, setSelected] = useState("DPT-01");
+  const [selected, setSelected] = useState("");
 
-  const sel = depts.find((d) => d.crm === selected) ?? depts[0];
-  const detail = detailRows[sel.crm] ?? [
-    ["HRMS source", `${sel.hrms} · Synced`],
-    ["Admin", sel.admin],
-    ["Reports to", "Super Admin"],
-    ["Account scope", "Department"],
-    ["Open tasks", sel.tasks],
-    ["SLA", "94%"],
-    ["Training", "88%"],
-    ["Budget", "₹1.6 L · demo"],
-  ];
+  const sel = depts.find(d => d.crm === selected) ?? depts[0] ?? { crm: EMPTY,hrms: EMPTY,name: EMPTY,admin: EMPTY,accounts: EMPTY,tasks: EMPTY,mode: EMPTY,status: EMPTY,icon: Cog,color: "#f0a020" };
+  const detail = [["HRMS source",sel.hrms],["Admin",sel.admin],["Reports to",EMPTY],["Account scope",EMPTY],["Open tasks",EMPTY],["SLA",EMPTY],["Training",EMPTY],["Budget",EMPTY]];
+  async function assignAdmin() {
+    const person = choose(admins.data ?? [],"Choose department head");
+    const department = live.rows.find(row => row.code === sel.crm);
+    if (!person || !department) return;
+    await live.mutation.run('/departments/' + department.id, { method: "PATCH",body: { version: department.version,headUserId: person.id } }, "Department head assigned.");
+  }
 
   const showRegister = tab === "Departments" || tab === "Assigned admins" || tab === "Team structure";
   const showSelected = tab === "Departments" || tab === "Assigned admins";
@@ -143,12 +118,12 @@ export default function SA007Departments() {
       </PageHead>
 
       <KpiRow cols={6}>
-        <KpiTile tone="blue" icon={Radio} value="07" label="Departments" sub="Registered" />
-        <KpiTile tone="green" icon={Bell} value="186" label="CRM accounts" sub="Total" />
-        <KpiTile tone="orange" icon={CircleCheck} value="162" label="Active accounts" sub="Enabled" />
-        <KpiTile tone="purple" icon={Users} value="12" label="Admins assigned" sub="Across depts" />
-        <KpiTile tone="sky" icon={Layers} value="01" label="Active centre" sub="Ghaziabad" />
-        <KpiTile tone="green" icon={Radio} value="10:20" label="HRMS sync" sub="Today" />
+        <KpiTile tone="blue" icon={Radio} value={count(live.list.meta?.total)} label="Departments" sub="Registered" />
+        <KpiTile tone="green" icon={Bell} value={count(users.data?.total)} label="CRM accounts" sub="Total" />
+        <KpiTile tone="orange" icon={CircleCheck} value={count(users.data?.active)} label="Active accounts" sub="Enabled" />
+        <KpiTile tone="purple" icon={Users} value={count(at(users.data,"activeByAccessLevel.ADMIN"))} label="Admins assigned" sub="Across depts" />
+        <KpiTile tone="sky" icon={Layers} value={EMPTY} label="Active centre" sub="Ghaziabad" />
+        <KpiTile tone="green" icon={Radio} value={EMPTY} label="HRMS sync" sub="Today" />
       </KpiRow>
 
       <Tabs tabs={tabs} value={tab} onChange={setTab} />
@@ -170,11 +145,11 @@ export default function SA007Departments() {
                   <div className="hidden items-center gap-[8px] lg:flex">
                     <PrimaryButton
                       outline
-                      onClick={() => notice.show("Map HRMS department: source fields are read-only (demo).")}
+                      disabled={!live.can("departments.create") || live.mutation.busy} onClick={() => live.mutation.run("/departments/import-cms", { method: "POST" }, "Departments imported.")}
                     >
                       Map HRMS
                     </PrimaryButton>
-                    <PrimaryButton outline onClick={() => notice.show("Review access: scoped to authorised roles (demo).")}>
+                    <PrimaryButton outline onClick={() => router.push("/dashboard/super-admin/users-access-control/roles")}>
                       Review access
                     </PrimaryButton>
                   </div>
@@ -212,10 +187,10 @@ export default function SA007Departments() {
                   </tbody>
                 </TableWrap>
                 <div className="mt-auto flex flex-wrap gap-[8px] pt-[8px] lg:hidden">
-                  <PrimaryButton outline onClick={() => notice.show("Map HRMS department (demo).")}>
+                  <PrimaryButton outline disabled={!live.can("departments.create") || live.mutation.busy} onClick={() => live.mutation.run("/departments/import-cms", { method: "POST" }, "Departments imported.")}>
                     Map HRMS department
                   </PrimaryButton>
-                  <PrimaryButton outline onClick={() => notice.show("Review access (demo).")}>
+                  <PrimaryButton outline onClick={() => router.push("/dashboard/super-admin/users-access-control/roles")}>
                     Review access
                   </PrimaryButton>
                 </div>
@@ -240,22 +215,22 @@ export default function SA007Departments() {
                 <div className="mt-[6px]">
                   <div className="flex items-center justify-between text-[15.5px] font-semibold">
                     <span>SLA compliance</span>
-                    <b>96%</b>
+                    <b>{EMPTY}</b>
                   </div>
-                  <Bar pct={96} color="#1f9a2b" />
+                  <Bar pct={0} color="#1f9a2b" />
                 </div>
                 <div className="mt-[6px]">
                   <div className="flex items-center justify-between text-[15.5px] font-semibold">
                     <span>Training status</span>
-                    <b>92%</b>
+                    <b>{EMPTY}</b>
                   </div>
-                  <Bar pct={92} />
+                  <Bar pct={0} />
                 </div>
                 <div className="mt-auto flex flex-wrap gap-[8px] pt-[8px]">
-                  <PrimaryButton onClick={() => notice.show(`Assign admin to ${sel.crm} (demo).`)}>
+                  <PrimaryButton disabled={!live.can("departments.edit") || live.mutation.busy} onClick={assignAdmin}>
                     Assign admin
                   </PrimaryButton>
-                  <PrimaryButton outline onClick={() => notice.show(`View performance for ${sel.crm} (demo).`)}>
+                  <PrimaryButton outline disabled onClick={() => notice.show(EMPTY)}>
                     View performance
                   </PrimaryButton>
                 </div>
@@ -279,7 +254,7 @@ export default function SA007Departments() {
                   ))}
                 </div>
                 <div className="mt-auto pt-[8px]">
-                  <PrimaryButton onClick={() => notice.show("Permission matrix opened (demo).")}>
+                  <PrimaryButton onClick={() => router.push("/dashboard/super-admin/users-access-control/roles")}>
                     Permission matrix
                   </PrimaryButton>
                 </div>
@@ -294,7 +269,7 @@ export default function SA007Departments() {
                   ))}
                 </div>
                 <div className="mt-auto pt-[8px]">
-                  <PrimaryButton onClick={() => notice.show("Configure workflow opened (demo).")}>
+                  <PrimaryButton disabled onClick={() => notice.show(EMPTY)}>
                     Configure workflow
                   </PrimaryButton>
                 </div>

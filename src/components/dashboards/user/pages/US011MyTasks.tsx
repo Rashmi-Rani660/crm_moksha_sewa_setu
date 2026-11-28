@@ -2,6 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useOperations } from "@/lib/crm/useOperations";
+import { authorizedRequest } from "@/lib/api/authorized";
+import { useDebounced } from "@/lib/api/useCrmQuery";
+import { text, EMPTY, type CrmRecord } from "@/lib/crm/data";
+import { shortDateTime } from "@/lib/format";
 import {
   UserFlowSteps,
   UserFrame,
@@ -22,7 +27,7 @@ type TaskRow = {
   id: string;
   title: string;
   due: string;
-  priority: "High" | "Normal";
+  priority: "Critical" | "High" | "Normal";
   priorityTone?: "red" | "amber";
   status: string;
   statusTone: "red" | "green" | "amber" | "blue";
@@ -30,20 +35,16 @@ type TaskRow = {
   primary?: boolean;
 };
 
-const initialTasks: TaskRow[] = [
-  { id: "TASK-026", title: "TASK-026 · Verify documents", due: "10:00", priority: "High", priorityTone: "red", status: "Overdue", statusTone: "red", action: "Open", primary: true },
-  { id: "TASK-028", title: "TASK-028 · Family follow-up", due: "11:30", priority: "High", priorityTone: "amber", status: "Overdue", statusTone: "red", action: "Open" },
-  { id: "TASK-031", title: "TASK-031 · Update case", due: "14:00", priority: "Normal", status: "Accepted", statusTone: "green", action: "Continue" },
-  { id: "TASK-032", title: "TASK-032 · Upload evidence", due: "15:00", priority: "Normal", status: "Awaiting acceptance", statusTone: "amber", action: "Accept task" },
-  { id: "TASK-033", title: "TASK-033 · Daily report", due: "16:00", priority: "Normal", status: "To do", statusTone: "blue", action: "Open" },
-];
+
 
 export default function US011MyTasks() {
   const router = useRouter();
   const { show, node } = useUserNotice();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState("All tasks");
-  const [tasks, setTasks] = useState(initialTasks);
+  const search = useDebounced(q.trim());
+  const live = useOperations("tasks",show,{ mine: true,search: search || undefined,overdue: filter === "Overdue" ? true : undefined,status: filter === "Accepted" ? "ACCEPTED" : filter === "Awaiting acceptance" || filter === "To do" ? "ASSIGNED" : undefined });
+  const tasks: TaskRow[] = live.rows.map(row => ({ id: text(row.id),title: text(row.taskNo) + ' ? ' + text(row.title),due: shortDateTime(text(row.dueAt,"")),priority: row.priority === "CRITICAL" ? "Critical" : row.priority === "HIGH" ? "High" : "Normal",priorityTone: row.priority === "CRITICAL" ? "red" : "amber",status: row.overdue ? "Overdue" : row.status === "ASSIGNED" ? "Awaiting acceptance" : row.displayStatus,statusTone: row.overdue ? "red" : "blue",action: row.status === "ASSIGNED" ? "Accept task" : row.status === "ACCEPTED" || row.status === "RETURNED" ? "Continue" : "Open" }));
 
   const query = q.trim().toLowerCase();
   const filtered = tasks.filter((t) => {
@@ -52,17 +53,20 @@ export default function US011MyTasks() {
     return matchQ && matchF;
   });
 
-  const handleAction = (row: TaskRow) => {
+  const handleAction = async (row: TaskRow) => {
     if (row.action === "Accept task") {
-      setTasks((prev) =>
-        prev.map((item) =>
-          item.id === row.id ? { ...item, status: "Accepted", statusTone: "green", action: "Continue" } : item,
-        ),
-      );
-      show(`${row.id} accepted (demo).`);
+      if (!live.can("tasks.edit") || live.mutation.busy) return;
+      const fresh = await authorizedRequest<CrmRecord>('/tasks/' + row.id);
+      await live.mutation.run('/tasks/' + row.id + '/accept', { body: { version: fresh.data.version } }, "Task accepted.");
       return;
     }
-    router.push(userRoutes.taskExecution);
+    if (row.action === "Continue") {
+      if (!live.can("tasks.edit") || live.mutation.busy) return;
+      const fresh = await authorizedRequest<CrmRecord>('/tasks/' + row.id);
+      const started = await live.mutation.run<CrmRecord>('/tasks/' + row.id + '/start', { body: { version: fresh.data.version } }, "Task started.");
+      if (!started) return;
+    }
+    router.push(userRoutes.taskExecution + '?id=' + row.id);
   };
 
   return (
@@ -70,12 +74,12 @@ export default function US011MyTasks() {
       <UserHeader code="US-011" title="My Tasks" />
       <UserKpiRow
         items={[
-          { value: "12", label: "Pending tasks", tone: "blue" },
-          { value: "05", label: "Due today", tone: "orange" },
-          { value: "02", label: "Overdue", tone: "red", valueRed: true },
-          { value: "02", label: "Awaiting acceptance", tone: "orange" },
-          { value: "04", label: "Completed today", tone: "green" },
-          { value: "03", label: "Assigned cases", tone: "blue" },
+          { value: live.metric("open"), label: "Pending tasks", tone: "blue" },
+          { value: live.metric("dueToday"), label: "Due today", tone: "orange" },
+          { value: live.metric("overdue"), label: "Overdue", tone: "red", valueRed: true },
+          { value: live.metric("awaitingAcceptance"), label: "Awaiting acceptance", tone: "orange" },
+          { value: live.metric("completedToday"), label: "Completed today", tone: "green" },
+          { value: EMPTY, label: "Assigned cases", tone: "blue" },
         ]}
       />
 
@@ -129,7 +133,7 @@ export default function US011MyTasks() {
                     <td className="whitespace-nowrap px-[8px]">
                       <button
                         type="button"
-                        onClick={() => handleAction(row)}
+                        disabled={live.mutation.busy || (row.action === "Accept task" && !live.can("tasks.edit"))} onClick={() => handleAction(row)}
                         className={row.primary ? userPrimaryBtn : userOutlineBtn}
                       >
                         {row.action}
@@ -144,27 +148,27 @@ export default function US011MyTasks() {
           <div className="mt-[10px] flex flex-wrap gap-[7px]">
             <button type="button" onClick={() => show("List view active.")} className={userPrimaryBtn}>List view</button>
             <button type="button" onClick={() => show("Calendar view preview.")} className={userOutlineBtn}>Calendar view</button>
-            <button type="button" onClick={() => show("Task queue refreshed.")} className={userOutlineBtn}>Refresh</button>
+            <button type="button" onClick={live.reload} className={userOutlineBtn}>Refresh</button>
           </div>
         </UserPanel>
 
         <UserPanel title="Next action">
           <div className="rounded-[6px] border border-[#dce6f5] bg-[#eef4fc] px-[10px] py-[6px] text-[13.8px] font-medium text-[#1a1d36]">
-            TASK-026 · Verify pending documents
+            {text(live.rawRows[0]?.taskNo)} ? {text(live.rawRows[0]?.title)}
           </div>
           <div className="mt-[4px]">
             <UserKVList
               rows={[
-                ["Case", "MS-26-1101"],
-                ["Due", "10:00"],
-                ["Legal clearance", <UserPill key="lc" tone="red">Pending</UserPill>],
-                ["Owner", "User 07"],
+                ["Case",text(live.rawRows[0]?.reference)],
+                ["Due",tasks[0]?.due ?? EMPTY],
+                ["Legal clearance", <UserPill key="lc" tone="red">{EMPTY}</UserPill>],
+                ["Owner",text(live.profile?.name)],
                 ["Next step", "Review required documents"],
               ]}
             />
           </div>
           <div className="mt-[8px]">
-            <button type="button" onClick={() => router.push(userRoutes.taskExecution)} className={userPrimaryBtn}>
+            <button type="button" onClick={() => router.push(userRoutes.taskExecution + (tasks[0] ? "?id=" + tasks[0].id : ""))} className={userPrimaryBtn}>
               Open task
             </button>
           </div>
@@ -172,9 +176,9 @@ export default function US011MyTasks() {
           <div className="mt-[2px]">
             <UserKVList
               rows={[
-                ["Daily completion · demo", "4 completed"],
-                ["Awaiting acceptance", "02"],
-                ["Overdue", "02"],
+                ["Daily completion · demo", live.metric("completedToday")],
+                ["Awaiting acceptance",live.metric("awaitingAcceptance")],
+                ["Overdue",live.metric("overdue")],
               ]}
             />
           </div>
@@ -182,7 +186,7 @@ export default function US011MyTasks() {
 
         <UserPanel title="Quick work">
           <div className="flex flex-wrap gap-[7px] pt-[2px]">
-            <button type="button" onClick={() => router.push(userRoutes.taskExecution)} className={userPrimaryBtn}>Resume last task</button>
+            <button type="button" onClick={() => router.push(userRoutes.taskExecution + (tasks[0] ? "?id=" + tasks[0].id : ""))} className={userPrimaryBtn}>Resume last task</button>
             <button type="button" onClick={() => setFilter("Overdue")} className={userOutlineBtn}>View overdue</button>
             <button type="button" onClick={() => router.push(userRoutes.aiWorkAssistant)} className={userOutlineBtn}>Ask AI</button>
           </div>

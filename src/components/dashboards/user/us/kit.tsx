@@ -1,5 +1,7 @@
 "use client";
 
+import { fieldName } from "@/lib/crm/formFields";
+
 /**
  * Shared pieces for the User screens US-001 … US-010 (design book "US-001 to US-010").
  * Uses the existing user sidebar, top bar and footer unchanged; only the page body is drawn here.
@@ -7,6 +9,7 @@
  */
 
 import type { ReactNode } from "react";
+import { useAuthSession } from "@/lib/auth/session";
 import { ArrowRight, Check, ChevronDown, Search } from "lucide-react";
 import { Box, DashboardCanvas } from "@/components/dashboards/canvas";
 import EncodencyBadge from "@/components/ui/EncodencyBadge";
@@ -20,6 +23,7 @@ const SB = 210;
 /* ---------------------------------- frame ---------------------------------- */
 
 export function UserFrame({ code, active, title, children }: { code: string; active?: string; title: string; children: ReactNode }) {
+  const { session } = useAuthSession();
   const own = userScreens.find((s) => s.code === code);
   const siblings = userScreens.filter((s) => s.group === own?.group);
   return (
@@ -29,7 +33,7 @@ export function UserFrame({ code, active, title, children }: { code: string; act
           <div className="flex flex-col gap-3 lg:h-[50px] lg:shrink-0 lg:flex-row lg:items-start lg:gap-[14px]">
             <div className="min-w-0">
               <h1 className="text-[21px] font-medium leading-tight tracking-[-0.5px] text-[#0b0c36] lg:whitespace-nowrap lg:text-[24px] lg:leading-none">{title}</h1>
-              <p className="mt-[5px] text-[15px] font-normal leading-none text-[#141a4a] lg:text-[16px]">User 07 / FY 2026–27 / Ghaziabad • My authorised work</p>
+              <p className="mt-[5px] text-[15px] font-normal leading-none text-[#141a4a] lg:text-[16px]">{session?.name ?? "\u2014"} / FY 2026–27 / Ghaziabad • My authorised work</p>
             </div>
             <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:flex-nowrap">
               <span className="flex h-[32px] shrink-0 items-center rounded-[7px] border border-[#ecd48a] bg-[#fff4d1] px-[12px] pt-px text-[13px] font-semibold tracking-[0.2px] text-[#8a5300]">DEMO DATA</span>
@@ -250,7 +254,7 @@ export function Field({
   placeholder?: string;
 }) {
   const input = (
-    <input
+    <input name={label ? fieldName(label) : undefined}
       value={value}
       readOnly={readOnly || !onChange}
       placeholder={placeholder}
@@ -338,18 +342,19 @@ export function Progress({ value, label }: { value: number; label: string }) {
   );
 }
 
-export function DropZone({ text, onFiles }: { text: string; onFiles: (names: string[]) => void }) {
+export function DropZone({ text, onFiles, onFileObjects }: { text: string; onFiles: (names: string[]) => void; onFileObjects?: (files: File[]) => void }) {
   return (
     <label
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
         e.preventDefault();
         onFiles(Array.from(e.dataTransfer.files).map((f) => f.name));
+        onFileObjects?.(Array.from(e.dataTransfer.files));
       }}
       className="flex h-[36px] cursor-pointer items-center justify-center rounded-[8px] border border-dashed border-[#8aa0c8] bg-[#f6f9fe] px-2 text-center text-[14.5px] font-medium text-[#1a1d36] hover:bg-[#eef3fb]"
     >
       {text}
-      <input type="file" accept="application/pdf,image/*" className="sr-only" onChange={(e) => onFiles(Array.from(e.target.files ?? []).map((f) => f.name))} />
+      <input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.mp4,.webm" className="sr-only" onChange={(e) => { const files = Array.from(e.target.files ?? []); onFiles(files.map(file => file.name)); onFileObjects?.(files); }} />
     </label>
   );
 }

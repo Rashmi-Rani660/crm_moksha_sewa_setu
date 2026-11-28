@@ -214,8 +214,9 @@ export function Donut({
 }) {
   const r = (size - thickness) / 2;
   const c = 2 * Math.PI * r;
-  const total = segments.reduce((s, x) => s + x.value, 0);
-  const lens = segments.map((s) => (s.value / total) * c);
+  const values = segments.map((s) => Number.isFinite(s.value) && s.value > 0 ? s.value : 0);
+  const total = values.reduce((sum, value) => sum + value, 0);
+  const lens = values.map((value) => total > 0 ? (value / total) * c : 0);
   const starts = lens.map((_, i) => lens.slice(0, i).reduce((a, b) => a + b, 0));
   return (
     <div style={{ width: size, height: size }} className="relative">

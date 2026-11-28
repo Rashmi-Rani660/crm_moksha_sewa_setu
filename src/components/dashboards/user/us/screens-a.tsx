@@ -1,9 +1,18 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 /** US-001 … US-005 — demo data only; actions show what would happen once the backend exists. */
 
 import Link from "next/link";
 import { useState } from "react";
+import { useDashboardData } from "@/lib/crm/useDashboardData";
+import { usePlanner, useWorkforce } from "@/lib/crm/useWorkforce";
+import { useOperations } from "@/lib/crm/useOperations";
+import { useCrmQuery, useDebounced } from "@/lib/api/useCrmQuery";
+import { useCrmMutation } from "@/lib/api/useCrmMutation";
+import { at, count, records, text, EMPTY, type CrmRecord } from "@/lib/crm/data";
+import { humanize, clock, shortDate, shortDateTime } from "@/lib/format";
 import { useNotice } from "@/components/dashboards/super-admin/kit";
 import { Btn, Btns, Card, Field, Lines, Note, SearchBox, SelectBox, Table, Tiles, UserFrame, btnOutline, btnSolid } from "./kit";
 import { usRoutes } from "./routes";
@@ -14,6 +23,8 @@ const rows2 = "grid gap-[10px] lg:min-h-0 lg:flex-1";
 
 export function US001MyWorkDashboard() {
   const notice = useNotice();
+  const live = useDashboardData();
+  const planner = usePlanner(notice.show);
   const quick: [string, string?][] = [
     ["New request", usRoutes.createRequest],
     ["Accept task"],
@@ -25,22 +36,17 @@ export function US001MyWorkDashboard() {
     ["Ask AI"],
     ["Resume draft", usRoutes.createRequest],
   ];
-  const work: [string, string, string, string][] = [
-    ["MS-26-1101 · Emergency", "Now", "Open case", usRoutes.caseDetails],
-    ["TASK-026 · Verify documents", "*Overdue", "Open", usRoutes.verification],
-    ["TASK-028 · Family follow-up", "*Overdue", "Open", usRoutes.planner],
-    ["2 assignments", "*Accept pending", "Review", usRoutes.cases],
-  ];
+  const work: [string,string,string,string][] = records(at(live.data,"myWork.tasks")).map(row => [text(row.title),shortDateTime(text(row.dueAt,"")),"Open",'/dashboard/user/my-tasks/execution?id=' + row.id]);
   return (
     <UserFrame code="US-001" title="My Work Dashboard">
       <Tiles
         items={[
-          { value: "12", label: "Pending tasks", tone: "blue" },
-          { value: "05", label: "Due today", tone: "orange" },
-          { value: "02", label: "Overdue", tone: "red" },
-          { value: "03", label: "Assigned cases", tone: "sky" },
-          { value: "04", label: "Completed today", tone: "green" },
-          { value: "06", label: "Pending replies", tone: "orange" },
+          { value: live.value("Pending tasks"), label: "Pending tasks", tone: "blue" },
+          { value: live.value("Due today"), label: "Due today", tone: "orange" },
+          { value: live.value("Overdue"), label: "Overdue", tone: "red" },
+          { value: live.value("Assigned cases"), label: "Assigned cases", tone: "sky" },
+          { value: live.value("Completed today"), label: "Completed today", tone: "green" },
+          { value: live.value("Pending replies"), label: "Pending replies", tone: "orange" },
         ]}
       />
       <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-3 lg:h-[40px] lg:shrink-0 lg:grid-cols-9">
@@ -48,7 +54,7 @@ export function US001MyWorkDashboard() {
           href ? (
             <Link key={label} href={href} className={`${i === 0 ? btnSolid : btnOutline} !h-[40px]`}>{label}</Link>
           ) : (
-            <button key={label} type="button" onClick={() => notice.show(`${label}: opens the authorised quick action (demo).`)} className={`${btnOutline} !h-[40px]`}>{label}</button>
+            <button key={label} type="button" disabled onClick={() => notice.show(EMPTY)} className={`${btnOutline} !h-[40px]`}>{label}</button>
           ),
         )}
       </div>
@@ -56,7 +62,7 @@ export function US001MyWorkDashboard() {
         <div className="grid gap-[10px] lg:min-h-0 lg:grid-cols-[690fr_460fr] lg:[grid-template-rows:minmax(0,1fr)]">
           <Card title="Priority work" bodyClassName="flex flex-col gap-[8px]">
             <div className="flex flex-wrap items-center gap-[8px] rounded-[6px] bg-[#eef3fb] px-[8px] py-[5px] text-[13px] font-normal">
-              <span>Next action: Emergency case MS-26-1101 · Review clearance</span>
+              <span>Next action: {text(at(live.data,"myWork.tasks.0.title"))}</span>
               <Link href={usRoutes.verification} className={btnOutline}>Continue</Link>
             </div>
             <Table
@@ -69,22 +75,22 @@ export function US001MyWorkDashboard() {
             />
           </Card>
           <Card title="Today’s planner" bodyClassName="flex flex-col gap-[10px]">
-            <Lines rows={[["10:00 · Verification", "Due"], ["11:30 · Family follow-up", "Scheduled"], ["14:00 · Case update", "Scheduled"], ["16:00 · Daily report", "Scheduled"]]} />
+            <Lines rows={records(planner.planner.data).slice(0,4).map(row => [shortDateTime(text(row.startAt,"")),text(row.title)])} />
             <div><Link href={usRoutes.planner} className={btnSolid}>Open planner</Link></div>
           </Card>
         </div>
         <div className="grid gap-[10px] lg:min-h-0 lg:grid-cols-3 lg:[grid-template-rows:minmax(0,1fr)]">
           <Card title="Admin instructions" bodyClassName="flex flex-col gap-[10px]">
-            <Lines rows={[["Verify pending documents", "*New"], ["Upload service evidence", "Today"], ["Handover unresolved work", "End of shift"]]} />
+            <Lines rows={[]} />
             <div><Link href={usRoutes.notifications} className={btnSolid}>View instructions</Link></div>
           </Card>
           <Card title="Communication" bodyClassName="flex flex-col gap-[10px]">
-            <Lines rows={[["Pending emails", "02"], ["WhatsApp replies", "04"], ["Scheduled callbacks", "03"]]} />
-            <div><Btn solid onClick={() => notice.show("Communication hub opens with your assigned threads only (demo).")}>Open hub</Btn></div>
+            <Lines rows={[["Pending emails",EMPTY],["WhatsApp replies",EMPTY],["Scheduled callbacks",EMPTY]]} />
+            <div><Btn solid disabled onClick={() => notice.show(EMPTY)}>Open hub</Btn></div>
           </Card>
           <Card title="AI work assistant" bodyClassName="flex flex-col gap-[10px]">
-            <Lines rows={[["Summarise my work", "Ask AI"], ["Find approved SOP", "Search"], ["Prepare daily report", "Draft"]]} />
-            <div><Btn solid onClick={() => notice.show("AI assistant drafts from your authorised activity only; review before use (demo).")}>Ask AI</Btn></div>
+            <Lines rows={[["Summarise my work",EMPTY],["Find approved SOP",EMPTY],["Prepare daily report",EMPTY]]} />
+            <div><Btn solid disabled onClick={() => notice.show(EMPTY)}>Ask AI</Btn></div>
           </Card>
         </div>
       </div>
@@ -97,24 +103,19 @@ export function US001MyWorkDashboard() {
 
 export function US002WorkPlanner() {
   const notice = useNotice();
+  const live = usePlanner(notice.show);
   const [view, setView] = useState<"Day" | "Week" | "Month">("Day");
   const [day, setDay] = useState(28);
-  const today: [string, string, string, string, string][] = [
-    ["10:00", "Case verification", "*Due", "Open", usRoutes.verification],
-    ["11:30", "Family follow-up", "*Scheduled", "Open", usRoutes.caseDetails],
-    ["12:30", "Team briefing", "*Meeting", "Details", ""],
-    ["14:00", "Case update", "*Scheduled", "Open", usRoutes.caseDetails],
-    ["16:00", "Daily report", "*Scheduled", "Draft", ""],
-  ];
+  const today: [string,string,string,string,string][] = records(live.planner.data).map(row => [clock(text(row.startAt,"")),text(row.title),humanize(text(row.status,"")),"Details",""]);
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   return (
     <UserFrame code="US-002" active="my-work-planner" title="Work Planner, Calendar & Handover">
       <Tiles
         items={[
-          { value: "05", label: "Due today", tone: "orange" },
-          { value: "02", label: "Overdue", tone: "red" },
-          { value: "01", label: "Meetings", tone: "sky" },
-          { value: "02", label: "Handover pending", tone: "purple" },
+          { value: EMPTY, label: "Due today", tone: "orange" },
+          { value: EMPTY, label: "Overdue", tone: "red" },
+          { value: EMPTY, label: "Meetings", tone: "sky" },
+          { value: EMPTY, label: "Handover pending", tone: "purple" },
         ]}
       />
       <div className={`${rows2} lg:[grid-template-rows:minmax(0,1.6fr)_minmax(0,1fr)]`}>
@@ -129,13 +130,13 @@ export function US002WorkPlanner() {
                 href ? (
                   <Link key={t} href={href} className={`${btnOutline} !h-[30px]`}>{a}</Link>
                 ) : (
-                  <Btn key={t} className="!h-[30px]" onClick={() => notice.show(`${w}: ${a === "Draft" ? "daily report draft prepared from your activity log" : "meeting details opened"} (demo).`)}>{a}</Btn>
+                  <Btn key={t} className="!h-[30px]" onClick={() => notice.show(w)}>{a}</Btn>
                 ),
               ])}
             />
             <Btns>
-              <Btn solid onClick={() => notice.show("Reminder added — conflicts are checked first (demo).")}>Add reminder</Btn>
-              <Btn onClick={() => notice.show("Reschedule request sent to your reporting Admin (demo).")}>Request reschedule</Btn>
+              <Btn solid disabled={live.mutation.busy || !live.can("planner.create")} onClick={live.add}>Add reminder</Btn>
+              <Btn disabled={live.mutation.busy || !live.can("planner.create")} onClick={live.reschedule}>Request reschedule</Btn>
             </Btns>
           </Card>
           <Card title="Calendar & handover" bodyClassName="flex flex-col gap-[8px]">
@@ -160,21 +161,21 @@ export function US002WorkPlanner() {
                 </button>
               ))}
             </div>
-            <Lines rows={[["Shift", "09:30–18:00"], ["Conflict check", "No demo conflict"], ["Handover owner", "Reporting Admin"]]} />
-            <div><Btn solid onClick={() => notice.show("Handover draft prepared — the receiving owner must acknowledge (demo).")}>Prepare handover</Btn></div>
+            <Lines rows={[["Shift", EMPTY], ["Conflict check", EMPTY], ["Handover owner", "Reporting Admin"]]} />
+            <div><Btn solid disabled={live.mutation.busy || !live.can("planner.create")} onClick={live.handover}>Prepare handover</Btn></div>
           </Card>
         </div>
         <div className="grid gap-[10px] lg:min-h-0 lg:grid-cols-[690fr_460fr] lg:[grid-template-rows:minmax(0,1fr)]">
           <Card title="Pending work transfer" bodyClassName="flex flex-col gap-[10px]">
-            <Table cols={["Record", "Pending action", "Receiving owner"]} rows={[["MS-26-1101", "Legal review", "Admin approval required"], ["TASK-028", "Callback", "Awaiting acknowledgement"]]} />
-            <div><Btn solid onClick={() => notice.show("Handover submitted with timestamp; ownership changes after acknowledgement (demo).")}>Submit handover</Btn></div>
+            <Table cols={["Record", "Pending action", "Receiving owner"]} rows={records(live.handovers.data).map(row => [text(row.summary),humanize(text(row.status,"")),text(at(row,"to.name"))])} />
+            <div><Btn solid disabled={live.mutation.busy || !live.can("planner.create")} onClick={live.handover}>Submit handover</Btn></div>
           </Card>
           <Card title="Reminders & appointments" bodyClassName="flex flex-col gap-[10px]">
-            <Lines rows={[["Family callback", "11:30"], ["Team meeting", "12:30"], ["Shift handover", "17:45"]]} />
+            <Lines rows={records(live.planner.data).slice(0,3).map(row => [text(row.title),clock(text(row.startAt,""))])} />
             <Btns>
-              <Btn solid onClick={() => notice.show("Reminder set (demo).")}>Set reminder</Btn>
+              <Btn solid disabled={live.mutation.busy || !live.can("planner.create")} onClick={live.add}>Set reminder</Btn>
               <Link href={usRoutes.dashboard} className={btnOutline}>Next work</Link>
-              <Btn onClick={() => notice.show("Team meeting · 12:30 · briefing room / online link (demo).")}>Meeting details</Btn>
+              <Btn onClick={() => notice.show(records(live.planner.data).filter(row => row.type === "MEETING").map(row => text(row.title)).join("\n") || EMPTY)}>Meeting details</Btn>
             </Btns>
           </Card>
         </div>
@@ -186,18 +187,15 @@ export function US002WorkPlanner() {
 
 /* --------------------------------- US-003 ---------------------------------- */
 
-type Msg = { time: string; text: string; priority: "Critical" | "High" | "Normal"; status: "Unread" | "Ack due" | "Read" | "Acknowledged"; from: string; deadline: string; body: string };
-const initialMsgs: Msg[] = [
-  { time: "09:45", text: "Emergency case assigned", priority: "Critical", status: "Unread", from: "Reporting Admin", deadline: "Now", body: "Emergency case MS-26-1101 assigned to you. Review clearance status before any field action." },
-  { time: "09:40", text: "Verify pending documents", priority: "High", status: "Ack due", from: "Reporting Admin", deadline: "Today · 11:00", body: "Verify the required documents. Do not proceed with dispatch until authorised clearance is recorded." },
-  { time: "09:30", text: "Shift handover reminder", priority: "Normal", status: "Read", from: "System", deadline: "17:45", body: "Prepare your shift handover before 17:45." },
-  { time: "Yesterday", text: "Updated legal SOP", priority: "Normal", status: "Read", from: "Admin 01", deadline: "—", body: "The legal verification SOP has a new approved version." },
-  { time: "Yesterday", text: "Training due", priority: "Normal", status: "Unread", from: "Training", deadline: "This week", body: "Sensitive case handling refresher is due this week." },
-];
+type Msg = { id: string; time: string; text: string; priority: "Critical" | "High" | "Normal"; status: "Unread" | "Ack due" | "Read" | "Acknowledged"; from: string; deadline: string; body: string };
+
 
 export function US003Notifications() {
   const notice = useNotice();
-  const [msgs, setMsgs] = useState(initialMsgs);
+  const mutation = useCrmMutation(notice.show);
+  const inbox = useCrmQuery<CrmRecord[]>("/notifications?limit=100");
+  const summary = useCrmQuery<CrmRecord>("/notifications/summary");
+  const msgs: Msg[] = records(inbox.data).map(row => ({ id: text(row.id),time: shortDateTime(text(row.createdAt,"")),text: text(row.title),priority: row.priority === "CRITICAL" ? "Critical" : row.priority === "HIGH" ? "High" : "Normal",status: row.acknowledged ? "Acknowledged" : row.requiresAck ? "Ack due" : row.read ? "Read" : "Unread",from: EMPTY,deadline: EMPTY,body: text(row.message) }));
   const [sel, setSel] = useState(1);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("All statuses");
@@ -205,17 +203,17 @@ export function US003Notifications() {
   const visible = msgs
     .map((m, i) => ({ m, i }))
     .filter(({ m }) => (status === "All statuses" || m.status === status) && (prio === "All priorities" || m.priority === prio) && m.text.toLowerCase().includes(q.toLowerCase()));
-  const cur = msgs[sel];
-  const update = (i: number, s: Msg["status"]) => setMsgs(msgs.map((m, k) => (k === i ? { ...m, status: s } : m)));
+  const cur = msgs[sel] ?? msgs[0] ?? { id: "",time: EMPTY,text: EMPTY,priority: "Normal",status: "Read",from: EMPTY,deadline: EMPTY,body: EMPTY };
+  const update = (i: number, status: string) => { const target = msgs[i]; if (target) void mutation.run(`/notifications/${target.id}/${status === "Acknowledged" ? "acknowledge" : "read"}`, { method: "POST" }, "Saved."); };
   const pill = (p: string) => (p === "Normal" || p === "Read" ? p : `*${p}`);
   return (
     <UserFrame code="US-003" active="notifications-instructions" title="Notifications & Admin Instructions">
       <Tiles
         items={[
-          { value: String(2 + msgs.filter((m) => m.status === "Unread").length).padStart(2, "0"), label: "Unread", tone: "blue" },
-          { value: String(1 + msgs.filter((m) => m.status === "Ack due").length).padStart(2, "0"), label: "Acknowledgement due", tone: "orange" },
-          { value: "01", label: "Critical", tone: "red" },
-          { value: "02", label: "Announcements", tone: "purple" },
+          { value: count(summary.data?.unread), label: "Unread", tone: "blue" },
+          { value: count(summary.data?.pendingAck), label: "Acknowledgement due", tone: "orange" },
+          { value: count(summary.data?.criticalUnacknowledged), label: "Critical", tone: "red" },
+          { value: EMPTY, label: "Announcements", tone: "purple" },
         ]}
       />
       <div className={`${rows2} lg:[grid-template-rows:minmax(0,1.7fr)_minmax(0,1fr)]`}>
@@ -228,26 +226,26 @@ export function US003Notifications() {
             </div>
             <Table cols={["Time", "Message", "Priority", "Status"]} rows={visible.map(({ m }) => [m.time, m.text, pill(m.priority), pill(m.status)])} selected={visible.findIndex((v) => v.i === sel)} onSelect={(k) => setSel(visible[k].i)} />
             <Btns>
-              <Btn solid onClick={() => (cur.status === "Acknowledged" ? notice.show("Already acknowledged.") : (update(sel, "Acknowledged"), notice.show(`“${cur.text}” acknowledged · timestamp recorded (demo).`)))}>Acknowledge selected</Btn>
-              <Btn onClick={() => (update(sel, cur.status === "Unread" ? "Read" : cur.status), notice.show("Marked read — acknowledgement is still separate (demo)."))}>Mark read</Btn>
+              <Btn solid disabled={mutation.busy || !cur.id} onClick={() => update(sel,"Acknowledged")}>Acknowledge selected</Btn>
+              <Btn disabled={mutation.busy || !cur.id} onClick={() => update(sel,"Read")}>Mark read</Btn>
             </Btns>
           </Card>
           <Card title="Selected instruction" bodyClassName="flex flex-col gap-[10px]">
-            <Lines rows={[["From", cur.from], ["Received", `28 Nov · ${cur.time}`], ["Deadline", cur.deadline], ["Linked case", "MS-26-1101"]]} />
+            <Lines rows={[["From", cur.from], ["Received", `28 Nov · ${cur.time}`], ["Deadline", cur.deadline], ["Linked case",EMPTY]]} />
             <Note boxed>{cur.body}</Note>
             <Btns>
-              <Btn solid onClick={() => (update(sel, "Acknowledged"), notice.show("Instruction acknowledged (demo)."))}>Acknowledge</Btn>
+              <Btn solid disabled={mutation.busy || !cur.id} onClick={() => update(sel,"Acknowledged")}>Acknowledge</Btn>
               <Link href={usRoutes.verification} className={btnOutline}>Open documents</Link>
             </Btns>
           </Card>
         </div>
         <div className="grid gap-[10px] lg:min-h-0 lg:grid-cols-2 lg:[grid-template-rows:minmax(0,1fr)]">
           <Card title="Announcements & reminders" bodyClassName="flex flex-col gap-[10px]">
-            <Lines rows={[["Updated SOP", "Read approved version"], ["Training refresher", "Due this week"], ["Critical alerts", "Cannot mute"]]} />
-            <div><Btn solid onClick={() => notice.show("Approved SOP version opened (demo).")}>View SOP</Btn></div>
+            <Lines rows={[["Updated SOP",EMPTY],["Training refresher",EMPTY],["Critical alerts",EMPTY]]} />
+            <div><Btn solid disabled onClick={() => notice.show(EMPTY)}>View SOP</Btn></div>
           </Card>
           <Card title="Delivery & acknowledgement">
-            <Lines rows={[["Read", "Separate from acknowledgement"], ["Acknowledged by", "User 07"], ["History", "Timestamp recorded on server"]]} />
+            <Lines rows={[["Read", "Separate from acknowledgement"], ["Acknowledged by",EMPTY], ["History", "Timestamp recorded on server"]]} />
           </Card>
         </div>
       </div>
@@ -260,47 +258,49 @@ export function US003Notifications() {
 
 export function US004MyProfile() {
   const notice = useNotice();
+  const live = useWorkforce(notice.show);
+  const profile = live.profile;
   return (
     <UserFrame code="US-004" active="my-profile-hrms" title="My Profile, Attendance & HRMS">
       <Tiles
         items={[
-          { value: "Present", label: "Attendance today", tone: "green" },
-          { value: "On duty", label: "Duty status", tone: "sky" },
-          { value: "01", label: "Leave requests", tone: "orange" },
-          { value: "Current", label: "HRMS sync", tone: "green" },
+          { value: humanize(text(at(live.attendance.data,"today.status"),"")), label: "Attendance today", tone: "green" },
+          { value: humanize(text(live.duty.data?.status,"")), label: "Duty status", tone: "sky" },
+          { value: count(live.leave.meta?.total), label: "Leave requests", tone: "orange" },
+          { value: EMPTY, label: "HRMS sync", tone: "green" },
         ]}
       />
       <div className={`${rows2} lg:[grid-template-rows:minmax(0,1.5fr)_minmax(0,1fr)]`}>
         <div className="grid gap-[10px] lg:min-h-0 lg:grid-cols-[640fr_500fr] lg:[grid-template-rows:minmax(0,1fr)]">
           <Card title="My employee profile" bodyClassName="flex flex-col gap-[10px]">
             <div className="grid gap-x-[8px] gap-y-[8px] sm:grid-cols-2">
-              <Field label="Employee ID" value="EMP-007" readOnly />
-              <Field label="Name" value="Demo User 07" readOnly />
-              <Field label="Department" value="Sewa Operations" readOnly />
-              <Field label="Reporting Admin" value="Admin 01" readOnly />
-              <Field label="Service centre" value="Ghaziabad" readOnly />
-              <Field label="Mobile" value="98XXXXXX07" readOnly />
+              <Field label="Employee ID" value={text(profile?.crmId)} readOnly />
+              <Field label="Name" value={text(profile?.name)} readOnly />
+              <Field label="Department" value={text(profile?.department?.name)} readOnly />
+              <Field label="Reporting Admin" value={EMPTY} readOnly />
+              <Field label="Service centre" value={profile?.centres.map(c => c.name).join(" / ") || EMPTY} readOnly />
+              <Field label="Mobile" value={text(profile?.mobile)} readOnly />
             </div>
             <Btns>
-              <Btn solid onClick={() => notice.show("Correction request sent to HRMS — profile fields cannot be edited here (demo).")}>Request correction</Btn>
-              <Btn onClick={() => notice.show("Personal settings: language and notification preferences (demo).")}>Personal settings</Btn>
+              <Btn solid disabled onClick={() => notice.show(EMPTY)}>Request correction</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Personal settings</Btn>
             </Btns>
           </Card>
           <Card title="Attendance & duty" bodyClassName="flex flex-col gap-[10px]">
-            <Lines rows={[["Check-in", "09:30 AM"], ["Check-out", "Not recorded"], ["Shift", "09:30–18:00"], ["Last sync", "09:35 AM · demo"], ["Leave balance", "From HRMS"]]} />
+            <Lines rows={[["Check-in", shortDateTime(text(at(live.attendance.data,"today.checkInAt"),""))], ["Check-out", shortDateTime(text(at(live.attendance.data,"today.checkOutAt"),""))], ["Shift", EMPTY], ["Last sync", EMPTY], ["Leave balance", "From HRMS"]]} />
             <Btns>
-              <Btn solid onClick={() => notice.show("Leave request submitted to HRMS for approval (demo).")}>Request leave</Btn>
-              <Btn onClick={() => notice.show("Attendance correction request submitted to HRMS (demo).")}>Attendance correction</Btn>
+              <Btn solid disabled={!live.can("attendance.create") || live.mutation.busy} onClick={live.requestLeave}>Request leave</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Attendance correction</Btn>
             </Btns>
           </Card>
         </div>
         <div className="grid gap-[10px] lg:min-h-0 lg:grid-cols-[640fr_500fr] lg:[grid-template-rows:minmax(0,1fr)]">
           <Card title="Attendance history" bodyClassName="flex flex-col gap-[8px]">
-            <Table cols={["Date", "In", "Out", "Status"]} rows={[["28 Nov", "09:30", "—", "Present"], ["27 Nov", "09:27", "18:03", "Present"], ["26 Nov", "09:35", "18:01", "Present"]]} />
-            <Note>Recent attendance: 3 / 3 days present · demo sample</Note>
+            <Table cols={["Date", "In", "Out", "Status"]} rows={records(live.attendance.data?.days).map(row => [shortDate(text(row.day,"")),clock(text(row.checkInAt,"")),clock(text(row.checkOutAt,"")),humanize(text(row.status,""))])} />
+            <Note>{count(at(live.attendance.data,"totals.present"))}</Note>
           </Card>
           <Card title="Account & privacy">
-            <Lines rows={[["Access level", "User"], ["MFA", "Required"], ["Location tracking", "On duty, consent only"], ["Profile changes", "HRMS approval"]]} />
+            <Lines rows={[["Access level",humanize(profile?.accessLevel)], ["MFA", "Required"], ["Location tracking", "On duty, consent only"], ["Profile changes", "HRMS approval"]]} />
           </Card>
         </div>
       </div>
@@ -311,33 +311,31 @@ export function US004MyProfile() {
 
 /* --------------------------------- US-005 ---------------------------------- */
 
-type Req = { id: string; cat: string; source: string; age: string; status: "Urgent" | "New" | "Review"; prio: string; clearance: string };
-const reqs: Req[] = [
-  { id: "REQ-26-1101", cat: "Unclaimed body", source: "Helpline", age: "12 min", status: "Urgent", prio: "Emergency", clearance: "Pending" },
-  { id: "REQ-26-1102", cat: "EWS family", source: "WhatsApp", age: "25 min", status: "New", prio: "Normal", clearance: "Not started" },
-  { id: "REQ-26-1103", cat: "Unsupported person", source: "Website", age: "40 min", status: "Review", prio: "High", clearance: "Pending" },
-  { id: "REQ-26-1104", cat: "EWS family", source: "Google Ads", age: "1 hr", status: "New", prio: "Normal", clearance: "Not started" },
-  { id: "REQ-26-1105", cat: "EWS family", source: "Social media", age: "2 hr", status: "Review", prio: "Normal", clearance: "Pending" },
-];
+type Req = { id: string; cat: string; source: string; age: string; status: string; prio: string; clearance: string };
+
 const sources = ["All sources", "Helpline", "WhatsApp", "Website", "Google Ads", "Social media", "Official email", "AI inbound calling", "Chatbot", "Staff app", "Volunteer app"] as const;
 
 export function US005SewaRequests() {
+  const router = useRouter();
   const notice = useNotice();
   const [sel, setSel] = useState(0);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("All statuses");
   const [source, setSource] = useState<(typeof sources)[number]>("All sources");
-  const visible = reqs.map((r, i) => ({ r, i })).filter(({ r }) => (status === "All statuses" || r.status === status) && (source === "All sources" || r.source === source) && `${r.id} ${r.cat}`.toLowerCase().includes(q.toLowerCase()));
-  const cur = reqs[sel];
+  const search = useDebounced(q.trim());
+  const live = useOperations("requests",notice.show,{ search: search || undefined,status: status === "New" ? "NEW" : status === "Review" ? "PENDING_VERIFICATION" : undefined,emergency: status === "Urgent" ? true : undefined });
+  const reqs: (Req & { recordId: string })[] = live.rows.map(row => ({ recordId: text(row.id),id: row.displayId,cat: humanize(text(row.beneficiaryCategory,"")),source: humanize(text(row.channel,"")),age: row.displayCreated,status: row.displayStatus,prio: row.displayPriority,clearance: EMPTY }));
+  const visible = reqs.map((r, i) => ({ r, i })).filter(({ r }) => (source === "All sources" || r.source === source) && `${r.id} ${r.cat}`.toLowerCase().includes(q.toLowerCase()));
+  const cur = reqs[sel] ?? reqs[0] ?? { recordId: "",id: EMPTY,cat: EMPTY,source: EMPTY,age: EMPTY,status: EMPTY,prio: EMPTY,clearance: EMPTY };
   return (
     <UserFrame code="US-005" active="sewa-requests" title="Sewa Requests & Digital Leads">
       <Tiles
         items={[
-          { value: "05", label: "Assigned requests", tone: "blue" },
-          { value: "02", label: "New", tone: "sky" },
-          { value: "02", label: "Verification due", tone: "orange" },
-          { value: "01", label: "Emergency", tone: "red" },
-          { value: "02", label: "Digital leads", tone: "purple" },
+          { value: count(live.total), label: "Assigned requests", tone: "blue" },
+          { value: live.metric("byStatus.NEW"), label: "New", tone: "sky" },
+          { value: live.metric("pendingVerification"), label: "Verification due", tone: "orange" },
+          { value: live.metric("emergencyOpen"), label: "Emergency", tone: "red" },
+          { value: EMPTY, label: "Digital leads", tone: "purple" },
         ]}
       />
       <div className={`${rows2} lg:[grid-template-rows:minmax(0,2fr)_minmax(0,1fr)]`}>
@@ -351,7 +349,7 @@ export function US005SewaRequests() {
             <Table
               cols={["Request ID", "Category", "Source", "Age", "Status", "Action"]}
               selected={visible.findIndex((v) => v.i === sel)}
-              onSelect={(k) => setSel(visible[k].i)}
+              onSelect={(k) => { setSel(visible[k].i);live.select(reqs[visible[k].i]?.recordId ?? null); }}
               rows={visible.map(({ r }) => [
                 r.id,
                 r.cat,
@@ -360,27 +358,27 @@ export function US005SewaRequests() {
                 `*${r.status}`,
                 <span key={r.id} className="flex gap-[4px]">
                   {r.status === "New" ? (
-                    <Link href={usRoutes.createRequest} className={`${btnOutline} !h-[30px]`}>Edit</Link>
+                    <Link href={`${usRoutes.createRequest}?id=${r.recordId}`} className={`${btnOutline} !h-[30px]`}>Edit</Link>
                   ) : (
-                    <Link href={usRoutes.verification} className={`${btnOutline} !h-[30px]`}>Open</Link>
+                    <Link href={`${usRoutes.verification}?id=${r.recordId}`} className={`${btnOutline} !h-[30px]`}>Open</Link>
                   )}
-                  <Btn className="!h-[30px]" onClick={() => notice.show(`${r.id}: quick update saved to the request timeline (demo).`)}>Update</Btn>
+                  <Btn className="!h-[30px]" onClick={() => router.push(`${usRoutes.verification}?id=${r.recordId}`)}>Update</Btn>
                 </span>,
               ])}
             />
             <div><Link href={usRoutes.createRequest} className={btnSolid}>New request</Link></div>
           </Card>
           <Card title={`Selected request • ${cur.id}`} bodyClassName="flex flex-col gap-[10px]">
-            <Lines rows={[["Category", cur.cat], ["Coverage", "Ghaziabad"], ["Priority", cur.prio === "Normal" ? "Normal" : `*${cur.prio}`], ["Legal clearance", cur.clearance === "Pending" ? "*Pending" : cur.clearance], ["Owner", "User 07"], ["Duplicate check", "Review before creation"]]} />
+            <Lines rows={[["Category", cur.cat], ["Coverage",humanize(text(live.detail.data?.coverage,""))], ["Priority", cur.prio === "Normal" ? "Normal" : `*${cur.prio}`], ["Legal clearance", cur.clearance === "Pending" ? "*Pending" : cur.clearance], ["Owner",text(at(live.detail.data,"owner.name"))], ["Duplicate check", "Review before creation"]]} />
             <Btns>
-              <Link href={usRoutes.verification} className={btnSolid}>Verify documents</Link>
-              <Btn onClick={() => notice.show(`${cur.id} escalated to your reporting Admin (demo).`)}>Escalate</Btn>
+              <Link href={`${usRoutes.verification}?id=${cur.recordId}`} className={btnSolid}>Verify documents</Link>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Escalate</Btn>
             </Btns>
           </Card>
         </div>
         <div className="grid gap-[10px] lg:min-h-0 lg:grid-cols-2 lg:[grid-template-rows:minmax(0,1fr)]">
           <Card title="Channel intake">
-            <Lines rows={[["Helpline / WhatsApp", "02"], ["Website", "01"], ["Google Ads / social", "02"]]} />
+            <Lines rows={[["Helpline / WhatsApp",EMPTY],["Website",live.metric("byChannelThisMonth.WEBSITE")],["Google Ads / social",EMPTY]]} />
           </Card>
           <Card title="Quick guidance">
             <Note boxed>Only assigned leads are visible. Verify coverage and eligibility before committing any service. Delhi and Noida: coming soon.</Note>

@@ -1,6 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useCrmAccess } from "@/lib/api/useCrmAccess";
+import { useCrmQuery } from "@/lib/api/useCrmQuery";
+import { useCrmMutation } from "@/lib/api/useCrmMutation";
+import { at, choose, count, records, text, istTimestamp, EMPTY, type CrmRecord } from "@/lib/crm/data";
+import { humanize } from "@/lib/format";
 import {
   UserFrame,
   UserHeader,
@@ -18,25 +23,70 @@ import {
 
 export default function US019VehicleMaterialRequests() {
   const { show, node } = useUserNotice();
-  const [linkedCase, setLinkedCase] = useState("MS-26-1101");
+  const { profile,can } = useCrmAccess();
+  const mutation = useCrmMutation(show);
+  const cases = useCrmQuery<CrmRecord[]>(can("cases.view") ? "/cases?active=true&limit=100" : null);
+  const trips = useCrmQuery<CrmRecord[]>(can("fleet.view") ? "/fleet/trips?limit=100" : null);
+  const materials = useCrmQuery<CrmRecord[]>(can("inventory.view") ? "/inventory/material-requests?mine=true&limit=100" : null);
+  const vehicles = useCrmQuery<CrmRecord[]>(can("fleet.view") ? "/fleet/vehicles?limit=100" : null);
+  const stock = useCrmQuery<CrmRecord[]>(can("inventory.view") ? "/inventory/stock?limit=100" : null);
+  const fleet = useCrmQuery<CrmRecord>(can("fleet.view") ? "/fleet/summary" : null);
+  const inventory = useCrmQuery<CrmRecord>(can("inventory.view") ? "/inventory/summary" : null);
+  const submitted = useRef(new Map<string,CrmRecord>());
+  const locked = useRef(false);
+  const [materialItem,setMaterialItem] = useState<CrmRecord | null>(null);
+  const [linkedCase, setLinkedCase] = useState("");
   const [reqType, setReqType] = useState("Vehicle");
-  const [reqDate, setReqDate] = useState("28 Nov 2026");
-  const [location, setLocation] = useState("Ghaziabad");
-  const [qty, setQty] = useState("1 vehicle");
+  const [reqDate, setReqDate] = useState("");
+  const [location, setLocation] = useState("");
+  const [qty, setQty] = useState("");
   const [priority, setPriority] = useState("High");
   const [purpose, setPurpose] = useState("");
 
+  const rows = [...records(trips.data).filter(row => row.requestedBy === profile?.id),...records(materials.data)];
+  async function submit() {
+    if (locked.current || mutation.busy) return;
+    locked.current = true;
+    try {
+      const kase = records(cases.data).find(row => row.caseNo === linkedCase || row.id === linkedCase);
+      if (!kase) return show("Choose a real assigned case.");
+      const centreId = at(kase,"centre.id") ?? profile?.centres[0]?.id;
+      if (!centreId) return show("A service centre is required.");
+      if (reqType.includes("Vehicle")) {
+        if (!can("fleet.create")) return;
+        const scheduledAt = istTimestamp(reqDate);
+        if (!scheduledAt || !location.trim()) return show("Enter a pickup location and required time as YYYY-MM-DD HH:MM (IST).");
+        const body = { purpose: "BODY_TRANSPORT",centreId,caseId: kase.id,pickup: { address: location },drop: {},scheduledAt,notes: purpose };
+        const key = JSON.stringify(body);
+        let created = submitted.current.get(key);
+        if (!created) { created = await mutation.run<CrmRecord>("/fleet/trips", { body }); if (created) submitted.current.set(key,created); }
+        if (!created) return;
+        show(text(created.tripNo) + ': ' + humanize(text(created.status,"")));
+      }
+      if (reqType.includes("Material")) {
+        if (!can("inventory.create")) return;
+        const item = materialItem ?? choose(records(stock.data).map(row => ({ ...row,...(row.item as CrmRecord) })),"Choose material");
+        const quantity = Number(qty);
+        if (!item || !Number.isInteger(quantity) || quantity <= 0 || !purpose.trim()) return show("Choose material, a positive whole quantity and a purpose.");
+        const body = { centreId,caseId: kase.id,purpose,lines: [{ itemId: item.id,quantity }] };
+        const key = JSON.stringify(body);
+        let created = submitted.current.get(key);
+        if (!created) { created = await mutation.run<CrmRecord>("/inventory/material-requests", { body }); if (created) submitted.current.set(key,created); }
+        if (created) show(text(created.requestNo) + ': ' + humanize(text(created.status,"")));
+      }
+    } finally { locked.current = false; }
+  }
   return (
     <UserFrame active="resources-expenses">
       <UserHeader code="US-019" title="Vehicle & Material Requests" />
       <UserKpiRow
         items={[
-          { value: "02", label: "My resource requests", tone: "blue" },
-          { value: "01", label: "Awaiting approval", tone: "orange" },
-          { value: "01", label: "Allocated", tone: "green" },
-          { value: "01", label: "Vehicle available", tone: "green" },
-          { value: "02", label: "Low stock items", tone: "red", valueRed: true },
-          { value: "Pending", label: "Case clearance", tone: "orange" },
+          { value: profile ? count(rows.length) : EMPTY, label: "My resource requests", tone: "blue" },
+          { value: profile ? count(rows.filter(row => row.status === "REQUESTED").length) : EMPTY, label: "Awaiting approval", tone: "orange" },
+          { value: profile ? count(rows.filter(row => row.status === "DISPATCHED" || row.status === "ISSUED").length) : EMPTY, label: "Allocated", tone: "green" },
+          { value: count(at(fleet.data,"vehicles.available")), label: "Vehicle available", tone: "green" },
+          { value: count(inventory.data?.lowStockLines), label: "Low stock items", tone: "red", valueRed: true },
+          { value: EMPTY, label: "Case clearance", tone: "orange" },
         ]}
       />
 
@@ -84,9 +134,9 @@ export default function US019VehicleMaterialRequests() {
               />
             </label>
             <div className="mt-[8px] flex flex-wrap gap-[7px]">
-              <button type="button" onClick={() => show(`Resource request submitted for ${linkedCase}.`)} className={userPrimaryBtn}>Submit request</button>
-              <button type="button" onClick={() => show("Resource request draft saved.")} className={userOutlineBtn}>Save draft</button>
-              <button type="button" onClick={() => show("Additional material row added.")} className={userOutlineBtn}>Add material</button>
+              <button type="button" disabled={mutation.busy} onClick={submit} className={userPrimaryBtn}>Submit request</button>
+              <button type="button" disabled onClick={() => show(EMPTY)} className={userOutlineBtn}>Save draft</button>
+              <button type="button" onClick={() => { const item = choose(records(stock.data).map(row => ({ ...row,...(row.item as CrmRecord) })),"Choose material"); if (item) { setMaterialItem(item); show(text(item.name)); } }} className={userOutlineBtn}>Add material</button>
             </div>
             <p className="mt-[6px] text-[13px] text-[#4a5468]">
               Availability is indicative; Admin confirms allocation and dispatch clearance.
@@ -97,18 +147,18 @@ export default function US019VehicleMaterialRequests() {
             <UserKVList
               rows={[
                 ["MV-01 · Force Traveller", "In service"],
-                ["MV-02 · Maruti EECO", <UserPill key="mv2" tone="green">Available</UserPill>],
-                ["Case legal clearance", <UserPill key="cl" tone="red">Pending</UserPill>],
+                ["MV-02 · Maruti EECO", <UserPill key="mv2" tone="green">{humanize(text(vehicles.data?.[1]?.status,""))}</UserPill>],
+                ["Case legal clearance", <UserPill key="cl" tone="red">{EMPTY}</UserPill>],
                 ["Driver / safety checks", "Admin verification"],
-                ["Body cover", "6 pieces · low stock"],
-                ["Sanitisation supplies", "8 units · low stock"],
+                [text(at(stock.data?.[0],"item.name")),text(stock.data?.[0]?.quantity)],
+                [text(at(stock.data?.[1],"item.name")),text(stock.data?.[1]?.quantity)],
               ]}
             />
             <div className="mt-[8px] rounded-[6px] border border-[#dce6f5] bg-[#eef4fc] px-[10px] py-[5px] text-[13.8px] text-[#1a1d36]">
               Requesting a vehicle does not authorise dispatch.
             </div>
             <div className="mt-[8px]">
-              <button type="button" onClick={() => show("Viewing RES-011 approval status.")} className={userPrimaryBtn}>View request status</button>
+              <button type="button" onClick={() => show(rows.map(row => `${text(row.tripNo ?? row.requestNo)}: ${text(row.status)}`).join("\n") || EMPTY)} className={userPrimaryBtn}>View request status</button>
             </div>
           </UserPanel>
         </div>
@@ -125,23 +175,19 @@ export default function US019VehicleMaterialRequests() {
                 </tr>
               </thead>
               <tbody>
-                <tr className="h-[32px] border-b border-[#dce4ee] text-[14.2px] text-[#1a1d36]">
-                  <td className="px-[8px]">RES-011</td>
-                  <td className="px-[8px]">Vehicle MV-02</td>
-                  <td className="px-[8px]"><UserPill tone="amber">Awaiting approval</UserPill></td>
-                  <td className="px-[8px]">Admin review</td>
+                {rows.map(row => (
+                <tr key={text(row.id)} className="h-[32px] border-b border-[#dce4ee] text-[14.2px] text-[#1a1d36]">
+                  <td className="px-[8px]">{text(row.tripNo ?? row.requestNo)}</td>
+                  <td className="px-[8px]">{text(row.purpose)}</td>
+                  <td className="px-[8px]"><UserPill tone="amber">{humanize(text(row.status,""))}</UserPill></td>
+                  <td className="px-[8px]">{EMPTY}</td>
                 </tr>
-                <tr className="h-[32px] border-b border-[#dce4ee] text-[14.2px] text-[#1a1d36]">
-                  <td className="px-[8px]">RES-012</td>
-                  <td className="px-[8px]">Cremation kit</td>
-                  <td className="px-[8px]"><UserPill tone="green">Allocated</UserPill></td>
-                  <td className="px-[8px]">Acknowledge issue</td>
-                </tr>
+                ))}
               </tbody>
             </table>
           </div>
           <div className="mt-[6px]">
-            <button type="button" onClick={() => show("Resource request history opened.")} className={userPrimaryBtn}>View history</button>
+            <button type="button" onClick={() => { trips.reload();materials.reload();stock.reload(); }} className={userPrimaryBtn}>View history</button>
           </div>
         </UserPanel>
       </div>

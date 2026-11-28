@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 /**
  * SA-004 — Central Approval Centre.
  * Rebuild matched to the SA-004 reference design: 6 KPI tiles, 6 tabs, the
@@ -36,10 +38,11 @@ import {
   th,
   useNotice,
 } from "@/components/dashboards/super-admin/kit";
-import { authorizedRequest } from "@/lib/api/authorized";
 import { errorMessage } from "@/lib/api/client";
 import { qs, useCrmQuery } from "@/lib/api/useCrmQuery";
 import { humanize, pad2, shortDateTime } from "@/lib/format";
+import { useCrmMutation } from "@/lib/api/useCrmMutation";
+import { entityHref } from "@/lib/crm/navigation";
 
 const tabs = ["All", "Sewa & legal", "Expenses", "Donations", "Procurement", "User access"] as const;
 type Tab = (typeof tabs)[number];
@@ -47,10 +50,10 @@ type Tab = (typeof tabs)[number];
 /** Approval types shown under each tab (finance and procurement approvals arrive with Phase 4). */
 const TAB_TYPES: Record<Exclude<Tab, "All">, string[]> = {
   "Sewa & legal": ["CASE_CLOSURE", "CASE_REOPEN", "CITY_ACTIVATION", "NOTIFICATION_BROADCAST"],
-  Expenses: [],
+  Expenses: ["TRIP_COST"],
   Donations: [],
-  Procurement: [],
-  "User access": ["USER_ACTIVATION", "USER_ACCESS_CHANGE", "USER_REACTIVATION"],
+  Procurement: ["VEHICLE_DISPATCH", "MATERIAL_REQUEST", "PURCHASE_REQUEST", "STOCK_AUDIT"],
+  "User access": ["USER_ACTIVATION", "USER_ACCESS_CHANGE", "USER_REACTIVATION", "LEAVE_REQUEST"],
 };
 
 const LEVEL_LABEL: Record<string, string> = { SUPER_ADMIN: "Super Admin", ADMIN: "Admin", USER: "User" };
@@ -59,6 +62,8 @@ type Approval = {
   id: string;
   approvalNo: string;
   type: string;
+  entityType: string;
+  entityId: string;
   entityLabel: string;
   summary: string;
   risk: string;
@@ -112,7 +117,9 @@ const workflowHelp: Record<(typeof workflowActions)[number], string> = {
 const workflowActions = ["Submit", "Verify", "Decide", "Notify"] as const;
 
 export default function SA004Approvals() {
+  const router = useRouter();
   const notice = useNotice();
+  const mutation = useCrmMutation(notice.show);
   const [tab, setTab] = useState<Tab>("All");
   const [history, setHistory] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -133,15 +140,16 @@ export default function SA004Approvals() {
   ];
 
   async function decide(decision: "APPROVE" | "REJECT") {
+    if (mutation.busy) return;
     if (!selected) return notice.show("Select an approval first.");
     if (!selected.canDecide) {
       return notice.show(selected.status !== "PENDING" ? "This approval has already been decided." : `You cannot decide ${selected.approvalNo}: it needs an independent ${LEVEL_LABEL[selected.requiredLevel] ?? ""} who did not request it.`);
     }
     const reason = window.prompt(`${decision === "APPROVE" ? "Approve" : "Reject"} ${selected.approvalNo} — reason (required):`)?.trim();
     if (!reason) return;
+    if (reason.length < 5) return notice.show("Enter a reason of at least 5 characters.");
     try {
-      await authorizedRequest(`/approvals/${selected.id}/decision`, { body: { decision, reason } });
-      notice.show(`${selected.approvalNo} ${decision === "APPROVE" ? "approved" : "rejected"}.`);
+      await mutation.run(`/approvals/${selected.id}/decision`, { body: { decision, reason } }, `${selected.approvalNo} ${decision === "APPROVE" ? "approved" : "rejected"}.`);
       queue.reload();
       summary.reload();
     } catch (err) {
@@ -208,6 +216,8 @@ export default function SA004Approvals() {
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedId(a.id);
+                        const href = entityHref(a.entityType, a.entityId, "super-admin");
+                        if (href) router.push(href);
                       }}
                       className="text-[14.8px] font-semibold text-[#0b0c36] hover:text-[#2320c4] hover:underline"
                     >
@@ -264,10 +274,10 @@ export default function SA004Approvals() {
               <KV k="Decision" v={selected ? (selected.status === "PENDING" ? `Pending · requested ${shortDateTime(selected.createdAt)}` : `${humanize(selected.status)}${selected.decisionReason ? ` · ${selected.decisionReason}` : ""}${selected.failureMessage ? ` · ${selected.failureMessage}` : ""}`) : "—"} />
             </div>
             <div className="mt-auto flex flex-wrap gap-[8px] pt-[8px]">
-              <PrimaryButton onClick={() => decide("APPROVE")}>
+              <PrimaryButton disabled={mutation.busy || !selected?.canDecide} onClick={() => decide("APPROVE")}>
                 Approve with reason
               </PrimaryButton>
-              <PrimaryButton outline onClick={() => decide("REJECT")}>
+              <PrimaryButton disabled={mutation.busy || !selected?.canDecide} outline onClick={() => decide("REJECT")}>
                 Reject with reason
               </PrimaryButton>
             </div>

@@ -9,34 +9,37 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { useOperations } from "@/lib/crm/useOperations";
+import { useCrmQuery } from "@/lib/api/useCrmQuery";
+import { EMPTY, records, text, type CrmRecord } from "@/lib/crm/data";
 import { useNotice } from "@/components/dashboards/super-admin/kit";
 import { saRoutes, screenPicker1120 } from "@/components/dashboards/super-admin/routes";
 import { Btn, Buttons, Check, Col, Columns, Field, KVList, NativeSelect, Panel, Pill, Screen, TextBox, ink } from "@/components/dashboards/super-admin/screen-kit";
 
 const tabs = ["Task Details", "Assignee & Scope", "Delivery & SLA", "Review"] as const;
-const typeOpts = ["Field operations", "Verification", "Helpline", "Internal work"] as const;
-const caseOpts = ["MSC-26-27-0004", "MSC-26-27-0003", "MSC-26-27-0008", "Internal work item"] as const;
-const deptOpts = ["Sewa Operations", "Case & Workflow", "Communication Hub", "Finance & Donations"] as const;
+
+
+
 const priorityOpts = ["High", "Critical", "Normal"] as const;
 const modeOpts = ["Manual", "Automatic", "Approval-based"] as const;
 const recurOpts = ["One-time", "Daily", "Weekly"] as const;
 const assigneeTypeOpts = ["Staff", "Volunteer", "Team"] as const;
-const assigneeOpts = ["Field Team 01", "Case User 03", "Volunteer 01", "Helpline User 01"] as const;
+
 const channelOpts = ["Staff App", "Volunteer App", "WhatsApp", "Email"] as const;
 
 const initial = {
-  title: "Confirm pickup readiness",
-  type: typeOpts[0] as string,
-  linked: caseOpts[0] as string,
-  dept: deptOpts[0] as string,
+  title: "",
+  type: "",
+  linked: "",
+  dept: "",
   priority: priorityOpts[0] as string,
   due: "26 Nov 2026 · 12:30 PM",
   mode: modeOpts[0] as string,
-  instructions: "Confirm readiness with authorised team; record acceptance and update case.",
+  instructions: "",
   location: "Ghaziabad · authorised case",
   recurrence: recurOpts[0] as string,
   assigneeType: assigneeTypeOpts[0] as string,
-  assignee: assigneeOpts[0] as string,
+  assignee: "",
   channel: channelOpts[0] as string,
   acceptance: true,
   notify: true,
@@ -45,21 +48,35 @@ const initial = {
 
 export default function SA018CreateTask() {
   const notice = useNotice();
+  const live = useOperations("tasks", notice.show);
+  const cases = useCrmQuery<CrmRecord[]>(live.can("cases.view") ? "/cases?limit=100&active=true" : null);
+  const departments = useCrmQuery<CrmRecord[]>(live.can("departments.view") ? "/departments?limit=100&status=ACTIVE" : null);
+  const typeOpts = live.master("TASK_TYPE").map(row => text(row.code));
+  const caseOpts = ["Internal work item", ...records(cases.data).map(row => text(row.caseNo))];
+  const deptOpts = records(departments.data).map(row => text(row.name));
+  const assigneeOpts = live.people.map(row => text(row.name));
   const router = useRouter();
   const [tab, setTab] = useState<string>(tabs[0]);
   const [f, setF] = useState(initial);
-  const [files, setFiles] = useState<string[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
   const set = <K extends keyof typeof initial>(k: K) => (v: (typeof initial)[K]) => setF((s) => ({ ...s, [k]: v }));
-  const volunteer = f.assigneeType === "Volunteer" || f.assignee.startsWith("Volunteer");
 
-  const assign = () => {
-    if (!f.title.trim()) return notice.show("Task title is required.");
-    if (!f.due.trim()) return notice.show("Due date / time is required.");
-    if (!f.instructions.trim()) return notice.show("Add instructions for the assignee.");
-    if (f.priority === "Critical" && !window.confirm("Sensitive / critical assignment — confirm before dispatch?")) return;
-    notice.show(`Task assigned to ${f.assignee} via ${f.channel} (demo).`);
-    window.setTimeout(() => router.push(saRoutes.tasks), 900);
+  const assign = async () => {
+    if (live.mutation.busy || !live.can("tasks.create")) return;
+    const dueAt = live.due(f.due);
+    if (!dueAt) return notice.show("Enter the due time as YYYY-MM-DD HH:MM (IST).");
+    const assignee = live.people.find(row => row.name === f.assignee);
+    const linked = records(cases.data).find(row => row.caseNo === f.linked);
+    if (!assignee || !f.type || !f.title.trim()) return notice.show("Enter a title, task type and eligible assignee.");
+    const recurrence = f.recurrence === "Daily" ? "DAILY" : f.recurrence === "Weekly" ? "WEEKLY" : "NONE";
+    const recurrenceUntil = recurrence === "NONE" ? undefined : live.due(window.prompt("Recurrence end (YYYY-MM-DD HH:MM, IST):") || "");
+    if (recurrence !== "NONE" && !recurrenceUntil) return;
+    if (!["Staff App", "Volunteer App"].includes(f.channel)) return notice.show("This delivery channel has no CRM integration yet.");
+    const created = await live.createTask({ title: f.title, description: f.instructions, typeCode: f.type, assigneeId: assignee.id, priority: f.priority.toUpperCase(), dueAt, location: f.location, requireAcceptance: f.acceptance, dispatchToMobile: true, recurrence, ...(recurrenceUntil ? { recurrenceUntil } : {}), ...(linked ? { caseId: linked.id } : {}) });
+    if (!created) return;
+    for (const file of files) await live.upload.uploadFile('/tasks/' + created.id + '/evidence', file);
+    router.push(saRoutes.tasks);
   };
 
   return (
@@ -70,9 +87,9 @@ export default function SA018CreateTask() {
       picker={screenPicker1120}
       kpis={[
         { value: f.mode, label: "Assignment mode" },
-        { value: "08 / 10", label: "Staff on duty" },
-        { value: "12 / 18", label: "Volunteers available" },
-        { value: "01 / 02", label: "Vehicles available" },
+        { value: EMPTY, label: "Staff on duty" },
+        { value: EMPTY, label: "Volunteers available" },
+        { value: EMPTY, label: "Vehicles available" },
       ]}
       tabs={tabs}
       tab={tab}
@@ -86,7 +103,7 @@ export default function SA018CreateTask() {
               <Field label="Task type"><NativeSelect label="Task type" value={f.type} options={typeOpts} onChange={set("type")} className="w-full" /></Field>
               <Field label="Linked case / request"><NativeSelect label="Linked case / request" value={f.linked} options={caseOpts} onChange={set("linked")} className="w-full" /></Field>
               <Field label="Department"><NativeSelect label="Department" value={f.dept} options={deptOpts} onChange={set("dept")} className="w-full" /></Field>
-              <Field label="Centre"><TextBox value="Ghaziabad" readOnly label="Centre" /></Field>
+              <Field label="Centre"><TextBox value={live.profile?.centres[0]?.name ?? EMPTY} readOnly label="Centre" /></Field>
               <Field label="Priority"><NativeSelect label="Priority" value={f.priority} options={priorityOpts} onChange={set("priority")} className="w-full" /></Field>
               <Field label="Due date / time"><TextBox value={f.due} onChange={set("due")} label="Due date / time" /></Field>
               <Field label="Assignment mode"><NativeSelect label="Assignment mode" value={f.mode} options={modeOpts} onChange={set("mode")} className="w-full" /></Field>
@@ -101,22 +118,22 @@ export default function SA018CreateTask() {
             <div className="grid grid-cols-1 gap-x-[13px] gap-y-[7px] sm:grid-cols-3">
               <Field label="Assignee type"><NativeSelect label="Assignee type" value={f.assigneeType} options={assigneeTypeOpts} onChange={set("assigneeType")} className="w-full" /></Field>
               <Field label="Assignee"><NativeSelect label="Assignee" value={f.assignee} options={assigneeOpts} onChange={set("assignee")} className="w-full" /></Field>
-              <Field label="Reporting admin"><TextBox value="Operations Admin" readOnly label="Reporting admin" /></Field>
+              <Field label="Reporting admin"><TextBox value={EMPTY} readOnly label="Reporting admin" /></Field>
               <Field label="Delivery channel"><NativeSelect label="Delivery channel" value={f.channel} options={channelOpts} onChange={set("channel")} className="w-full" /></Field>
             </div>
             <Buttons className="!mt-[8px]">
-              <Btn primary onClick={assign}>Review & assign</Btn>
-              <Btn onClick={() => notice.show(`Draft saved: "${f.title}" (demo).`)}>Save draft</Btn>
+              <Btn primary disabled={live.mutation.busy || !live.can("tasks.create")} onClick={assign}>Review & assign</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Save draft</Btn>
               <Btn href={saRoutes.tasks}>Cancel</Btn>
             </Buttons>
             <div className={`mt-[6px] flex items-center justify-between border-b border-[#e1e7f0] pb-[3px] text-[15.3px] ${ink}`}>
               <span>Attachments</span>
-              <span className="truncate pl-[10px]">{files.length ? files.join(", ") : "No files selected"}</span>
+              <span className="truncate pl-[10px]">{files.length ? files.map(file => file.name).join(", ") : "No files selected"}</span>
             </div>
-            <input ref={fileInput} type="file" multiple hidden onChange={(e) => setFiles(Array.from(e.target.files ?? []).map((x) => x.name))} />
+            <input ref={fileInput} type="file" multiple hidden onChange={(e) => setFiles(Array.from(e.target.files ?? []))} />
             <Buttons className="!mt-[6px]">
               <Btn onClick={() => fileInput.current?.click()}>Add attachment</Btn>
-              <Btn onClick={() => notice.show(`${f.assignee}: available · ${volunteer ? "volunteer sees minimum details" : "full case access"} (demo).`)}>Preview assignee</Btn>
+              <Btn onClick={() => notice.show(live.people.find(row => row.name === f.assignee) ? f.assignee : EMPTY)}>Preview assignee</Btn>
             </Buttons>
           </Panel>
         </Col>
@@ -126,10 +143,10 @@ export default function SA018CreateTask() {
             <KVList
               rowH={26}
               rows={[
-                ["Centre coverage", <Pill key="a" tone="green">Active</Pill>],
-                ["Assignee availability", <Pill key="b" tone="green">Available</Pill>],
-                ["Case access", <Pill key="c" tone="green">Verified</Pill>],
-                ["Legal gate", <Pill key="d" tone="green">Verified</Pill>],
+                ["Centre coverage", <Pill key="a" tone="green">{EMPTY}</Pill>],
+                ["Assignee availability", <Pill key="b" tone="green">{EMPTY}</Pill>],
+                ["Case access", <Pill key="c" tone="green">{EMPTY}</Pill>],
+                ["Legal gate", <Pill key="d" tone="green">{EMPTY}</Pill>],
                 ["Conflict / workload", "Review required"],
               ]}
             />
@@ -143,8 +160,8 @@ export default function SA018CreateTask() {
             <KVList
               rowH={24}
               rows={[
-                ["Acknowledgement target", "15 min (demo)"],
-                ["Fallback", "Operations Admin"],
+                ["Acknowledgement target", EMPTY],
+                ["Fallback", EMPTY],
                 ["Delivery failure", "Retry / manual follow-up"],
               ]}
             />

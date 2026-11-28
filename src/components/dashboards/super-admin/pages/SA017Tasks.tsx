@@ -8,6 +8,10 @@
  */
 
 import { useState } from "react";
+import { useOperations } from "@/lib/crm/useOperations";
+import { useDebounced } from "@/lib/api/useCrmQuery";
+import { text as value, EMPTY } from "@/lib/crm/data";
+import { clock } from "@/lib/format";
 import { useNotice } from "@/components/dashboards/super-admin/kit";
 import { saRoutes, screenPicker1120 } from "@/components/dashboards/super-admin/routes";
 import { Btn, Buttons, Col, Columns, DataTable, FilterBar, Flow, KVList, Meter, NativeSelect, Panel, Pill, Screen, SearchInput, ink, useFilters } from "@/components/dashboards/super-admin/screen-kit";
@@ -15,21 +19,6 @@ import { Btn, Buttons, Col, Columns, DataTable, FilterBar, Flow, KVList, Meter, 
 const tabs = ["All Tasks", "My Team", "Overdue", "Awaiting Acceptance", "Completed"] as const;
 const views = ["List", "Kanban", "Calendar"] as const;
 
-const tasks = [
-  { id: "MST-26-27-0001", task: "Verify legal clearance / request 0001", who: "Verification User 01", team: "Verification", due: "12:00", priority: "Critical", status: "Pending" },
-  { id: "MST-26-27-0002", task: "Coordinate pickup / case 0004", who: "Field Team 01", team: "Field operations", due: "12:30", priority: "High", status: "In progress" },
-  { id: "MST-26-27-0003", task: "Family update / case 0004", who: "Helpline User 01", team: "Helpline", due: "13:00", priority: "Normal", status: "Assigned" },
-  { id: "MST-26-27-0004", task: "Review closure evidence / case 0005", who: "Case User 03", team: "Internal tasks", due: "11:00", priority: "High", status: "Overdue" },
-  { id: "MST-26-27-0005", task: "Confirm material kit / case 0003", who: "Volunteer 01", team: "Volunteer coordination", due: "14:00", priority: "Normal", status: "Awaiting acceptance" },
-  { id: "MST-26-27-0006", task: "Update field arrival / case 0004", who: "Field Team 01", team: "Field operations", due: "11:20", priority: "Normal", status: "Completed" },
-];
-type Task = (typeof tasks)[number];
-const byTab: Record<string, (t: Task) => boolean> = {
-  "My Team": (t) => t.team === "Field operations",
-  Overdue: (t) => t.status === "Overdue",
-  "Awaiting Acceptance": (t) => t.status === "Awaiting acceptance",
-  Completed: (t) => t.status === "Completed",
-};
 const teamOpts = ["All teams", "Verification", "Field operations", "Helpline", "Volunteer coordination", "Internal tasks"] as const;
 const priorityOpts = ["All priority", "Critical", "High", "Normal"] as const;
 const statusOpts = ["All status", "Pending", "In progress", "Assigned", "Overdue", "Awaiting acceptance", "Completed"] as const;
@@ -39,15 +28,11 @@ export default function SA017Tasks() {
   const notice = useNotice();
   const [tab, setTab] = useState<string>(tabs[0]);
   const [view, setView] = useState<(typeof views)[number]>("List");
-  const { q, setQ, f, set, reset, text } = useFilters({ team: "All teams", priority: "All priority", status: "All status" });
-  const rows = tasks.filter(
-    (t) =>
-      (byTab[tab] ?? (() => true))(t) &&
-      (f.team === "All teams" || t.team === f.team) &&
-      (f.priority === "All priority" || t.priority === f.priority) &&
-      (f.status === "All status" || t.status === f.status) &&
-      text(t.id, t.task, t.who),
-  );
+  const { q, setQ, f, set, reset } = useFilters({ team: "All teams", priority: "All priority", status: "All status" });
+  const search = useDebounced(q.trim());
+  const statuses: Record<string,string> = { Pending: "ASSIGNED", Assigned: "ASSIGNED", "In progress": "IN_PROGRESS", "Awaiting acceptance": "ASSIGNED", Completed: "COMPLETED" };
+  const live = useOperations("tasks", notice.show, { search: search || undefined, status: tab === "Awaiting Acceptance" ? "ASSIGNED" : tab === "Completed" ? "COMPLETED" : statuses[f.status], overdue: tab === "Overdue" || f.status === "Overdue" ? true : undefined, priority: f.priority === "All priority" ? undefined : f.priority.toUpperCase() });
+  const rows = live.rows.map(row => ({ id: row.displayId, recordId: value(row.id), task: value(row.title), who: row.displayOwner, team: EMPTY, due: clock(value(row.dueAt,"")), priority: row.displayPriority, status: row.overdue ? "Overdue" : row.status === "ASSIGNED" ? "Awaiting acceptance" : row.displayStatus }));
   const byTime = [...rows].sort((a, b) => a.due.localeCompare(b.due));
 
   return (
@@ -57,11 +42,11 @@ export default function SA017Tasks() {
       active="case-workflow"
       picker={screenPicker1120}
       kpis={[
-        { value: "36", label: "Open tasks" },
-        { value: "05", label: "Overdue" },
-        { value: "12", label: "Due today" },
-        { value: "04", label: "Awaiting acceptance" },
-        { value: "10", label: "Completed today" },
+        { value: live.metric("open"), label: "Open tasks" },
+        { value: live.metric("overdue"), label: "Overdue" },
+        { value: live.metric("dueToday"), label: "Due today" },
+        { value: live.metric("awaitingAcceptance"), label: "Awaiting acceptance" },
+        { value: live.metric("completedToday"), label: "Completed today" },
       ]}
       tabs={tabs}
       tab={tab}
@@ -96,7 +81,8 @@ export default function SA017Tasks() {
               <DataTable
                 head={["Task ID", "Task / linked case", "Assignee", "Due", "Priority", "Status"]}
                 pills={[4, 5]}
-                rows={rows.map((t) => ({ key: t.id, cells: [t.id, t.task, t.who, t.due, t.priority, t.status] }))}
+                empty={live.empty} onRow={live.select}
+                rows={rows.map((t) => ({ key: t.recordId, cells: [t.id, t.task, t.who, t.due, t.priority, t.status] }))}
               />
             )}
             {view === "Kanban" && (
@@ -120,8 +106,8 @@ export default function SA017Tasks() {
 
             <Buttons>
               <Btn primary href={saRoutes.createTask}>Create task</Btn>
-              <Btn onClick={() => notice.show("Reassignment needs a reason; history is kept (demo).")}>Reassign selected</Btn>
-              <Btn onClick={() => notice.show("Completion evidence is reviewed before closing (demo).")}>Review evidence</Btn>
+              <Btn disabled={!live.canAct("Reassign")} onClick={() => live.act("Reassign")}>Reassign selected</Btn>
+              <Btn onClick={() => notice.show(live.documents.map(row => value(row.title)).join("\n") || EMPTY)}>Review evidence</Btn>
             </Buttons>
           </Panel>
 
@@ -133,11 +119,11 @@ export default function SA017Tasks() {
         <Col>
           <Panel title="Team workload" h={302}>
             <div className="flex flex-col gap-[12px] pt-[2px]">
-              <Meter label="Verification" value="8 open" pct={67} />
-              <Meter label="Field operations" value="12 open" pct={100} />
-              <Meter label="Helpline" value="6 open" pct={50} />
-              <Meter label="Volunteer coordination" value="5 open" pct={42} />
-              <Meter label="Internal tasks" value="5 open" pct={42} />
+              <Meter label="Verification" value={EMPTY} pct={0} />
+              <Meter label="Field operations" value={EMPTY} pct={0} />
+              <Meter label="Helpline" value={EMPTY} pct={0} />
+              <Meter label="Volunteer coordination" value={EMPTY} pct={0} />
+              <Meter label="Internal tasks" value={EMPTY} pct={0} />
             </div>
           </Panel>
 
@@ -145,15 +131,15 @@ export default function SA017Tasks() {
             <KVList
               rowH={30}
               rows={[
-                ["Staff app", <Pill key="s" tone="green">Connected</Pill>],
-                ["Volunteer app", <Pill key="v" tone="green">Connected</Pill>],
-                ["Awaiting acknowledgement", "04"],
-                ["Failed deliveries", "01 (demo)"],
+                ["Staff app", <Pill key="s" tone="green">{EMPTY}</Pill>],
+                ["Volunteer app", <Pill key="v" tone="green">{EMPTY}</Pill>],
+                ["Awaiting acknowledgement", live.metric("awaitingAcceptance")],
+                ["Failed deliveries", EMPTY],
                 ["Manual override", "Reason required"],
               ]}
             />
             <Buttons>
-              <Btn primary onClick={() => notice.show("01 task delivery failed — retry or follow up manually (demo).")}>Review failed delivery</Btn>
+              <Btn primary disabled onClick={() => notice.show(EMPTY)}>Review failed delivery</Btn>
             </Buttons>
           </Panel>
         </Col>

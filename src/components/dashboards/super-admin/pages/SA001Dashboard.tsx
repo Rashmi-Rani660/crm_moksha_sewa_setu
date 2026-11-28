@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 /**
  * SA-001 — Super Admin Dashboard.
  * Rebuild matched to the SA-001 reference design: 8 KPI tiles, 5 tabs and a
@@ -7,6 +9,9 @@
  */
 
 import { useState } from "react";
+import { useDashboardData } from "@/lib/crm/useDashboardData";
+import { useCrmQuery } from "@/lib/api/useCrmQuery";
+import { EMPTY, count, at, records, text, type CrmRecord } from "@/lib/crm/data";
 import {
   Bell,
   CircleCheck,
@@ -48,87 +53,83 @@ type Tab = (typeof tabs)[number];
 type Fy = "FY 2026–27" | "FY 2025–26" | "FY 2024–25";
 
 const trend = [
-  { m: "Jun", v: 78 },
-  { m: "Jul", v: 96 },
-  { m: "Aug", v: 118 },
-  { m: "Sep", v: 146 },
-  { m: "Oct", v: 178 },
-  { m: "Nov", v: 324 },
+  { m: "Jun", v: 0 },
+  { m: "Jul", v: 0 },
+  { m: "Aug", v: 0 },
+  { m: "Sep", v: 0 },
+  { m: "Oct", v: 0 },
+  { m: "Nov", v: 0 },
 ] as const;
 
 const alerts: { icon: LucideIcon; color: string; label: string; count: string; tone: PillTone }[] = [
-  { icon: TriangleAlert, color: "#e02424", label: "Emergency requests", count: "03 · Review", tone: "red" },
-  { icon: UsersRound, color: "#2f6fe0", label: "Unassigned requests", count: "04", tone: "amber" },
-  { icon: Clock3, color: "#e08a00", label: "Overdue tasks", count: "05", tone: "amber" },
-  { icon: ShieldAlert, color: "#e08a00", label: "Critical approvals", count: "07", tone: "gray" },
-  { icon: MessageSquareText, color: "#e08a00", label: "Unanswered calls", count: "03", tone: "amber" },
-  { icon: Database, color: "#e08a00", label: "Inventory shortage", count: "01", tone: "amber" },
+  { icon: TriangleAlert, color: "#e02424", label: "Emergency requests", count: EMPTY, tone: "red" },
+  { icon: UsersRound, color: "#2f6fe0", label: "Unassigned requests", count: EMPTY, tone: "amber" },
+  { icon: Clock3, color: "#e08a00", label: "Overdue tasks", count: EMPTY, tone: "amber" },
+  { icon: ShieldAlert, color: "#e08a00", label: "Critical approvals", count: EMPTY, tone: "gray" },
+  { icon: MessageSquareText, color: "#e08a00", label: "Unanswered calls", count: EMPTY, tone: "amber" },
+  { icon: Database, color: "#e08a00", label: "Inventory shortage", count: EMPTY, tone: "amber" },
 ];
 
 const statusRows: readonly (readonly [string, string])[] = [
-  ["Completed / In progress", "276 / 18"],
-  ["Pending / On hold", "14 / 16"],
-  ["Unclaimed bodies (completed)", "52"],
-  ["EWS families (completed)", "156"],
-  ["Unsupported persons (completed)", "68"],
+  ["Completed / In progress", EMPTY],
+  ["Pending / On hold", EMPTY],
+  ["Unclaimed bodies (completed)", EMPTY],
+  ["EWS families (completed)", EMPTY],
+  ["Unsupported persons (completed)", EMPTY],
 ] as const;
 
 const adminRows: readonly (readonly [string, string])[] = [
-  ["Super Admin / Admin / User", "1 / 12 / 173"],
-  ["Online / Inactive accounts", "48 / 24"],
-  ["Staff on duty", "8 / 10"],
-  ["Volunteers available", "12 / 18"],
-  ["Vehicles available", "1 / 2"],
-  ["Open complaints", "02"],
+  ["Super Admin / Admin / User", EMPTY],
+  ["Online / Inactive accounts", EMPTY],
+  ["Staff on duty", EMPTY],
+  ["Volunteers available", EMPTY],
+  ["Vehicles available", EMPTY],
+  ["Open complaints", EMPTY],
 ] as const;
 
 const commStats: readonly (readonly [string, string])[] = [
-  ["Pending email / WhatsApp", "4 / 6"],
-  ["Connected / Delayed / Failed", "12 / 1 / 1"],
+  ["Pending email / WhatsApp", EMPTY],
+  ["Connected / Delayed / Failed", EMPTY],
 ] as const;
 
 const commIntegrations: { label: string; status: string; tone: PillTone }[] = [
-  { label: "WhatsApp", status: "Delayed", tone: "amber" },
-  { label: "Accounting", status: "Failed", tone: "red" },
-  { label: "HRMS / Staff / Volunteer apps", status: "Connected", tone: "green" },
+  { label: "WhatsApp", status: EMPTY, tone: "amber" },
+  { label: "Accounting", status: EMPTY, tone: "red" },
+  { label: "HRMS / Staff / Volunteer apps", status: EMPTY, tone: "green" },
 ];
 
 const aiRows: readonly (readonly [string, string])[] = [
-  ["Auto / Approval / Manual", "22 / 7 / 3"],
-  ["Failed workflows / Interventions", "3 / 8"],
-  ["AI cost / Budget", "₹8,450 / ₹15,000"],
-  ["AI handling rate", "72%"],
-  ["Emergency pause", "Approval required"],
+  ["Auto / Approval / Manual", EMPTY],
+  ["Failed workflows / Interventions", EMPTY],
+  ["AI cost / Budget", EMPTY],
+  ["AI handling rate", EMPTY],
+  ["Emergency pause", EMPTY],
 ] as const;
 
 const securityRows: readonly (readonly [string, string])[] = [
-  ["Security alerts / Failed logins", "2 / 8"],
-  ["Last backup", "26 Nov · 02:00"],
-  ["Last restore test", "22 Nov · Passed"],
-  ["Actual RPO / Target", "8 min / 15 min"],
-  ["Uptime (30 days)", "99.9% · demo"],
+  ["Security alerts / Failed logins", EMPTY],
+  ["Last backup", EMPTY],
+  ["Last restore test", EMPTY],
+  ["Actual RPO / Target", EMPTY],
+  ["Uptime (30 days)", EMPTY],
 ] as const;
 
 const financeRows: readonly (readonly [string, string])[] = [
-  ["Income less expenses", "₹6.36 L"],
-  ["Pending expense approvals", "₹45,000"],
-  ["Reconciliation pending", "04"],
+  ["Income less expenses", EMPTY],
+  ["Pending expense approvals", EMPTY],
+  ["Reconciliation pending", EMPTY],
 ] as const;
 
 const coverage: { city: string; status: string; tone: PillTone }[] = [
-  { city: "Ghaziabad", status: "Active", tone: "green" },
-  { city: "Delhi / Noida", status: "Coming soon", tone: "amber" },
+  { city: EMPTY, status: EMPTY, tone: "green" },
+  { city: EMPTY, status: EMPTY, tone: "amber" },
 ];
 
 const trainingRows: readonly (readonly [string, string])[] = [
-  ["Staff / Volunteer training", "92% / 80%"],
+  ["Staff / Volunteer training", EMPTY],
 ] as const;
 
-const insights = [
-  "Review 3 emergency requests and 4 unassigned requests.",
-  "Resolve WhatsApp delay and accounting failure.",
-  "Review overdue tasks with responsible admins.",
-];
+const insights = [EMPTY, EMPTY, EMPTY];
 
 function StatRows({ rows }: { rows: readonly (readonly [string, string])[] }) {
   return (
@@ -145,7 +146,7 @@ function MonthBar() {
     <div className="flex min-w-0 flex-1 items-end gap-[6px]">
       {trend.map((t) => (
         <div key={t.m} className="flex min-w-0 flex-1 flex-col items-center gap-[2px]">
-          <span className="text-[13.5px] font-semibold text-[#0b0c36]">{t.v}</span>
+          <span className="text-[13.5px] font-semibold text-[#0b0c36]">{EMPTY}</span>
           <span className="w-full rounded-[2px] bg-[#8fc6f5]" style={{ height: `${(t.v / 324) * 48}px` }} />
           <span className="text-[13px] font-semibold text-[#3b4256]">{t.m}</span>
         </div>
@@ -163,9 +164,13 @@ function Bar({ pct, className = "" }: { pct: number; className?: string }) {
 }
 
 export default function SA001Dashboard() {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("Overview");
   const [fy] = useState<Fy>("FY 2026–27");
   const notice = useNotice();
+  const live = useDashboardData();
+  const cities = useCrmQuery<CrmRecord[]>(live.can("geography.view") ? "/geography/cities" : null);
+  const liveAlerts = alerts.map(a => ({ ...a, count: live.value(a.label) }));
 
   return (
     <SuperAdminFrame>
@@ -174,14 +179,14 @@ export default function SA001Dashboard() {
       </PageHead>
 
       <KpiRow cols={8}>
-        <KpiTile tone="blue" icon={Radio} value="186" label="CRM accounts" sub="162 active" />
-        <KpiTile tone="green" icon={Bell} value="12" label="Active admins" sub="3 access levels" />
-        <KpiTile tone="orange" icon={CircleCheck} value="324" label="Requests" sub="This month" />
-        <KpiTile tone="purple" icon={Users} value="18" label="Active cases" sub="Live" />
-        <KpiTile tone="sky" icon={Layers} value="276" label="Completed" sub="This month" />
-        <KpiTile tone="red" icon={Radio} value="03" label="Emergency" sub="Immediate attention" />
-        <KpiTile tone="orange" icon={Bell} value="₹18.76 L" label="Donations" sub="FY 26 – 27" />
-        <KpiTile tone="purple" icon={CircleCheck} value="₹12.40 L" label="Expenses" sub="FY 26 – 27" />
+        <KpiTile tone="blue" icon={Radio} value={live.value("CRM accounts")} label="CRM accounts" sub={live.users.data ? `${live.users.data.active} active` : EMPTY} />
+        <KpiTile tone="green" icon={Bell} value={live.value("Active admins")} label="Active admins" sub="3 access levels" />
+        <KpiTile tone="orange" icon={CircleCheck} value={live.value("Requests")} label="Requests" sub="This month" />
+        <KpiTile tone="purple" icon={Users} value={live.value("Active cases")} label="Active cases" sub="Live" />
+        <KpiTile tone="sky" icon={Layers} value={live.value("Completed")} label="Completed" sub="This month" />
+        <KpiTile tone="red" icon={Radio} value={live.value("Emergency")} label="Emergency" sub="Immediate attention" />
+        <KpiTile tone="orange" icon={Bell} value={live.value("Donations")} label="Donations" sub="FY 26 – 27" />
+        <KpiTile tone="purple" icon={CircleCheck} value={live.value("Expenses")} label="Expenses" sub="FY 26 – 27" />
       </KpiRow>
 
       <Tabs tabs={tabs} value={tab} onChange={setTab} />
@@ -190,7 +195,7 @@ export default function SA001Dashboard() {
       {/* Row 1 */}
       <div className="grid gap-[10px] sm:grid-cols-2 lg:min-h-0 lg:flex-[225_1_0] lg:[grid-template-rows:minmax(0,1fr)] lg:grid-cols-[275fr_345fr_260fr]">
         <Panel title="Critical alerts & priority actions" bodyClassName="flex flex-col gap-[5px] pt-[3px]">
-          {alerts.map((a) => (
+          {liveAlerts.map((a) => (
             <div key={a.label} className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px] text-[14.4px] font-semibold leading-none last:border-b-0 last:pb-0">
               <span className="min-w-0 flex-1 truncate">{a.label}</span>
               <Pill tone={a.tone} className="h-[18px] min-w-[28px] text-[15px] font-bold">{a.count}</Pill>
@@ -198,17 +203,17 @@ export default function SA001Dashboard() {
           ))}
         </Panel>
         <Panel title="Request status & monthly trend" bodyClassName="flex flex-col gap-[8px] pt-[3px]">
-          <StatRows rows={statusRows} />
+          <StatRows rows={statusRows.map(([label]) => [label, label === "Completed / In progress" ? `${live.metric("requests.byStatus.CONVERTED")} / ${live.metric("requests.byStatus.PENDING_VERIFICATION")}` : label === "Pending / On hold" ? `${live.metric("requests.byStatus.NEW")} / ${live.metric("requests.byStatus.ON_HOLD")}` : EMPTY])} />
           <div className="mt-auto flex items-end gap-[10px]">
-            <Donut size={72} thickness={11} segments={[{ value: 276, color: "#2f6fe0" }, { value: 18, color: "#7cc1f5" }, { value: 14, color: "#f7b500" }, { value: 16, color: "#c4cad6" }]}>
-              <b className="text-[15px] leading-none">324</b>
+            <Donut size={72} thickness={11} segments={[{ value: live.status("requests.byStatus.CONVERTED") ?? 0, color: "#2f6fe0" }, { value: live.status("requests.byStatus.PENDING_VERIFICATION") ?? 0, color: "#7cc1f5" }, { value: live.status("requests.byStatus.NEW") ?? 0, color: "#f7b500" }, { value: live.status("requests.byStatus.ON_HOLD") ?? 0, color: "#c4cad6" }]}>
+              <b className="text-[15px] leading-none">{count(live.requestTotal)}</b>
               <span className="text-[12.8px] font-semibold">Total</span>
             </Donut>
             <div className="min-w-0 flex-1"><MonthBar /></div>
           </div>
         </Panel>
         <Panel title="Admin & resources" bodyClassName="flex flex-col gap-[5px] pt-[3px]">
-          <StatRows rows={adminRows} />
+          <StatRows rows={adminRows.map(([label]) => [label,label === "Super Admin / Admin / User" ? ["SUPER_ADMIN","ADMIN","USER"].map(level => count(at(live.users.data,'activeByAccessLevel.' + level))).join(" / ") : label === "Staff on duty" ? count(at(live.workforce.data,"summary.onDuty")) : label === "Volunteers available" ? count(live.volunteers.data?.availableNow) + ' / ' + count(live.volunteers.data?.total) : label === "Vehicles available" ? count(at(live.fleet.data,"vehicles.available")) + ' / ' + count(at(live.fleet.data,"vehicles.total")) : EMPTY])} />
         </Panel>
       </div>
 
@@ -230,9 +235,9 @@ export default function SA001Dashboard() {
           <div className="mt-auto flex flex-col gap-[4px] pt-[2px]">
             <div className="flex items-center justify-between text-[15.5px] font-semibold">
               <span>AI budget used</span>
-              <b>56%</b>
+              <b>{EMPTY}</b>
             </div>
-            <Bar pct={56} />
+            <Bar pct={0} />
           </div>
         </Panel>
         <Panel title="Security & backup" bodyClassName="flex flex-col gap-[5px] pt-[3px]">
@@ -247,19 +252,19 @@ export default function SA001Dashboard() {
           <div className="mt-auto flex flex-col gap-[4px] pt-[2px]">
             <div className="flex items-center justify-between text-[15.5px] font-semibold">
               <span>Expenses / donations</span>
-              <b>66.1%</b>
+              <b>{EMPTY}</b>
             </div>
-            <Bar pct={66.1} />
+            <Bar pct={0} />
           </div>
         </Panel>
         <Panel title="Coverage & training" bodyClassName="flex flex-col gap-[5px] pt-[3px] text-[14.4px] font-semibold">
           <div className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px]">
-            <span className="min-w-0 flex-1 truncate">{coverage[0].city}</span>
-            <Pill tone={coverage[0].tone} className="h-[17px] text-[14.5px]">{coverage[0].status}</Pill>
+            <span className="min-w-0 flex-1 truncate">{text(records(cities.data).find(city => city.status === "ACTIVE")?.name)}</span>
+            <Pill tone={coverage[0].tone} className="h-[17px] text-[14.5px]">{cities.data ? records(cities.data).some(city => city.status === "ACTIVE") ? "Active" : EMPTY : EMPTY}</Pill>
           </div>
           <div className="flex items-center gap-[8px] border-b border-[#eef0f5] pb-[4px]">
-            <span className="min-w-0 flex-1 truncate">{coverage[1].city}</span>
-            <Pill tone={coverage[1].tone} className="h-[17px] text-[14.5px]">{coverage[1].status}</Pill>
+            <span className="min-w-0 flex-1 truncate">{records(cities.data).filter(city => city.status === "COMING_SOON").map(city => text(city.name)).join(" / ") || EMPTY}</span>
+            <Pill tone={coverage[1].tone} className="h-[17px] text-[14.5px]">{cities.data && records(cities.data).some(city => city.status === "COMING_SOON") ? "Coming soon" : EMPTY}</Pill>
           </div>
           <div className="flex items-center justify-between gap-[8px]">
             <span>{trainingRows[0][0]}</span>
@@ -268,22 +273,22 @@ export default function SA001Dashboard() {
           <div className="mt-auto flex flex-col gap-[4px] pt-[2px]">
             <div className="flex items-center justify-between text-[15.5px] font-semibold">
               <span>Staff training</span>
-              <b>92%</b>
+              <b>{EMPTY}</b>
             </div>
-            <Bar pct={92} />
+            <Bar pct={0} />
             <div className="flex items-center justify-between text-[15.5px] font-semibold">
               <span>Volunteer training</span>
-              <b>80%</b>
+              <b>{EMPTY}</b>
             </div>
-            <Bar pct={80} />
+            <Bar pct={0} />
           </div>
         </Panel>
         <Panel title="AI management insights" bodyClassName="flex flex-col gap-[7px] pt-[6px]">
           <p className="text-[14px] font-medium leading-tight text-[#1a1d36]">{insights[0]}</p>
           <p className="text-[14px] font-medium leading-tight text-[#1a1d36]">{insights[1]}</p>
           <div className="flex flex-wrap gap-[8px]">
-            <button type="button" onClick={() => notice.show("Opening the alert queue (demo).")} className="flex h-[28px] items-center rounded-[7px] bg-[#1d4fe0] px-[12px] text-[14px] font-semibold text-white shadow-[0_2px_6px_rgba(29,79,224,0.28)] hover:bg-[#1840c0]">Review alerts</button>
-            <button type="button" onClick={() => notice.show("Automation pause requested (demo).")} className="flex h-[28px] items-center rounded-[7px] border border-[#cfd5e2] bg-white px-[12px] text-[14px] font-semibold text-[#1d4fe0] hover:bg-[#f1f4ff]">Pause automation</button>
+            <button type="button" onClick={() => router.push("/dashboard/super-admin/notification-alerts")} className="flex h-[28px] items-center rounded-[7px] bg-[#1d4fe0] px-[12px] text-[14px] font-semibold text-white shadow-[0_2px_6px_rgba(29,79,224,0.28)] hover:bg-[#1840c0]">Review alerts</button>
+            <button type="button" disabled onClick={() => notice.show(EMPTY)} className="flex h-[28px] items-center rounded-[7px] border border-[#cfd5e2] bg-white px-[12px] text-[14px] font-semibold text-[#1d4fe0] hover:bg-[#f1f4ff]">Pause automation</button>
           </div>
           <p className="mt-auto rounded-[7px] border border-[#e1e5ee] bg-[#f8fafc] px-[10px] py-[6px] text-[14px] font-medium leading-tight text-[#1a1d36]">{insights[2]}</p>
         </Panel>

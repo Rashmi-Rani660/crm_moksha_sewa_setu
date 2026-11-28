@@ -9,27 +9,16 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useOperations } from "@/lib/crm/useOperations";
+import { useDebounced } from "@/lib/api/useCrmQuery";
+import { at, text as value, EMPTY } from "@/lib/crm/data";
+import { humanize } from "@/lib/format";
 import { useNotice } from "@/components/dashboards/super-admin/kit";
 import { saRoutes, screenPicker1120 } from "@/components/dashboards/super-admin/routes";
 import { Btn, Buttons, Col, Columns, DataTable, FilterBar, Flow, KVList, NativeSelect, Panel, Pill, Screen, SearchInput, useFilters } from "@/components/dashboards/super-admin/screen-kit";
 
 const tabs = ["All Requests", "Emergency", "Unassigned", "Verification Pending", "Out of Coverage"] as const;
 
-const requests = [
-  { id: "MSR-26-27-0001", type: "Unclaimed body", source: "AI inbound call", city: "Ghaziabad", owner: "Operations Admin", priority: "Critical", status: "Pending verification" },
-  { id: "MSR-26-27-0002", type: "EWS family", source: "Website", city: "Ghaziabad", owner: "Unassigned", priority: "High", status: "Pending" },
-  { id: "MSR-26-27-0003", type: "Unsupported person", source: "Volunteer app", city: "Ghaziabad", owner: "Case User 01", priority: "Normal", status: "Verified" },
-  { id: "MSR-26-27-0004", type: "EWS family", source: "WhatsApp", city: "Ghaziabad", owner: "Case User 02", priority: "High", status: "In progress" },
-  { id: "MSR-26-27-0005", type: "Unclaimed body", source: "Staff app", city: "Ghaziabad", owner: "Case User 03", priority: "Normal", status: "Completed" },
-  { id: "MSR-26-27-0006", type: "EWS family", source: "Google Ads", city: "Noida", owner: "Helpdesk", priority: "Normal", status: "Out of coverage" },
-];
-type Req = (typeof requests)[number];
-const byTab: Record<string, (r: Req) => boolean> = {
-  Emergency: (r) => r.priority === "Critical",
-  Unassigned: (r) => r.owner === "Unassigned",
-  "Verification Pending": (r) => r.status === "Pending verification" || r.status === "Pending",
-  "Out of Coverage": (r) => r.status === "Out of coverage",
-};
 const channelOpts = ["All channels", "AI inbound call", "Website", "Volunteer app", "WhatsApp", "Staff app", "Google Ads"] as const;
 const priorityOpts = ["All priority", "Critical", "High", "Normal"] as const;
 const statusOpts = ["All status", "Pending verification", "Pending", "Verified", "In progress", "Completed", "Out of coverage"] as const;
@@ -37,15 +26,28 @@ const statusOpts = ["All status", "Pending verification", "Pending", "Verified",
 export default function SA013LeadsRequests() {
   const notice = useNotice();
   const [tab, setTab] = useState<string>(tabs[0]);
-  const { q, setQ, f, set, reset, text } = useFilters({ channel: "All channels", priority: "All priority", status: "All status" });
-  const rows = requests.filter(
-    (r) =>
-      (byTab[tab] ?? (() => true))(r) &&
-      (f.channel === "All channels" || r.source === f.channel) &&
-      (f.priority === "All priority" || r.priority === f.priority) &&
-      (f.status === "All status" || r.status === f.status) &&
-      text(r.id, r.type, r.source, r.city, r.owner),
-  );
+  const { q, setQ, f, set, reset } = useFilters({ channel: "All channels", priority: "All priority", status: "All status" });
+  const search = useDebounced(q.trim());
+  const statusMap: Record<string, string> = { "Pending verification": "PENDING_VERIFICATION", Pending: "NEW", Verified: "VERIFIED", "In progress": "PENDING_VERIFICATION", Completed: "CONVERTED", "Out of coverage": "OUT_OF_COVERAGE" };
+  const live = useOperations("requests", notice.show, { search: search || undefined,
+    status: tab === "Verification Pending" ? "PENDING_VERIFICATION" : statusMap[f.status],
+    emergency: tab === "Emergency" ? true : undefined, unassigned: tab === "Unassigned" ? true : undefined,
+    coverage: tab === "Out of Coverage" ? "OUT_OF_COVERAGE" : undefined,
+    priority: f.priority === "All priority" ? undefined : f.priority.toUpperCase(),
+    channel: liveChannel(f.channel),
+  });
+  function liveChannel(label: string) { const map: Record<string, string> = { Website: "WEBSITE", "Staff app": "STAFF_APP", "Volunteer app": "VOLUNTEER_APP", WhatsApp: "WHATSAPP", "AI inbound call": "AI_CALL", "Google Ads": "GOOGLE_ADS" }; return map[label]; }
+  const rows = live.rows.map(r => ({ id: r.displayId, recordId: value(r.id), type: humanize(value(r.beneficiaryCategory, "")), source: humanize(value(r.channel, "")), city: value(at(r,"location.city")), owner: r.displayOwner, priority: r.displayPriority, status: r.displayStatus }));
+  const metric = (key: string) => live.metric(key);
+  async function register() {
+    const requester = window.prompt("Requester name:")?.trim();
+    const mobile = window.prompt("Requester mobile (10 digits):")?.trim();
+    const pincode = window.prompt("Service PIN code (6 digits):")?.trim();
+    const channel = await live.pickCode("REQUEST_CHANNEL", "Request channel");
+    if (!requester || !mobile || !pincode || !channel) return;
+    if (!window.confirm("Has the family consented to processing their data?")) return;
+    await live.createRequest({ requester: { name: requester, mobile }, location: { pincode }, channel, consentDataProcessing: true });
+  }
 
   return (
     <Screen
@@ -54,12 +56,12 @@ export default function SA013LeadsRequests() {
       active="sewa-operations"
       picker={screenPicker1120}
       kpis={[
-        { value: "324", label: "Requests this month" },
-        { value: "276", label: "Completed" },
-        { value: "18", label: "In progress" },
-        { value: "14", label: "Pending" },
-        { value: "16", label: "On hold" },
-        { value: "03", label: "Emergency" },
+        { value: metric("thisMonth"), label: "Requests this month" },
+        { value: metric("byStatus.CONVERTED"), label: "Completed" },
+        { value: metric("byStatus.PENDING_VERIFICATION"), label: "In progress" },
+        { value: metric("byStatus.NEW"), label: "Pending" },
+        { value: metric("byStatus.ON_HOLD"), label: "On hold" },
+        { value: metric("emergencyOpen"), label: "Emergency" },
       ]}
       tabs={tabs}
       tab={tab}
@@ -78,10 +80,11 @@ export default function SA013LeadsRequests() {
             <DataTable
               head={["Request ID", "Beneficiary type", "Source", "City", "Assigned owner", "Priority", "Status"]}
               pills={[5, 6]}
+              empty={live.empty}
               rows={rows.map((r) => ({
                 key: r.id,
                 cells: [
-                  <Link key="id" href={saRoutes.requestDetails} className="hover:text-[#1e43a8] hover:underline">{r.id}</Link>,
+                  <Link key="id" href={`${saRoutes.requestDetails}?id=${r.recordId}`} className="hover:text-[#1e43a8] hover:underline">{r.id}</Link>,
                   r.type,
                   r.source,
                   r.city,
@@ -92,9 +95,9 @@ export default function SA013LeadsRequests() {
               }))}
             />
             <Buttons>
-              <Btn primary onClick={() => notice.show("New request: capture source and consent, then duplicate check (demo).")}>Register request</Btn>
-              <Btn onClick={() => notice.show("Assign an owner — manual override needs a reason (demo).")}>Assign owner</Btn>
-              <Btn onClick={() => notice.show("02 possible duplicates waiting for review (demo).")}>Review duplicates</Btn>
+              <Btn primary disabled={live.mutation.busy || !live.can("requests.create")} onClick={register}>Register request</Btn>
+              <Btn disabled={!live.canAct("Assign owner")} onClick={() => live.act("Assign owner")}>Assign owner</Btn>
+              <Btn onClick={() => notice.show(metric("pendingDuplicateReview"))}>Review duplicates</Btn>
             </Buttons>
           </Panel>
 
@@ -107,12 +110,12 @@ export default function SA013LeadsRequests() {
           <Panel title="Intake channel watch" h={240}>
             <KVList
               rows={[
-                ["Website / forms", "Synced"],
-                ["AI inbound calling", "Connected"],
-                ["WhatsApp", <Pill key="w" tone="blue">Delayed</Pill>],
-                ["Official email", "Connected"],
-                ["Staff / volunteer apps", "Connected"],
-                ["Chatbot / social / Google Ads", "Connected"],
+                ["Website / forms", value(live.sync.data?.lastRunAt)],
+                ["AI inbound calling", EMPTY],
+                ["WhatsApp", <Pill key="w" tone="blue">{EMPTY}</Pill>],
+                ["Official email", EMPTY],
+                ["Staff / volunteer apps", EMPTY],
+                ["Chatbot / social / Google Ads", EMPTY],
               ]}
             />
           </Panel>
@@ -121,21 +124,21 @@ export default function SA013LeadsRequests() {
             <KVList
               rows={[
                 ["Mode", "Approval-based"],
-                ["Unassigned requests", "04 (demo)"],
-                ["Pending duplicate review", "02"],
-                ["Out-of-coverage requests", "01"],
+                ["Unassigned requests", metric("unassigned")],
+                ["Pending duplicate review", metric("pendingDuplicateReview")],
+                ["Out-of-coverage requests", metric("outOfCoverage")],
                 ["Outgoing SMS", "Delivery only"],
               ]}
             />
             <Buttons className="mb-[6px]">
-              <Btn primary onClick={() => notice.show("Routing rules: approval-based mode (demo).")}>Review routing</Btn>
+              <Btn primary disabled onClick={() => notice.show(EMPTY)}>Review routing</Btn>
               <Btn onClick={() => setTab("Unassigned")}>Manual assignment</Btn>
             </Buttons>
             <KVList
               rows={[
-                ["Unanswered calls", <Pill key="u" tone="amber">03</Pill>],
-                ["Avg. first response", "18 min · demo"],
-                ["Pending replies", <Pill key="p" tone="amber">Email 06 · WA 08</Pill>],
+                ["Unanswered calls", <Pill key="u" tone="amber">{EMPTY}</Pill>],
+                ["Avg. first response", value(live.summary.data?.averageFirstResponseMinutes)],
+                ["Pending replies", <Pill key="p" tone="amber">{EMPTY}</Pill>],
               ]}
             />
           </Panel>

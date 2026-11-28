@@ -27,6 +27,10 @@ import {
 import { ScreenSwitch, sectionScreens } from "@/components/dashboards/super-admin/screen-switch";
 import { screens } from "./data";
 import type { Action, Bar, Form, Pair, Register, Row, Screen, TableView } from "./types";
+import { useCrmQuery, useDebounced } from "@/lib/api/useCrmQuery";
+import { useCrmAccess } from "@/lib/api/useCrmAccess";
+import { at, text, records, EMPTY, type CrmRecord } from "@/lib/crm/data";
+import { shortDateTime } from "@/lib/format";
 
 /* ------------------------------ small helpers ------------------------------ */
 
@@ -158,7 +162,9 @@ function RegisterBody({
   selected,
   onSelect,
   notice,
+  auditSearch,
 }: {
+  auditSearch?: (value: string) => void;
   reg: Register;
   rows: Row[];
   setRows: (r: Row[]) => void;
@@ -177,6 +183,7 @@ function RegisterBody({
     .filter(({ r }) => (status === filter.all || r[filter.col] === status) && (!query.trim() || r.join(" ").toLowerCase().includes(query.trim().toLowerCase())));
 
   const run = (a: Action) => {
+    if (auditSearch) { if (a.label === "Filter events") auditSearch(query); return; }
     if (a.confirm && !window.confirm(a.confirm)) return;
     if (a.setStatus) {
       setRows(rows.map((r, i) => (i === selected ? r.map((c, j) => (j === reg.statusCol ? a.setStatus! : c)) : r)));
@@ -187,13 +194,13 @@ function RegisterBody({
   return (
     <div className="flex h-full flex-col gap-[8px]">
       <div className="flex flex-wrap items-center gap-[8px] lg:flex-nowrap">
-        <SearchField value={query} onChange={setQuery} placeholder="Search records..." className="min-w-0 flex-1" />
+        <SearchField value={query} onChange={(value) => { setQuery(value);auditSearch?.(value); }} placeholder="Search records..." className="min-w-0 flex-1" />
         {!filter.always && (
           <button type="button" aria-pressed={showFilter} onClick={() => { setShowFilter(!showFilter); setStatus(filter.all); }} className={`${btnOutline} ${showFilter ? "!bg-[#eef2ff]" : ""}`}>
             Filter
           </button>
         )}
-        <button type="button" onClick={() => notice("Export requested — masked columns, purpose and approval recorded in the audit trail (demo).")} className={btnOutline}>
+        <button type="button" disabled={!!auditSearch} onClick={() => notice("Export requested — masked columns, purpose and approval recorded in the audit trail (demo).")} className={btnOutline}>
           Export
         </button>
         {showFilter && <Dropdown label="Status filter" value={status} options={options} onChange={setStatus} className="w-[150px] [&_button]:!font-normal" />}
@@ -201,7 +208,7 @@ function RegisterBody({
       <DataTable cols={reg.cols} rows={visible.map((v) => v.r)} statusCol={reg.statusCol} selected={visible.findIndex((v) => v.i === selected)} onSelect={(k) => onSelect(visible[k].i)} />
       <div className="mt-auto flex flex-wrap gap-[8px] pt-[2px]">
         <button type="button" onClick={() => run(reg.actions[0])} className={btnSolid}>{reg.actions[0].label}</button>
-        <button type="button" onClick={() => run(reg.actions[1])} className={btnOutline}>{reg.actions[1].label}</button>
+        <button type="button" disabled={!!auditSearch} onClick={() => run(reg.actions[1])} className={btnOutline}>{reg.actions[1].label}</button>
       </div>
     </div>
   );
@@ -253,11 +260,22 @@ function FormBody({ form, notice }: { form: Form; notice: (m: string) => void })
 /* ----------------------------------- page ---------------------------------- */
 
 export default function SaScreen({ id }: { id: string }) {
-  const s: Screen = screens[id];
+  const original: Screen = screens[id];
   const notice = useNotice();
+  const [auditSearch,setAuditSearch] = useState("");
+  const query = useDebounced(auditSearch.trim());
+  const { can } = useCrmAccess(id === "SA-073");
+  const audit = useCrmQuery<CrmRecord[]>(id === "SA-073" && can("audit.view") ? '/audit-logs?limit=100' + (query ? '&search=' + encodeURIComponent(query) : '') : null);
+  const auditRows = records(audit.data).map(row => [text(row.id),text(at(row,"actor.name")),text(row.action),text(row.entityLabel),shortDateTime(text(row.at,"")),EMPTY,EMPTY]);
+  const s: Screen = id !== "SA-073" ? original : { ...original,kpis: original.kpis.map(k => ({ ...k,value: EMPTY })),main: original.main.kind === "register" ? { ...original.main,rows: auditRows } : original.main,
+    tabViews: original.tabViews.map((view,i) => ({ ...view,rows: i === 0 ? records(audit.data).flatMap(row => records(row.changes).map(change => [text(row.id),text(change.field),text(change.from),text(change.to),text(at(row,"actor.name")),EMPTY])) : [] })),
+    side: { ...original.side,rows: original.side.rows.map(([label]) => [label,EMPTY]) },
+    lowerLeft: { ...original.lowerLeft,rows: original.lowerLeft.rows?.map(([label]) => [label,EMPTY]),bars: original.lowerLeft.bars?.map(bar => ({ ...bar,value: 0,max: 1 })),chart: original.lowerLeft.chart ? { ...original.lowerLeft.chart,points: original.lowerLeft.chart.points.map(([label]) => [label,0]) } : undefined },
+    lowerRight: { ...original.lowerRight,rows: original.lowerRight.rows.map(([label]) => [label,EMPTY]) } };
   const [tab, setTab] = useState(s.tabs[0]);
   const tabIndex = s.tabs.indexOf(tab);
-  const [rows, setRows] = useState<Row[]>(s.main.kind === "register" ? s.main.rows : []);
+  const [localRows, setRows] = useState<Row[]>(original.main.kind === "register" ? original.main.rows : []);
+  const rows = id === "SA-073" ? auditRows : localRows;
   const [selected, setSelected] = useState(0);
 
   const selRow = s.main.kind === "register" ? rows[selected] : undefined;
@@ -294,7 +312,7 @@ export default function SaScreen({ id }: { id: string }) {
           {tabView ? (
             <DataTable cols={tabView.cols} rows={tabView.rows} statusCol={tabView.statusCol} />
           ) : s.main.kind === "register" ? (
-            <RegisterBody reg={s.main} rows={rows} setRows={setRows} selected={selected} onSelect={setSelected} notice={notice.show} />
+            <RegisterBody auditSearch={id === "SA-073" ? setAuditSearch : undefined} reg={s.main} rows={rows} setRows={setRows} selected={selected} onSelect={setSelected} notice={notice.show} />
           ) : (
             <FormBody form={s.main} notice={notice.show} />
           )}

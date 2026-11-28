@@ -11,7 +11,7 @@
  * submitted for audience approval — it is only sent once someone else approves it.
  */
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import {
   Bell,
   CircleCheck,
@@ -41,6 +41,8 @@ import { authorizedRequest } from "@/lib/api/authorized";
 import { errorMessage } from "@/lib/api/client";
 import { qs, useCrmQuery, useDebounced } from "@/lib/api/useCrmQuery";
 import { humanize, pad2, shortDateTime } from "@/lib/format";
+import { useCrmMutation } from "@/lib/api/useCrmMutation";
+import { useCrmAccess } from "@/lib/api/useCrmAccess";
 
 type Tab = (typeof tabs)[number];
 const tabs = [
@@ -116,6 +118,9 @@ function OutlineButton({ children, onClick }: { children: ReactNode; onClick?: (
 
 export default function SA003Notifications() {
   const notice = useNotice();
+  const mutation = useCrmMutation(notice.show);
+  const broadcastLocked = useRef(false);
+  const { can } = useCrmAccess();
   const [tab, setTab] = useState<Tab>("All alerts");
   const [query, setQuery] = useState("");
   const [priority, setPriority] = useState<(typeof priorityOptions)[number]>("All priorities");
@@ -146,12 +151,12 @@ export default function SA003Notifications() {
   };
 
   async function acknowledge() {
+    if (mutation.busy) return;
     const target = selected ?? rows.find((r) => r.mine && r.requiresAck && !r.acknowledged);
     if (!target) return notice.show("Select one of your own notifications to acknowledge.");
     if (!target.mine) return notice.show("Only the recipient can acknowledge a notification.");
     try {
-      await authorizedRequest(`/notifications/${target.id}/acknowledge`, { method: "POST" });
-      notice.show("Acknowledged.");
+      await mutation.run(`/notifications/${target.id}/acknowledge`, { method: "POST" }, "Acknowledged.");
       refresh();
     } catch (err) {
       notice.show(errorMessage(err));
@@ -159,14 +164,21 @@ export default function SA003Notifications() {
   }
 
   /** Builds the audience of the "Create notification" form. */
-  function audienceFor(): { accessLevels: string[]; centreIds: string[] } {
+  function audienceFor(): { accessLevels: string[]; centreIds: string[] } | undefined {
     const centreIds = (centres.data ?? []).map((c) => c.id);
     if (audience === "All admins") return { accessLevels: ["ADMIN"], centreIds: [] };
-    if (audience === "Selected centre") return { accessLevels: [], centreIds: centreIds.slice(0, 1) };
+    if (audience === "Selected centre") {
+      const available = centres.data ?? [];
+      const selected = window.prompt('Choose centre:\n' + available.map((centre,i) => (i + 1) + '. ' + centre.name).join('\n'));
+      if (!selected) return;
+      const centre = available[Number(selected) - 1];
+      return centre ? { accessLevels: [],centreIds: [centre.id] } : undefined;
+    }
     return { accessLevels: ["USER"], centreIds };
   }
 
   async function previewAndSubmit() {
+    if (broadcastLocked.current || mutation.busy || !can("notifications.create")) return;
     const title = subject.trim();
     if (title.length < 3) return notice.show("Enter a subject (at least 3 characters).");
     let scheduledAt: string | undefined;
@@ -178,22 +190,28 @@ export default function SA003Notifications() {
       scheduledAt = parsed.toISOString();
     }
     const critical = template === "Emergency alert";
+    broadcastLocked.current = true;
     try {
       const aud = audienceFor();
+      if (!aud) return;
+      const message = window.prompt("Notification message:", title)?.trim();
+      if (!message) return;
       const preview = await authorizedRequest<{ recipients: number }>("/notifications/broadcasts/preview", { body: { audience: { ...aud, departmentIds: [], roleIds: [] } } });
       if (!window.confirm(`Send "${title}" to ${preview.data.recipients} user(s)? It goes to approval first.`)) return;
       const reason = window.prompt("Reason for this notification (required for the approver):")?.trim();
       if (!reason) return;
-      const draft = await authorizedRequest<Broadcast>("/notifications/broadcasts", {
-        body: { title, message: title, priority: critical ? "CRITICAL" : "NORMAL", requiresAck: critical, audience: { ...aud, departmentIds: [], roleIds: [] }, ...(scheduledAt && { scheduledAt }) },
+      if (reason.length < 5) return notice.show("Enter a reason of at least 5 characters.");
+      const draft = await mutation.run<Broadcast>("/notifications/broadcasts", {
+        body: { title, message, priority: critical ? "CRITICAL" : "NORMAL", requiresAck: critical, audience: { ...aud, departmentIds: [], roleIds: [] }, ...(scheduledAt && { scheduledAt }) },
       });
-      await authorizedRequest(`/notifications/broadcasts/${draft.data.id}/submit`, { body: { version: draft.data.version, reason } });
-      notice.show(`"${title}" sent for audience approval (${preview.data.recipients} recipient(s)).`);
+      if (!draft) return;
+      const submitted = await mutation.run(`/notifications/broadcasts/${draft.id}/submit`, { body: { version: draft.version, reason } }, `"${title}" sent for audience approval (${preview.data.recipients} recipient(s)).`);
+      if (submitted === undefined) return;
       setSubject("");
       refresh();
     } catch (err) {
       notice.show(errorMessage(err));
-    }
+    } finally { broadcastLocked.current = false; }
   }
 
   return (
@@ -264,7 +282,7 @@ export default function SA003Notifications() {
           </tbody>
         </TableWrap>
         <div className="mt-auto flex flex-wrap items-center gap-[8px] pt-[6px]">
-          <PrimaryButton onClick={acknowledge}>
+          <PrimaryButton disabled={mutation.busy} onClick={acknowledge}>
             Acknowledge
           </PrimaryButton>
           <OutlineButton onClick={() => notice.show("Notifications go to the owner of the request, case or task they belong to; reassign that record to change who is notified.")}>
@@ -303,7 +321,7 @@ export default function SA003Notifications() {
             </FieldBlock>
           </div>
           <div className="mt-auto pt-[4px]">
-            <PrimaryButton onClick={previewAndSubmit}>
+            <PrimaryButton disabled={mutation.busy || !can("notifications.create")} onClick={previewAndSubmit}>
               Preview &amp; approve
             </PrimaryButton>
           </div>

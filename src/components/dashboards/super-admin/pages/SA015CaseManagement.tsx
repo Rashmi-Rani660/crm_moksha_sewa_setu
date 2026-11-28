@@ -9,42 +9,31 @@
  */
 
 import { useState } from "react";
+import { useOperations } from "@/lib/crm/useOperations";
+import { useDashboardData } from "@/lib/crm/useDashboardData";
+import { useDebounced } from "@/lib/api/useCrmQuery";
+import { at, text as value, EMPTY } from "@/lib/crm/data";
+import { shortDateTime } from "@/lib/format";
 import { useNotice } from "@/components/dashboards/super-admin/kit";
 import { saRoutes, screenPicker1120 } from "@/components/dashboards/super-admin/routes";
 import { Btn, Buttons, Col, Columns, DataTable, FilterBar, Flow, KVList, Meter, NativeSelect, Panel, Screen, SearchInput, SubLabel, useFilters } from "@/components/dashboards/super-admin/screen-kit";
 
 const tabs = ["Case Register", "Active Cases", "On Hold", "Completed", "Reopened"] as const;
 
-const cases = [
-  { id: "MSC-26-27-0008", req: "MSR-26-27-0008", who: "EWS family", owner: "Case User 01", stage: "Assigned", priority: "High", sla: "00:45" },
-  { id: "MSC-26-27-0003", req: "MSR-26-27-0003", who: "Unsupported person", owner: "Case User 02", stage: "Assigned", priority: "Normal", sla: "02:20" },
-  { id: "MSC-26-27-0004", req: "MSR-26-27-0004", who: "EWS family", owner: "Field Team 01", stage: "In service", priority: "High", sla: "01:10" },
-  { id: "MSC-26-27-0005", req: "MSR-26-27-0005", who: "Unclaimed body", owner: "Case User 03", stage: "Completed", priority: "Normal", sla: "Closed" },
-  { id: "MSC-26-27-0007", req: "MSR-26-27-0007", who: "Unsupported person", owner: "Case User 04", stage: "On hold", priority: "Normal", sla: "Review" },
-];
-type Case = (typeof cases)[number];
-const byTab: Record<string, (c: Case) => boolean> = {
-  "Active Cases": (c) => c.stage === "Assigned" || c.stage === "In service",
-  "On Hold": (c) => c.stage === "On hold",
-  Completed: (c) => c.stage === "Completed",
-  Reopened: () => false,
-};
 const stageOpts = ["All stages", "Assigned", "In service", "Completed", "On hold"] as const;
-const ownerOpts = ["All owners", "Case User 01", "Case User 02", "Case User 03", "Case User 04", "Field Team 01"] as const;
+
 const priorityOpts = ["All priorities", "High", "Normal"] as const;
 
 export default function SA015CaseManagement() {
   const notice = useNotice();
   const [tab, setTab] = useState<string>(tabs[0]);
-  const { q, setQ, f, set, reset, text } = useFilters({ stage: "All stages", owner: "All owners", priority: "All priorities" });
-  const rows = cases.filter(
-    (c) =>
-      (byTab[tab] ?? (() => true))(c) &&
-      (f.stage === "All stages" || c.stage === f.stage) &&
-      (f.owner === "All owners" || c.owner === f.owner) &&
-      (f.priority === "All priorities" || c.priority === f.priority) &&
-      text(c.id, c.req, c.who, c.owner, c.stage),
-  );
+  const { q, setQ, f, set, reset } = useFilters({ stage: "All stages", owner: "All owners", priority: "All priorities" });
+  const search = useDebounced(q.trim());
+  const stage: Record<string,string> = { Assigned: "OPENED", "In service": "IN_SERVICE", Completed: "CLOSED", "On hold": "ON_HOLD" };
+  const live = useOperations("cases", notice.show, { search: search || undefined, stage: tab === "Completed" ? "CLOSED" : tab === "On Hold" ? "ON_HOLD" : stage[f.stage], active: tab === "Active Cases" ? true : undefined, priority: f.priority === "All priorities" ? undefined : f.priority.toUpperCase() });
+  const dashboard = useDashboardData();
+  const ownerOpts = ["All owners", ...live.people.map(row => value(row.name))];
+  const rows = live.rows.filter(r => (tab !== "Reopened" || Number(r.reopenCount) > 0) && (f.owner === "All owners" || r.displayOwner === f.owner)).map(r => ({ id: r.displayId, recordId: value(r.id), req: value(r.requestNo), who: value(r.beneficiaryCategory), owner: r.displayOwner, stage: r.displayStatus, priority: r.displayPriority, sla: shortDateTime(value(at(r,"sla.resolutionDueAt"), "")) }));
 
   return (
     <Screen
@@ -53,11 +42,11 @@ export default function SA015CaseManagement() {
       active="case-workflow"
       picker={screenPicker1120}
       kpis={[
-        { value: "05", label: "Sample cases" },
-        { value: "02", label: "Assigned" },
-        { value: "01", label: "In service" },
-        { value: "01", label: "Completed" },
-        { value: "01", label: "On hold" },
+        { value: live.total === undefined ? EMPTY : String(live.total), label: "Sample cases" },
+        { value: live.metric("byStage.OPENED"), label: "Assigned" },
+        { value: live.metric("byStage.IN_SERVICE"), label: "In service" },
+        { value: live.metric("byStage.CLOSED"), label: "Completed" },
+        { value: live.metric("onHold"), label: "On hold" },
       ]}
       tabs={tabs}
       tab={tab}
@@ -76,12 +65,13 @@ export default function SA015CaseManagement() {
             <DataTable
               head={["Case ID", "Linked request", "Beneficiary", "Owner", "Stage", "Priority", "SLA left"]}
               pills={[5]}
-              empty={tab === "Reopened" ? "No reopened cases." : "No cases match these filters."}
-              rows={rows.map((c) => ({ key: c.id, cells: [c.id, c.req, c.who, c.owner, c.stage, c.priority, c.sla] }))}
+              empty={live.empty}
+              onRow={live.select}
+              rows={rows.map((c) => ({ key: c.recordId, cells: [c.id, c.req, c.who, c.owner, c.stage, c.priority, c.sla] }))}
             />
             <Buttons>
-              <Btn primary href={saRoutes.caseDetails}>Open case details</Btn>
-              <Btn onClick={() => notice.show("Assign a case owner — dispatch must be authorised (demo).")}>Assign case</Btn>
+              <Btn primary href={live.id ? `${saRoutes.caseDetails}?id=${live.id}` : undefined}>Open case details</Btn>
+              <Btn disabled={!live.canAct("Assign case")} onClick={() => live.act("Assign case")}>Assign case</Btn>
               <Btn href={saRoutes.sla}>Escalate</Btn>
             </Buttons>
           </Panel>
@@ -100,15 +90,15 @@ export default function SA015CaseManagement() {
                 ["Closure proof", "Mandatory"],
                 ["Case expense review", "Conditional"],
                 ["Reopen reason", "Mandatory"],
-                ["Service charge", "₹0"],
+                ["Service charge", EMPTY],
               ]}
             />
             <SubLabel>Selected case stages</SubLabel>
             <div className="flex flex-col gap-[8px] pt-[2px]">
-              <Meter label="Assigned" value="2 / 5" pct={40} />
-              <Meter label="In service" value="1 / 5" pct={20} />
-              <Meter label="Completed" value="1 / 5" pct={20} />
-              <Meter label="On hold" value="1 / 5" pct={20} />
+              <Meter label="Assigned" value={live.metric("byStage.OPENED")} pct={0} />
+              <Meter label="In service" value={live.metric("byStage.IN_SERVICE")} pct={0} />
+              <Meter label="Completed" value={live.metric("byStage.CLOSED")} pct={0} />
+              <Meter label="On hold" value={live.metric("onHold")} pct={0} />
             </div>
           </Panel>
 
@@ -116,10 +106,10 @@ export default function SA015CaseManagement() {
             <KVList
               rowH={26}
               rows={[
-                ["Emergency requests", "03"],
-                ["Unassigned requests", "04"],
-                ["Overdue tasks", "05"],
-                ["Open complaints", "02"],
+                ["Emergency requests", dashboard.value("Emergency requests")],
+                ["Unassigned requests", dashboard.value("Unassigned requests")],
+                ["Overdue tasks", dashboard.value("Overdue tasks")],
+                ["Open complaints", EMPTY],
               ]}
             />
             <Buttons>

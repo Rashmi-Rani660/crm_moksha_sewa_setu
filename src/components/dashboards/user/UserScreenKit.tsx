@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useAuthSession } from "@/lib/auth/session";
 import { useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { Box, DashboardCanvas } from "@/components/dashboards/canvas";
@@ -46,13 +47,15 @@ export function UserFrame({ active, children }: { active?: string; children: Rea
 
 export function UserHeader({ code, title }: { code: UserScreenCode; title: string }) {
   const router = useRouter();
+  const { session } = useAuthSession();
+  const wired = ["US-011","US-012","US-019"].includes(code);
   return (
     <div className="flex flex-col gap-3 lg:h-[50px] lg:flex-row lg:items-start lg:gap-[14px]">
       <div className="min-w-0">
         <h1 className="text-[21px] font-medium leading-tight tracking-[-0.5px] text-[#0b0c36] lg:whitespace-nowrap lg:text-[24px] lg:leading-none">
           {title}
         </h1>
-        <p className="mt-[5px] text-[15px] font-normal leading-none text-[#141a4a] lg:text-[16px]">User 07 / FY 2026–27 / Ghaziabad • My authorised work</p>
+        <p className="mt-[5px] text-[15px] font-normal leading-none text-[#141a4a] lg:text-[16px]">{wired ? session?.name ?? "\u2014" : "User 07"} / FY 2026–27 / Ghaziabad • My authorised work</p>
       </div>
       <div className="flex flex-wrap items-center gap-[10px] lg:ml-auto lg:mt-[4px] lg:flex-nowrap">
         <label className="relative block h-[32px] w-full sm:w-[328px]">

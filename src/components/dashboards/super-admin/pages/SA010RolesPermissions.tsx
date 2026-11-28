@@ -10,6 +10,7 @@
  */
 
 import { useState } from "react";
+import { useCrmMutation } from "@/lib/api/useCrmMutation";
 import type { AccessLevel } from "@/lib/api/auth";
 import { qs, useCrmQuery } from "@/lib/api/useCrmQuery";
 import { pad2, shortDateTime } from "@/lib/format";
@@ -99,6 +100,7 @@ function CellValue({ value }: { value: Cell }) {
 
 export default function SA010RolesPermissions() {
   const notice = useNotice();
+  const mutation = useCrmMutation(notice.show);
   const [tab, setTab] = useState<Tab>("Permission Matrix");
   const [level, setLevel] = useState<(typeof accessLevels)[number]>("Admin");
   const [profileName, setProfile] = useState<string>("");
@@ -204,10 +206,10 @@ export default function SA010RolesPermissions() {
                 </TableWrap>
 
                 <div className="flex flex-wrap gap-[8px]">
-                  <PrimaryButton onClick={() => notice.show(role?.slug === "super_admin" ? "The Super Admin profile is locked." : "Profile changes are made by a Super Admin and recorded in the change history; holders are signed out when their access changes.")}>
+                  <PrimaryButton disabled onClick={() => notice.show(role?.slug === "super_admin" ? "The Super Admin profile is locked." : "Profile changes are made by a Super Admin and recorded in the change history; holders are signed out when their access changes.")}>
                     Submit changes for approval
                   </PrimaryButton>
-                  <PrimaryButton outline onClick={() => setTab("Effective Access")}>
+                  <PrimaryButton outline disabled={!role || mutation.busy} onClick={async () => { if (!role) return; const result = await mutation.run("/roles/preview", { body: { accessLevel: role.accessLevel,grants: role.grants } }); if (result) setTab("Effective Access"); }}>
                     Preview effective access
                   </PrimaryButton>
                 </div>

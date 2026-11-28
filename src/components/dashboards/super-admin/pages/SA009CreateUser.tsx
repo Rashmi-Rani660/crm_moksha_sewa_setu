@@ -11,7 +11,7 @@
  * grants; Save draft / Submit call POST /crm/users (activation always needs independent approval).
  */
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Bell,
   CircleCheck,
@@ -42,6 +42,7 @@ import { authorizedRequest } from "@/lib/api/authorized";
 import { errorMessage } from "@/lib/api/client";
 import { qs, useCrmQuery } from "@/lib/api/useCrmQuery";
 import { useAuthSession } from "@/lib/auth/session";
+import { useCrmAccess } from "@/lib/api/useCrmAccess";
 import { ACCESS_LEVEL_LABEL, clock, shortDate } from "@/lib/format";
 
 const tabs = ["Create user", "Permission preview", "Centre access", "Audit history"] as const;
@@ -109,6 +110,8 @@ function cell(grants: RoleRow["grants"] | undefined, modules: string[], action: 
 export default function SA009CreateUser() {
   const notice = useNotice();
   const { session } = useAuthSession();
+  const access = useCrmAccess();
+  const saving = useRef(false);
   const [tab, setTab] = useState<Tab>("Create user");
   const [employeeLabel, setEmployeeLabel] = useState<string>("");
   const [level, setLevel] = useState<(typeof accessLevels)[number]>("User");
@@ -147,7 +150,9 @@ export default function SA009CreateUser() {
     if (!role) return notice.show(`No active access profile exists for ${level} access.`);
     if (!centre) return notice.show("No active service centre is configured.");
     const reason = window.prompt(submitForApproval ? "Reason for this access request (required):" : "Note for this draft (required):")?.trim();
-    if (!reason) return;
+    if (!reason || reason.length < 5) return notice.show("Give a reason of at least 5 characters.");
+    if (saving.current || !access.can("users.create")) return;
+    saving.current = true;
     setBusy(true);
     try {
       await authorizedRequest("/users", {
@@ -170,6 +175,7 @@ export default function SA009CreateUser() {
     } catch (err) {
       notice.show(errorMessage(err));
     } finally {
+      saving.current = false;
       setBusy(false);
     }
   }
@@ -181,7 +187,7 @@ export default function SA009CreateUser() {
         icon={Radio}
         iconTone="blue"
         title="Create User & Assign Access"
-        links={["Super Admin", "FY 2026–27", centre?.name ?? "Ghaziabad"]}
+        links={["Super Admin", "FY 2026–27", centre?.name ?? "—"]}
       >
         <ModuleDropdown current="SA-009" />
       </PageHead>
@@ -323,10 +329,10 @@ export default function SA009CreateUser() {
                   ))}
                 </div>
                 <div className="mt-auto flex flex-wrap items-center gap-[8px] pt-[8px]">
-                  <PrimaryButton onClick={() => save(false)}>
+                  <PrimaryButton disabled={busy || !access.can("users.create")} onClick={() => save(false)}>
                     Save draft
                   </PrimaryButton>
-                  <PrimaryButton outline onClick={() => save(true)}>
+                  <PrimaryButton outline disabled={busy || !access.can("users.create")} onClick={() => save(true)}>
                     Submit for approval
                   </PrimaryButton>
                   <div className="ml-auto flex items-center gap-[5px]">

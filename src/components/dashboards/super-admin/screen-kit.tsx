@@ -1,5 +1,7 @@
 "use client";
 
+import { fieldName } from "@/lib/crm/formFields";
+
 /**
  * Building blocks of the SA-011 … SA-020 screens (Sewa Setu-SA011-020 design
  * book). Same visual language as `RegisterScreen` (SA-041 … SA-050): heading
@@ -196,12 +198,12 @@ const primaryBtn =
 const outlineBtn =
   "flex h-[29px] shrink-0 items-center whitespace-nowrap rounded-[6px] border border-[#a9bddf] bg-white px-[11px] pt-px text-[15.2px] font-medium text-[#1e43a8] hover:bg-[#f1f5fd]";
 
-export function Btn({ children, primary = false, onClick, href, className = "" }: { children: ReactNode; primary?: boolean; onClick?: () => void; href?: string; className?: string }) {
+export function Btn({ children, primary = false, onClick, href, className = "", disabled = false }: { children: ReactNode; primary?: boolean; onClick?: () => void; href?: string; className?: string; disabled?: boolean }) {
   const cls = `${primary ? primaryBtn : outlineBtn} ${className}`;
   return href ? (
     <Link href={href} className={cls}>{children}</Link>
   ) : (
-    <button type="button" onClick={onClick} className={cls}>{children}</button>
+    <button type="button" disabled={disabled} onClick={onClick} className={cls}>{children}</button>
   );
 }
 
@@ -361,7 +363,7 @@ export function Field({ label, children, className = "" }: { label: string; chil
 
 export function TextBox({ value, onChange, readOnly = false, label }: { value: string; onChange?: (v: string) => void; readOnly?: boolean; label: string }) {
   return (
-    <input
+    <input name={fieldName(label)}
       value={value}
       readOnly={readOnly}
       aria-label={label}

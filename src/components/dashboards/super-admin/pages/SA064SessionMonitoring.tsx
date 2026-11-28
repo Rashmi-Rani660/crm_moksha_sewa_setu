@@ -2,16 +2,20 @@
 
 /** SA-064 — Login & Active Session Monitoring. Demo data. */
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Bell, CircleCheck, Network, Radio, UsersRound } from "lucide-react";
 import {
   KpiRow,
+  useNotice,
   KpiTile,
   PageHead,
   Panel,
   PrimaryButton,
   SuperAdminFrame,
 } from "@/components/dashboards/super-admin/kit";
+import { useSessions } from "@/lib/crm/useSessions";
+import { EMPTY, count, records, text } from "@/lib/crm/data";
+import { shortDateTime } from "@/lib/format";
 import { ScreenSwitch, securityScreens } from "@/components/dashboards/super-admin/screen-switch";
 
 type TabId = "overview" | "records" | "review" | "activity" | "reports";
@@ -33,13 +37,7 @@ interface SessionRecord {
   riskReview: string;
 }
 
-const SESSIONS: SessionRecord[] = [
-  { id: "SES-001", user: "User 07", device: "Chrome / desktop", location: "Ghaziabad", lastActivity: "10:24 AM", status: "Active", risk: "Low", mfa: "Verified", ip: "Masked", created: "26 Nov · 09:00 AM", expiry: "Policy controlled", revokeScope: "Selected session only", riskReview: "Normal activity" },
-  { id: "SES-002", user: "Admin 01", device: "Edge / desktop", location: "Ghaziabad", lastActivity: "10:22 AM", status: "Active", risk: "Low", mfa: "Verified", ip: "Masked", created: "26 Nov · 08:45 AM", expiry: "Policy controlled", revokeScope: "Selected session only", riskReview: "Normal activity" },
-  { id: "SES-003", user: "User 09", device: "Staff App", location: "Ghaziabad", lastActivity: "10:18 AM", status: "Active", risk: "Low", mfa: "Verified", ip: "Masked", created: "26 Nov · 09:10 AM", expiry: "Policy controlled", revokeScope: "Selected session only", riskReview: "Normal activity" },
-  { id: "SES-004", user: "User 12", device: "New browser", location: "Unknown", lastActivity: "10:12 AM", status: "Review", risk: "High · new device", mfa: "Verified", ip: "Masked", created: "26 Nov · 09:50 AM", expiry: "Policy controlled", revokeScope: "Selected session only", riskReview: "New browser / unknown location" },
-  { id: "SES-005", user: "User 14", device: "Staff App", location: "Unknown", lastActivity: "09:54 AM", status: "Revoked", risk: "High", mfa: "Verified", ip: "Masked", created: "26 Nov · 08:15 AM", expiry: "Revoked", revokeScope: "Selected session only", riskReview: "Session terminated" },
-];
+
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "overview", label: "Overview" },
@@ -51,11 +49,11 @@ const TABS: { id: TabId; label: string }[] = [
 
 const TREND_BARS = [
   { label: "00–04", value: 0, height: "h-1" },
-  { label: "04–08", value: 1, height: "h-4" },
-  { label: "08–12", value: 3, height: "h-10" },
-  { label: "12–16", value: 2, height: "h-7" },
-  { label: "16–20", value: 1, height: "h-4" },
-  { label: "20–24", value: 1, height: "h-4" },
+  { label: "04–08", value: 0, height: "h-4" },
+  { label: "08–12", value: 0, height: "h-10" },
+  { label: "12–16", value: 0, height: "h-7" },
+  { label: "16–20", value: 0, height: "h-4" },
+  { label: "20–24", value: 0, height: "h-4" },
 ];
 
 const STATUS_BADGE: Record<SessionStatus, string> = {
@@ -65,11 +63,14 @@ const STATUS_BADGE: Record<SessionStatus, string> = {
 };
 
 export default function SA064SessionMonitoring() {
+  const notice = useNotice();
+  const live = useSessions("sessions",notice.show);
+  const SESSIONS: SessionRecord[] = records(live.list.data).map(row => ({ id: text(row.id),user: live.userName,device: [text(row.device),text(row.browser)].join(" / "),location: EMPTY,lastActivity: shortDateTime(text(row.lastUsedAt,"")),status: "Active",risk: EMPTY,mfa: EMPTY,ip: text(row.ip),created: shortDateTime(text(row.createdAt,"")),expiry: shortDateTime(text(row.expiresAt,"")),revokeScope: "Selected session only",riskReview: EMPTY }));
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [search, setSearch] = useState("");
-  const [selectedId, setSelectedId] = useState("SES-004");
+  const [selectedId, setSelectedId] = useState("");
 
-  const filtered = useMemo(() => {
+  const filtered = (() => {
     const q = search.trim().toLowerCase();
     if (!q) return SESSIONS;
     return SESSIONS.filter(
@@ -79,9 +80,9 @@ export default function SA064SessionMonitoring() {
         r.device.toLowerCase().includes(q) ||
         r.location.toLowerCase().includes(q),
     );
-  }, [search]);
+  })();
 
-  const selected = SESSIONS.find((r) => r.id === selectedId) ?? SESSIONS[3];
+  const selected: SessionRecord = SESSIONS.find(row => row.id === selectedId) ?? SESSIONS[0] ?? { id: "",user: EMPTY,device: EMPTY,location: EMPTY,lastActivity: EMPTY,status: "Active",risk: EMPTY,mfa: EMPTY,ip: EMPTY,created: EMPTY,expiry: EMPTY,revokeScope: EMPTY,riskReview: EMPTY };
 
   return (
     <SuperAdminFrame active="system-security">
@@ -97,12 +98,12 @@ export default function SA064SessionMonitoring() {
         </PageHead>
 
         <KpiRow cols={6}>
-          <KpiTile tone="blue" value="48" label="Active sessions" sub="Demo snapshot" icon={Radio} />
-          <KpiTile tone="green" value="08" label="Failed logins · 24h" sub="Demo snapshot" icon={Bell} />
-          <KpiTile tone="orange" value="02" label="New devices" sub="Demo snapshot" icon={CircleCheck} />
-          <KpiTile tone="purple" value="01" label="Revoked today" sub="Demo snapshot" icon={UsersRound} />
-          <KpiTile tone="blue" value="02" label="Risk review" sub="Demo snapshot" icon={Network} />
-          <KpiTile tone="green" value="100%" label="MFA coverage" sub="Demo snapshot" icon={Radio} />
+          <KpiTile tone="blue" value={live.list.data ? count(SESSIONS.length) : EMPTY} label="Active sessions" sub="Demo snapshot" icon={Radio} />
+          <KpiTile tone="green" value={EMPTY} label="Failed logins · 24h" sub="Demo snapshot" icon={Bell} />
+          <KpiTile tone="orange" value={EMPTY} label="New devices" sub="Demo snapshot" icon={CircleCheck} />
+          <KpiTile tone="purple" value={EMPTY} label="Revoked today" sub="Demo snapshot" icon={UsersRound} />
+          <KpiTile tone="blue" value={EMPTY} label="Risk review" sub="Demo snapshot" icon={Network} />
+          <KpiTile tone="green" value={EMPTY} label="MFA coverage" sub="Demo snapshot" icon={Radio} />
         </KpiRow>
 
         <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs sm:grid-cols-5">
@@ -134,8 +135,8 @@ export default function SA064SessionMonitoring() {
                     placeholder="Search records..."
                     className="min-w-[200px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] text-slate-700 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
                   />
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Filter</button>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Export</button>
+                  <button type="button" onClick={live.selectUser} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Filter</button>
+                  <button type="button" disabled className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Export</button>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -176,8 +177,8 @@ export default function SA064SessionMonitoring() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <PrimaryButton>Review session</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Revoke session</button>
+                  <PrimaryButton disabled={!selected.id} onClick={() => notice.show(`${selected.device} ? ${selected.ip} ? ${selected.lastActivity}`)}>Review session</PrimaryButton>
+                  <button type="button" disabled={!live.canRevoke(selected.id)} onClick={() => live.revoke(selected.id)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Revoke session</button>
                   <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">View login history</button>
                 </div>
               </div>
@@ -186,12 +187,12 @@ export default function SA064SessionMonitoring() {
             <Panel title="Authentication trend · 24 hours">
               <div className="space-y-2">
                 <p className="text-[15px] font-medium text-slate-500">
-                  Illustrative failed login events · total 8
+                  {EMPTY}
                 </p>
                 <div className="grid grid-cols-6 items-end gap-3 pt-1">
                   {TREND_BARS.map((bar) => (
                     <div key={bar.label} className="flex flex-col items-center gap-1">
-                      <span className="text-[15px] font-semibold text-slate-700">{bar.value}</span>
+                      <span className="text-[15px] font-semibold text-slate-700">{EMPTY}</span>
                       <div className={`w-full rounded-t-md bg-blue-600 ${bar.height}`} />
                       <span className="text-[15px] text-slate-500">{bar.label}</span>
                     </div>
@@ -202,7 +203,7 @@ export default function SA064SessionMonitoring() {
                   <span className="font-semibold text-slate-800">Approved policy</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <PrimaryButton>Filter by risk</PrimaryButton>
+                  <PrimaryButton disabled>Filter by risk</PrimaryButton>
                   <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Session history</button>
                 </div>
               </div>
@@ -239,8 +240,8 @@ export default function SA064SessionMonitoring() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <PrimaryButton>Review session</PrimaryButton>
-                  <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Revoke session</button>
+                  <PrimaryButton disabled={!selected.id} onClick={() => notice.show(`${selected.device} ? ${selected.ip} ? ${selected.lastActivity}`)}>Review session</PrimaryButton>
+                  <button type="button" disabled={!live.canRevoke(selected.id)} onClick={() => live.revoke(selected.id)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[14px] font-medium text-slate-700 hover:bg-slate-50">Revoke session</button>
                 </div>
                 <div className="divide-y divide-slate-100 border-t border-slate-100 pt-1 text-[15px]">
                   <div className="flex items-center justify-between py-1.5">
@@ -259,11 +260,11 @@ export default function SA064SessionMonitoring() {
               <div className="divide-y divide-slate-100 text-[15px]">
                 <div className="flex items-center justify-between py-1.5">
                   <span className="text-slate-600">New device</span>
-                  <span className="font-semibold text-slate-800">02</span>
+                  <span className="font-semibold text-slate-800">{EMPTY}</span>
                 </div>
                 <div className="flex items-center justify-between py-1.5">
                   <span className="text-slate-600">Failed login</span>
-                  <span className="font-semibold text-slate-800">08</span>
+                  <span className="font-semibold text-slate-800">{EMPTY}</span>
                 </div>
                 <div className="flex items-center justify-between py-1.5">
                   <span className="text-slate-600">Location</span>
@@ -278,6 +279,7 @@ export default function SA064SessionMonitoring() {
           </div>
         </div>
       </div>
+      {notice.node}
     </SuperAdminFrame>
   );
 }

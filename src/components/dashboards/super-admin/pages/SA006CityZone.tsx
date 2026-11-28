@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 /**
  * SA-006 — City, Zone & Service Centre Management.
  * Matched to the SA-006 reference design: 6 KPI tiles, 6 tabs, top row
@@ -9,6 +11,12 @@
  */
 
 import { useState } from "react";
+import { authorizedRequest } from "@/lib/api/authorized";
+import { useCrmQuery } from "@/lib/api/useCrmQuery";
+import { useCrmMutation } from "@/lib/api/useCrmMutation";
+import { useCrmAccess } from "@/lib/api/useCrmAccess";
+import { count, records, text, EMPTY, choose, reason, type CrmRecord } from "@/lib/crm/data";
+import { humanize } from "@/lib/format";
 import {
   Bell,
   CircleCheck,
@@ -40,18 +48,6 @@ type Tab = (typeof tabs)[number];
 
 type City = { code: string; name: string; state: string; zones: string; centres: string; pins: string; status: string };
 
-const cities: City[] = [
-  { code: "CT-001", name: "Ghaziabad", state: "Uttar Pradesh", zones: "3", centres: "1", pins: "12", status: "Active" },
-  { code: "CT-002", name: "Noida", state: "Uttar Pradesh", zones: "2", centres: "0", pins: "8", status: "Coming soon" },
-  { code: "CT-003", name: "Delhi", state: "Delhi NCT", zones: "2", centres: "0", pins: "8", status: "Coming soon" },
-];
-
-const hierarchyCities = [
-  { name: "Ghaziabad", status: "Active" },
-  { name: "Delhi", status: "Coming soon" },
-  { name: "Noida", status: "Coming soon" },
-] as const;
-
 const readiness: readonly { label: string; value: string; pill?: boolean }[] = [
   { label: "Approved services", value: "Required", pill: true },
   { label: "Assigned admin / team", value: "Required", pill: true },
@@ -64,7 +60,7 @@ const routing: readonly (readonly [string, string])[] = [
   ["Coverage publication", "Approved changes only"],
   ["Request routing", "Auto / Manual / Approval"],
   ["Outside coverage", "Separate review queue"],
-  ["Last sync", "Demo • 10:20"],
+  ["Last sync", EMPTY],
   ["Change history", "Audit required"],
 ] as const;
 
@@ -77,7 +73,37 @@ const controls: readonly (readonly [string, string])[] = [
 ] as const;
 
 export default function SA006CityZone() {
+  const router = useRouter();
   const notice = useNotice();
+  const { can } = useCrmAccess();
+  const tree = useCrmQuery<CrmRecord[]>(can("geography.view") ? "/geography/tree" : null);
+  const rawCities = useCrmQuery<CrmRecord[]>(can("geography.view") ? "/geography/cities" : null);
+  const centres = useCrmQuery<CrmRecord[]>(can("geography.view") ? "/geography/centres?limit=100" : null);
+  const pins = useCrmQuery<CrmRecord[]>(can("geography.view") ? "/geography/pincodes?limit=100" : null);
+  const mutation = useCrmMutation(notice.show);
+  const cities: City[] = records(tree.data).flatMap(state => records(state.cities).map(city => ({ code: text(city.code), name: text(city.name), state: text(state.name), zones: count(records(city.zones).length), centres: count(records(city.centres).length), pins: count(records(city.centres).reduce((n,c) => n + Number(c.pincodes || 0),0)),status: humanize(text(city.status,"")) })));
+  const hierarchyCities = cities.map(city => ({ name: city.name,status: city.status }));
+  async function createCity() {
+    if (!can("geography.create") || mutation.busy) return;
+    const states = await authorizedRequest<CrmRecord[]>("/geography/states");
+    const state = choose(states.data,"Choose state");
+    const code = window.prompt("City code:")?.trim(); const name = window.prompt("City name:")?.trim();
+    if (state && code && name) await mutation.run("/geography/cities", { body: { stateId: state.id,code,name } }, "City created.");
+  }
+  async function editCoverage() {
+    const centre = choose(records(centres.data),"Choose centre"); const pincode = window.prompt("PIN code (6 digits):")?.trim();
+    if (!centre || !pincode) return;
+    await mutation.run("/geography/pincodes", { body: { centreId: centre.id,pincodes: [{ pincode }] } }, "Coverage saved.");
+  }
+  async function cityAction(activate: boolean) {
+    const city = choose(records(rawCities.data),"Choose city"); const note = reason(); if (!city || !note) return;
+    await mutation.run('/geography/cities/' + city.id + (activate ? '/activate' : '/status'), { body: { version: city.version,reason: note,...(activate ? {} : { status: "INACTIVE" }) } }, "Saved.");
+  }
+  async function manage(kind: "zones" | "centres") {
+    const city = choose(records(rawCities.data),"Choose city"); if (!city) return;
+    const code = window.prompt("Code:")?.trim(); const name = window.prompt("Name:")?.trim();
+    if (code && name) await mutation.run('/geography/' + kind, { body: { cityId: city.id,code,name } }, "Saved.");
+  }
   const [tab, setTab] = useState<Tab>("City management");
 
   const showCity = tab === "City management" || tab === "State management";
@@ -104,12 +130,12 @@ export default function SA006CityZone() {
       </PageHead>
 
       <KpiRow cols={6}>
-        <KpiTile tone="blue" icon={Radio} value="02" label="States / UTs" sub="Configured" />
-        <KpiTile tone="green" icon={Bell} value="03" label="Cities" sub="Registered" />
-        <KpiTile tone="orange" icon={CircleCheck} value="01" label="Active cities" sub="Ghaziabad" />
-        <KpiTile tone="purple" icon={Users} value="02" label="Upcoming" sub="Delhi / Noida" />
-        <KpiTile tone="sky" icon={Layers} value="01" label="Active centres" sub="Demo" />
-        <KpiTile tone="green" icon={Radio} value="28" label="Mapped PINs" sub="Demo • 12 active" />
+        <KpiTile tone="blue" icon={Radio} value={tree.data ? count(tree.data.length) : EMPTY} label="States / UTs" sub="Configured" />
+        <KpiTile tone="green" icon={Bell} value={rawCities.data ? count(rawCities.data.length) : EMPTY} label="Cities" sub="Registered" />
+        <KpiTile tone="orange" icon={CircleCheck} value={rawCities.data ? count(rawCities.data.filter(c => c.status === "ACTIVE").length) : EMPTY} label="Active cities" sub="Ghaziabad" />
+        <KpiTile tone="purple" icon={Users} value={rawCities.data ? count(rawCities.data.filter(c => c.status === "COMING_SOON").length) : EMPTY} label="Upcoming" sub="Delhi / Noida" />
+        <KpiTile tone="sky" icon={Layers} value={centres.data ? count(centres.data.filter(c => c.status === "ACTIVE").length) : EMPTY} label="Active centres" sub="Demo" />
+        <KpiTile tone="green" icon={Radio} value={count(pins.meta?.total)} label="Mapped PINs" sub="Demo • 12 active" />
       </KpiRow>
 
       <Tabs tabs={tabs} value={tab} onChange={setTab} />
@@ -147,13 +173,13 @@ export default function SA006CityZone() {
                   </tbody>
                 </TableWrap>
                 <div className="mt-auto flex flex-wrap gap-[8px] pt-[8px]">
-                  <PrimaryButton onClick={() => notice.show("Add city: readiness checks required (demo).")}>
+                  <PrimaryButton disabled={mutation.busy || !can("geography.create")} onClick={createCity}>
                     Add city
                   </PrimaryButton>
-                  <PrimaryButton outline onClick={() => notice.show("Edit coverage: PIN validation runs first (demo).")}>
+                  <PrimaryButton outline disabled={mutation.busy || !can("geography.edit")} onClick={editCoverage}>
                     Edit coverage
                   </PrimaryButton>
-                  <PrimaryButton outline onClick={() => notice.show("Deactivate: archive only — no delete (demo).")}>
+                  <PrimaryButton outline disabled={mutation.busy || !can("geography.edit")} onClick={() => cityAction(false)}>
                     Deactivate
                   </PrimaryButton>
                 </div>
@@ -200,7 +226,7 @@ export default function SA006CityZone() {
                   ))}
                 </div>
                 <div className="mt-auto pt-[8px]">
-                  <PrimaryButton onClick={() => notice.show("Review activation: all checks must pass (demo).")}>
+                  <PrimaryButton disabled={mutation.busy || !can("geography.edit")} onClick={() => cityAction(true)}>
                     Review activation
                   </PrimaryButton>
                 </div>
@@ -215,10 +241,10 @@ export default function SA006CityZone() {
                   ))}
                 </div>
                 <div className="mt-auto flex flex-wrap gap-[8px] pt-[8px]">
-                  <PrimaryButton onClick={() => notice.show("Sync preview: website coverage diff (demo).")}>
+                  <PrimaryButton disabled onClick={() => notice.show(EMPTY)}>
                     Sync preview
                   </PrimaryButton>
-                  <PrimaryButton outline onClick={() => notice.show("Change history opened (demo).")}>
+                  <PrimaryButton outline onClick={() => router.push("/dashboard/super-admin/audit-logs")}>
                     View history
                   </PrimaryButton>
                 </div>
@@ -233,10 +259,10 @@ export default function SA006CityZone() {
                   ))}
                 </div>
                 <div className="mt-auto flex flex-wrap gap-[8px] pt-[8px]">
-                  <PrimaryButton onClick={() => notice.show("Manage zones opened (demo).")}>
+                  <PrimaryButton disabled={mutation.busy || !can("geography.edit")} onClick={() => manage("zones")}>
                     Manage zones
                   </PrimaryButton>
-                  <PrimaryButton outline onClick={() => notice.show("Manage centres opened (demo).")}>
+                  <PrimaryButton outline disabled={mutation.busy || !can("geography.edit")} onClick={() => manage("centres")}>
                     Manage centres
                   </PrimaryButton>
                 </div>

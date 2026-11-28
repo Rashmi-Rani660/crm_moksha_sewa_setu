@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useOperations } from "@/lib/crm/useOperations";
+import { text, count, records, EMPTY } from "@/lib/crm/data";
+import { humanize, shortDateTime } from "@/lib/format";
 import {
   UserFlowSteps,
   UserFrame,
@@ -16,25 +19,19 @@ import {
   userTextareaCls,
 } from "@/components/dashboards/user/UserScreenKit";
 
-const checklistItems = [
-  { id: "c1", label: "Assignment accepted (recorded)", locked: true, defaultChecked: true },
-  { id: "c2", label: "Review identity details", locked: false, defaultChecked: true },
-  { id: "c3", label: "Confirm required documents", locked: false, defaultChecked: false },
-  { id: "c4", label: "Submit supporting evidence", locked: false, defaultChecked: false },
-];
+
 
 export default function US012TaskExecution() {
   const { show, node } = useUserNotice();
-  const [checked, setChecked] = useState<Record<string, boolean>>({
-    c1: true,
-    c2: true,
-    c3: false,
-    c4: false,
-  });
+  const live = useOperations("tasks",show,{ mine: true });
+  const record = live.detail.data;
+  const checklistItems = records(record?.checklist).map(row => ({ id: text(row.key),label: text(row.label),locked: !live.can("tasks.edit") || live.mutation.busy || live.detail.loading,defaultChecked: row.done === true }));
+  const checked: Record<string,boolean> = Object.fromEntries(checklistItems.map(row => [row.id,row.defaultChecked]));
+  const saveCheck = (key: string,done: boolean) => live.act("Save checklist", { items: checklistItems.map(row => ({ key: row.id,done: row.id === key ? done : row.defaultChecked })) });
   const [remarks, setRemarks] = useState("");
 
   const doneCount = Object.values(checked).filter(Boolean).length;
-  const pct = Math.round((doneCount / checklistItems.length) * 100);
+  const pct = checklistItems.length ? Math.round((doneCount / checklistItems.length) * 100) : 0;
   const canSubmit = doneCount === checklistItems.length;
 
   return (
@@ -42,12 +39,12 @@ export default function US012TaskExecution() {
       <UserHeader code="US-012" title="Task Acceptance, Execution & Completion" />
       <UserKpiRow
         items={[
-          { value: "TASK-026", label: "Selected task", tone: "blue" },
-          { value: "Overdue", label: "SLA status", tone: "red", valueRed: true },
-          { value: `${doneCount} / 4`, label: "Checklist", tone: "orange" },
-          { value: "1", label: "Evidence files", tone: "green" },
-          { value: "Pending", label: "Admin review", tone: "purple" },
-          { value: "Draft", label: "Save state", tone: "green" },
+          { value: text(record?.taskNo), label: "Selected task", tone: "blue" },
+          { value: record ? record.overdue ? "Overdue" : humanize(text(record.status,"")) : EMPTY, label: "SLA status", tone: "red", valueRed: true },
+          { value: `${doneCount} / ${checklistItems.length}`, label: "Checklist", tone: "orange" },
+          { value: record ? count(records(record.evidence).length) : EMPTY, label: "Evidence files", tone: "green" },
+          { value: humanize(text(record?.status,"")), label: "Admin review", tone: "purple" },
+          { value: EMPTY, label: "Save state", tone: "green" },
         ]}
       />
 
@@ -55,10 +52,10 @@ export default function US012TaskExecution() {
         <UserPanel title="Task execution · TASK-026">
           <UserKVList
             rows={[
-              ["Linked case", "MS-26-1101"],
-              ["Instruction", "Verify pending documents"],
-              ["Assigned by", "Admin 01"],
-              ["Due", "Today 10:00"],
+              ["Linked case",text(record?.reference)],
+              ["Instruction",text(record?.description)],
+              ["Assigned by",text(record?.createdBy)],
+              ["Due",shortDateTime(text(record?.dueAt,""))],
             ]}
           />
 
@@ -69,7 +66,7 @@ export default function US012TaskExecution() {
                   type="checkbox"
                   checked={checked[item.id]}
                   disabled={item.locked}
-                  onChange={(e) => setChecked((prev) => ({ ...prev, [item.id]: e.target.checked }))}
+                  onChange={(e) => saveCheck(item.id,e.target.checked)}
                   className="h-[14px] w-[14px] accent-[#1d4fe0]"
                 />
                 <span>{item.label}</span>
@@ -79,16 +76,16 @@ export default function US012TaskExecution() {
 
           <button
             type="button"
-            onClick={() => show("Evidence file picker opened (demo).")}
+            disabled={!live.can("tasks.edit") || !live.id || live.upload.busy} onClick={() => { if (live.id) live.upload.pick(`/tasks/${live.id}/evidence`); }}
             className="mt-[8px] flex h-[32px] w-full items-center justify-center rounded-[6px] border border-dashed border-[#a9bddf] bg-white text-[13.8px] text-[#1a1d36] hover:bg-[#f3f6fc]"
           >
             Drop evidence here · PDF / image · Browse files
           </button>
 
           <div className="mt-[8px] flex flex-wrap gap-[7px]">
-            <button type="button" onClick={() => show("Upload evidence initiated.")} className={userPrimaryBtn}>Upload evidence</button>
-            <button type="button" onClick={() => show("Voice note recorder ready (demo).")} className={userOutlineBtn}>Add voice note</button>
-            <button type="button" onClick={() => show("Task draft saved.")} className={userOutlineBtn}>Save draft</button>
+            <button type="button" disabled={!live.can("tasks.edit") || !live.id || live.upload.busy} onClick={() => { if (live.id) live.upload.pick(`/tasks/${live.id}/evidence`); }} className={userPrimaryBtn}>Upload evidence</button>
+            <button type="button" disabled onClick={() => show(EMPTY)} className={userOutlineBtn}>Add voice note</button>
+            <button type="button" disabled={!live.canAct("Save draft")} onClick={() => live.act("Save draft", { remarks })} className={userOutlineBtn}>Save draft</button>
           </div>
         </UserPanel>
 
@@ -104,9 +101,9 @@ export default function US012TaskExecution() {
           <div className="mt-[6px]">
             <UserKVList
               rows={[
-                ["Legal clearance", <UserPill key="lc" tone="red">Pending</UserPill>],
-                ["Evidence", "1 file · scan required"],
-                ["Draft", "Last saved · demo"],
+                ["Legal clearance", <UserPill key="lc" tone="red">{EMPTY}</UserPill>],
+                ["Evidence", record ? count(records(record.evidence).length) : EMPTY],
+                ["Draft", EMPTY],
                 ["Next action", "Submit missing document"],
               ]}
             />
@@ -124,14 +121,14 @@ export default function US012TaskExecution() {
           <div className="mt-[8px] flex flex-wrap gap-[7px]">
             <button
               type="button"
-              disabled={!canSubmit}
-              onClick={() => show("Submitted for Admin review.")}
+              disabled={!canSubmit || !live.canAct("Submit for review")}
+              onClick={() => live.act("Submit for review", { remarks })}
               className={userPrimaryBtn}
             >
               Submit for review
             </button>
-            <button type="button" onClick={() => show("Clarification request sent.")} className={userOutlineBtn}>Request clarification</button>
-            <button type="button" onClick={() => show("Escalated to Admin.")} className={userOutlineBtn}>Escalate</button>
+            <button type="button" disabled onClick={() => show(EMPTY)} className={userOutlineBtn}>Request clarification</button>
+            <button type="button" disabled onClick={() => show(EMPTY)} className={userOutlineBtn}>Escalate</button>
           </div>
           <p className="mt-[6px] text-[13px] text-[#4a5468]">
             Complete mandatory documents and evidence before submitting. Draft recovery required.
@@ -148,16 +145,16 @@ export default function US012TaskExecution() {
             </thead>
             <tbody>
               <tr className="h-[28px] border-b border-[#dce4ee] text-[13.8px] text-[#1a1d36]">
-                <td className="px-[8px]">09:40</td>
-                <td className="px-[8px]">Assigned by Admin 01</td>
+                <td className="px-[8px]">{shortDateTime(text(live.timeline[0]?.at,""))}</td>
+                <td className="px-[8px]">{text(live.timeline[0]?.summary)}</td>
               </tr>
               <tr className="h-[28px] border-b border-[#dce4ee] text-[13.8px] text-[#1a1d36]">
-                <td className="px-[8px]">09:45</td>
-                <td className="px-[8px]">Accepted by User 07</td>
+                <td className="px-[8px]">{shortDateTime(text(live.timeline[1]?.at,""))}</td>
+                <td className="px-[8px]">{text(live.timeline[1]?.summary)}</td>
               </tr>
               <tr className="h-[28px] border-b border-[#dce4ee] text-[13.8px] text-[#1a1d36]">
-                <td className="px-[8px]">10:05</td>
-                <td className="px-[8px]">Draft saved</td>
+                <td className="px-[8px]">{shortDateTime(text(live.timeline[2]?.at,""))}</td>
+                <td className="px-[8px]">{text(live.timeline[2]?.summary)}</td>
               </tr>
             </tbody>
           </table>

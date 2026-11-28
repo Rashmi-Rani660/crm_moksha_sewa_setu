@@ -3,6 +3,7 @@
 import { authApi } from "@/lib/api/auth";
 import { ApiError, request, type RequestOptions } from "@/lib/api/client";
 import { endSession, readTokens, storeTokens } from "@/lib/auth/session";
+import { invalidateCrmQueries } from "./invalidation";
 
 /**
  * Signed-in calls to the CRM API. Refreshes the access token shortly before it expires (one
@@ -38,17 +39,27 @@ async function accessToken(): Promise<string> {
 }
 
 export async function authorizedRequest<T>(path: string, options: Omit<RequestOptions, "token"> = {}) {
+  const token = await accessToken().catch((err: unknown) => {
+    if (err instanceof ApiError && (SESSION_OVER.has(err.code) || err.status === 401)) endSession("Your session has ended. Please sign in again.");
+    throw err;
+  });
   try {
+    let result;
     try {
-      return await request<T>(path, { ...options, token: await accessToken() });
+      result = await request<T>(path, { ...options, token });
     } catch (err) {
       // The token expired between the check and the call: refresh once and retry.
       if (err instanceof ApiError && err.code === "CRM_TOKEN_INVALID") {
-        return await request<T>(path, { ...options, token: await refreshAccessToken() });
+        const current = readTokens()?.accessToken;
+        result = await request<T>(path, { ...options, token: current && current !== token ? current : await refreshAccessToken() });
+      } else {
+        throw err;
       }
-      throw err;
     }
+    if ((options.method ?? (options.body === undefined ? "GET" : "POST")) !== "GET") invalidateCrmQueries();
+    return result;
   } catch (err) {
+    if (err instanceof ApiError && err.code === "CRM_STALE_VERSION") invalidateCrmQueries();
     if (err instanceof ApiError && (SESSION_OVER.has(err.code) || err.code === "CRM_TOKEN_INVALID")) {
       endSession("Your session has ended. Please sign in again.");
     }

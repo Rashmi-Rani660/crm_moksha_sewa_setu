@@ -8,7 +8,7 @@ import { DESIGN_W, useMenuToggle } from "@/components/dashboards/canvas";
 import { sectionHref, sectionsOf } from "@/components/dashboards/shells";
 import { usePopover } from "@/components/dashboards/usePopover";
 import { canViewDashboard, signOut, useAuthSession, viewDashboard, type Role } from "@/lib/auth/session";
-import { authorizedRequest } from "@/lib/api/authorized";
+import { useCrmMutation } from "@/lib/api/useCrmMutation";
 import { qs, useCrmQuery } from "@/lib/api/useCrmQuery";
 import { ACCESS_LEVEL_LABEL, shortDateTime } from "@/lib/format";
 
@@ -319,17 +319,18 @@ function Notifications({ role }: { role: Role; count: number }) {
   const inbox = useCrmQuery<InboxItem[]>(`/notifications${qs({ limit: 6 })}`);
   const summary = useCrmQuery<InboxSummary>("/notifications/summary");
   const notices = inbox.data ?? [];
+  const mutation = useCrmMutation(message => window.alert(message));
   const unread = summary.data?.unread ?? 0;
   const refresh = () => {
     inbox.reload();
     summary.reload();
   };
   const markRead = () => {
-    authorizedRequest("/notifications/read-all", { method: "POST" }).then(refresh, refresh);
+    void mutation.run("/notifications/read-all", { method: "POST" }).then(refresh);
   };
   const openOne = (id: string) => {
     setOpen(false);
-    authorizedRequest(`/notifications/${id}/read`, { method: "POST" }).then(refresh, refresh);
+    void mutation.run(`/notifications/${id}/read`, { method: "POST" }).then(refresh);
   };
 
   return (
@@ -355,7 +356,7 @@ function Notifications({ role }: { role: Role; count: number }) {
             <p className="text-[16px] font-bold">
               Notifications {unread > 0 && <span className="text-[15px] font-semibold text-[#5b6280]">({unread} unread)</span>}
             </p>
-            <button type="button" disabled={!unread} onClick={markRead} className="text-[15px] font-semibold text-[#2320c4] hover:underline disabled:text-[#9aa1b5] disabled:no-underline">
+            <button type="button" disabled={!unread || mutation.busy} onClick={markRead} className="text-[15px] font-semibold text-[#2320c4] hover:underline disabled:text-[#9aa1b5] disabled:no-underline">
               Mark all as read
             </button>
           </div>
@@ -432,7 +433,6 @@ function leaveDashboard(done: () => void) {
 
 function ProfileMenu({
   role,
-  user: designUser,
   chevron = 0,
   roleSize = 13,
   nameSize = 18,
@@ -452,7 +452,7 @@ function ProfileMenu({
   const { session } = useAuthSession();
   const { open, setOpen, ref } = usePopover();
   // The signed-in person, not the design placeholder.
-  const user = session ? { name: session.name, role: ACCESS_LEVEL_LABEL[session.accessLevel] } : designUser;
+  const user = { name: session?.name ?? "\u2014", role: session ? ACCESS_LEVEL_LABEL[session.accessLevel] : "\u2014" };
 
   return (
     <div ref={ref} className="relative">

@@ -8,28 +8,41 @@
  */
 
 import { useState } from "react";
+import { authorizedRequest } from "@/lib/api/authorized";
+import { useCrmQuery, useDebounced } from "@/lib/api/useCrmQuery";
+import { useResource } from "@/lib/crm/useResource";
+import { at, count, records, text as value, EMPTY, type CrmRecord } from "@/lib/crm/data";
+import { humanize } from "@/lib/format";
 import { useNotice } from "@/components/dashboards/super-admin/kit";
 import { screenPicker1120 } from "@/components/dashboards/super-admin/routes";
 import { Btn, Buttons, Col, Columns, DataTable, FilterBar, KVList, NativeSelect, Panel, Screen, SearchInput, useFilters } from "@/components/dashboards/super-admin/screen-kit";
 
 const tabs = ["Beneficiary Categories", "Service Master", "Documents", "Priority & Status", "ID Series"] as const;
 
-const services = [
-  { code: "SV-001", name: "Dignified cremation", scope: "Eligible beneficiary", status: "Active", version: "v1.0" },
-  { code: "SV-002", name: "Body transportation", scope: "Approved case", status: "Active", version: "v1.0" },
-  { code: "SV-003", name: "Documentation assistance", scope: "Approved case", status: "Active", version: "v1.0" },
-  { code: "SV-004", name: "Family coordination", scope: "Approved case", status: "Draft", version: "v0.2" },
-];
+
 const categoryOpts = ["All categories", "Eligible beneficiary", "Approved case"] as const;
 const statusOpts = ["All status", "Active", "Draft"] as const;
 
 export default function SA012MasterData() {
   const notice = useNotice();
   const [tab, setTab] = useState<string>(tabs[0]);
-  const { q, setQ, f, set, reset, text } = useFilters({ category: "All categories", status: "All status" });
-  const rows = services.filter(
-    (s) => (f.category === "All categories" || s.scope === f.category) && (f.status === "All status" || s.status === f.status) && text(s.code, s.name, s.scope),
-  );
+  const { q, setQ, f, set, reset } = useFilters({ category: "All categories", status: "All status" });
+  const typeByTab: Record<string,string> = { "Beneficiary Categories": "BENEFICIARY_CATEGORY", "Service Master": "SERVICE", Documents: "DOCUMENT_TYPE", "Priority & Status": "PRIORITY" };
+  const search = useDebounced(q.trim());
+  const live = useResource("/master-data", "master_data", notice.show, { type: typeByTab[tab],search: search || undefined,status: f.status === "All status" ? undefined : f.status.toUpperCase() }, { summary: null });
+  const types = useCrmQuery<CrmRecord[]>(live.can("master_data.view") ? "/master-data/types" : null);
+  const categories = useCrmQuery<CrmRecord[]>(live.can("master_data.view") ? "/master-data?type=BENEFICIARY_CATEGORY&status=ACTIVE&limit=100" : null);
+  const metric = (type: string) => count(records(types.data).find(row => row.type === type)?.total);
+  const rows = live.rows.map(row => ({ id: value(row.id),code: value(row.code),name: value(row.label),scope: value(at(row,"attributes.eligibility")),status: humanize(value(row.status,"")),version: value(row.revision) }));
+  async function review(id: string) {
+    const fresh = (await authorizedRequest<CrmRecord>('/master-data/' + id)).data;
+    const label = window.prompt("Label:",value(fresh.label,"")); if (label === null) return;
+    await live.mutation.run('/master-data/' + id, { method: "PATCH",body: { version: fresh.version,label } }, "Master record saved.");
+  }
+  async function create() {
+    const type = typeByTab[tab]; const code = window.prompt("Code:")?.trim(); const label = window.prompt("Label:")?.trim();
+    if (type && code && label) await live.mutation.run("/master-data", { body: { type,code,label } }, "Master record created.");
+  }
 
   return (
     <Screen
@@ -38,11 +51,11 @@ export default function SA012MasterData() {
       active="master-data"
       picker={screenPicker1120}
       kpis={[
-        { value: "03", label: "Beneficiary categories" },
-        { value: "04", label: "Service records" },
-        { value: "06", label: "Document types" },
-        { value: "04", label: "Workflow rules" },
-        { value: "02", label: "Change requests" },
+        { value: metric("BENEFICIARY_CATEGORY"), label: "Beneficiary categories" },
+        { value: metric("SERVICE"), label: "Service records" },
+        { value: metric("DOCUMENT_TYPE"), label: "Document types" },
+        { value: EMPTY, label: "Workflow rules" },
+        { value: EMPTY, label: "Change requests" },
       ]}
       tabs={tabs}
       tab={tab}
@@ -63,12 +76,12 @@ export default function SA012MasterData() {
               pills={[4]}
               rows={rows.map((s) => ({
                 key: s.code,
-                cells: [s.code, s.name, s.scope, "₹0", s.status, <Btn key="r" className="!h-[27px]" onClick={() => notice.show(`${s.code}: changes need approval and are versioned (demo).`)}>Review</Btn>, s.version],
+                cells: [s.code, s.name, s.scope, "₹0", s.status, <Btn key="r" className="!h-[27px]" disabled={!live.can("master_data.edit") || live.mutation.busy} onClick={() => review(s.id)}>Review</Btn>, s.version],
               }))}
             />
             <Buttons>
-              <Btn primary onClick={() => notice.show("New master record — saved as draft for approval (demo).")}>Add master record</Btn>
-              <Btn onClick={() => notice.show("Import file is validated and held for review (demo).")}>Import for review</Btn>
+              <Btn primary disabled={!live.can("master_data.create") || live.mutation.busy} onClick={create}>Add master record</Btn>
+              <Btn disabled onClick={() => notice.show(EMPTY)}>Import for review</Btn>
             </Buttons>
           </Panel>
 
@@ -76,11 +89,7 @@ export default function SA012MasterData() {
             <DataTable
               head={["Code", "Category", "Verification"]}
               rowH={30}
-              rows={[
-                { key: "BC-01", cells: ["BC-01", "Unclaimed bodies", "Competent authority clearance"] },
-                { key: "BC-02", cells: ["BC-02", "Unsupported persons", "Support / eligibility check"] },
-                { key: "BC-03", cells: ["BC-03", "Economically weaker families", "Eligibility evidence"] },
-              ]}
+              rows={records(categories.data).map(row => ({ key: value(row.id),cells: [value(row.code),value(row.label),value(at(row,"attributes.requiresLegalClearance"))] }))}
             />
           </Panel>
         </Col>
@@ -90,9 +99,9 @@ export default function SA012MasterData() {
             <KVList
               rowH={27}
               rows={[
-                ["Beneficiary categories", "03"],
-                ["Service types", "04"],
-                ["Document types", "06"],
+                ["Beneficiary categories",metric("BENEFICIARY_CATEGORY")],
+                ["Service types",metric("SERVICE")],
+                ["Document types",metric("DOCUMENT_TYPE")],
                 ["Priority / status values", "Configured"],
                 ["Vehicle / material masters", "Linked"],
                 ["Centre / PIN masters", "SA-006"],
@@ -109,16 +118,16 @@ export default function SA012MasterData() {
             <KVList
               rows={[
                 ["Financial year", "2026-27"],
-                ["Request ID example", "MSR-26-27-0001"],
-                ["Case ID example", "MSC-26-27-0001"],
-                ["Task ID example", "MST-26-27-0001"],
+                ["Request ID example", EMPTY],
+                ["Case ID example", EMPTY],
+                ["Task ID example", EMPTY],
                 ["Deletion policy", "Archive only"],
                 ["Charge model", "Free Sewa"],
               ]}
             />
             <Buttons>
-              <Btn primary onClick={() => notice.show("Change history: every edit is versioned and audited (demo).")}>Review change history</Btn>
-              <Btn onClick={() => setTab("ID Series")}>Manage ID series</Btn>
+              <Btn primary onClick={async () => { if (!live.id) return; const result = await authorizedRequest<CrmRecord[]>(`/master-data/${live.id}/history`); notice.show(result.data.map(row => value(row.summary)).join("\n") || EMPTY); }}>Review change history</Btn>
+              <Btn disabled onClick={() => setTab("ID Series")}>Manage ID series</Btn>
             </Buttons>
           </Panel>
         </Col>

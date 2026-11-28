@@ -8,41 +8,44 @@
  */
 
 import { useState } from "react";
+import { authorizedRequest } from "@/lib/api/authorized";
+import { useCrmQuery } from "@/lib/api/useCrmQuery";
+import { useResource } from "@/lib/crm/useResource";
+import { at, count, records, text, EMPTY, type CrmRecord } from "@/lib/crm/data";
+import { humanize } from "@/lib/format";
 import { useNotice } from "@/components/dashboards/super-admin/kit";
 import { screenPicker1120 } from "@/components/dashboards/super-admin/routes";
 import { Btn, Buttons, Col, Columns, DataTable, Field, KVList, NativeSelect, Panel, Pill, Screen, TextBox, ink } from "@/components/dashboards/super-admin/screen-kit";
 
 const tabs = ["Hierarchy", "Reporting Assignments", "Backup Approvers", "Sync History"] as const;
-const admins = ["Operations Admin", "Communication Admin", "Finance Admin"] as const;
-const usersOf: Record<(typeof admins)[number], string> = { "Operations Admin": "Case & field users", "Communication Admin": "Helpline users", "Finance Admin": "Accounts users" };
-const reportOpts = ["Operations Admin", "Communication Admin", "Finance Admin", "Not assigned"] as const;
-const backupOpts = ["Super Admin", "Operations Admin", "Finance Admin"] as const;
-const deptOpts = ["All departments", "Sewa Operations", "Communication Hub", "Finance & Donations"] as const;
-
 type Row = { id: string; designation: string; reportsTo: string; status: string; handover: string; dept: string };
-const initialRows: Row[] = [
-  { id: "DEMO-E021", designation: "Case Coordinator", reportsTo: "Operations Admin", status: "Active", handover: "Clear", dept: "Sewa Operations" },
-  { id: "DEMO-E022", designation: "Helpline Executive", reportsTo: "Communication Admin", status: "Active", handover: "Clear", dept: "Communication Hub" },
-  { id: "DEMO-E023", designation: "Accounts Executive", reportsTo: "Finance Admin", status: "Active", handover: "Clear", dept: "Finance & Donations" },
-  { id: "DEMO-E024", designation: "Field Coordinator", reportsTo: "Not assigned", status: "Pending", handover: "Required", dept: "Sewa Operations" },
-];
+
 
 export default function SA011ReportingHierarchy() {
   const notice = useNotice();
   const [tab, setTab] = useState<string>(tabs[0]);
-  const [rows, setRows] = useState(initialRows);
-  const [sel, setSel] = useState("DEMO-E021");
-  const [focus, setFocus] = useState<(typeof admins)[number]>("Communication Admin");
-  const current = rows.find((r) => r.id === sel)!;
-  const [reportsTo, setReportsTo] = useState<string>(current.reportsTo);
-  const [backup, setBackup] = useState<string>("Super Admin");
-  const [date, setDate] = useState("26 Nov 2026");
+  const live = useResource("/users", "users", notice.show);
+  const hierarchy = useCrmQuery<CrmRecord>(live.can("users.view") ? "/departments/hierarchy" : null);
+  const departments = useCrmQuery<CrmRecord[]>(live.can("departments.view") ? "/departments?status=ACTIVE&limit=100" : null);
+  const summary = useCrmQuery<CrmRecord>(live.can("users.view") ? "/users/summary" : null);
+  const rows: Row[] = live.rows.map(row => ({ id: text(row.crmId),designation: text(row.designation),reportsTo: text(at(row,"reportingTo.name")),status: humanize(text(row.status,"")),handover: EMPTY,dept: text(at(row,"department.name")) }));
+  const admins = live.rows.filter(row => row.accessLevel !== "USER").map(row => text(row.name));
+  const usersOf: Record<string,string> = Object.fromEntries(admins.map(name => [name,live.rows.filter(row => at(row,"reportingTo.name") === name).map(row => text(row.name)).join(" / ") || EMPTY]));
+  const reportOpts = ["Not assigned",...admins];
+  const backupOpts = [EMPTY];
+  const deptOpts = ["All departments",...records(departments.data).map(row => text(row.name))];
+  const [sel, setSel] = useState("");
+  const [focus, setFocus] = useState<string>("");
+  const current = rows.find(r => r.id === sel) ?? rows[0];
+  const [reportsTo, setReportsTo] = useState<string>("");
+  const [backup, setBackup] = useState<string>(EMPTY);
+  const [date, setDate] = useState("");
   const [dept, setDept] = useState<string>("All departments");
   const shown = rows.filter((r) => dept === "All departments" || r.dept === dept);
 
   const pick = (id: string) => {
     setSel(id);
-    setReportsTo(rows.find((r) => r.id === id)!.reportsTo);
+    setReportsTo(rows.find((r) => r.id === id)?.reportsTo ?? "");
   };
 
   return (
@@ -53,10 +56,10 @@ export default function SA011ReportingHierarchy() {
       picker={screenPicker1120}
       kpis={[
         { value: "03", label: "Access levels" },
-        { value: "12", label: "Admins" },
-        { value: "173", label: "Users" },
-        { value: "07", label: "Departments" },
-        { value: "02", label: "Unmapped reports" },
+        { value: count(at(summary.data,"activeByAccessLevel.ADMIN")), label: "Admins" },
+        { value: count(at(summary.data,"activeByAccessLevel.USER")), label: "Users" },
+        { value: count(departments.meta?.total), label: "Departments" },
+        { value: EMPTY, label: "Unmapped reports" },
       ]}
       tabs={tabs}
       tab={tab}
@@ -88,11 +91,11 @@ export default function SA011ReportingHierarchy() {
               selected={sel}
               onRow={pick}
               pills={[4]}
-              rows={shown.map((r) => ({ key: r.id, cells: [r.id, r.designation, r.reportsTo, "Ghaziabad", r.status, <Pill key="h" tone={r.handover === "Clear" ? "green" : "amber"}>{r.handover}</Pill>] }))}
+              rows={shown.map((r) => ({ key: r.id, cells: [r.id, r.designation, r.reportsTo, EMPTY, r.status, <Pill key="h" tone={r.handover === "Clear" ? "green" : "amber"}>{r.handover}</Pill>] }))}
             />
             <Buttons>
-              <Btn primary onClick={() => pick("DEMO-E024")}>Assign reporting authority</Btn>
-              <Btn onClick={() => notice.show("Open work must be handed over before reassignment (demo).")}>Review handover</Btn>
+              <Btn primary onClick={() => { if (current) pick(current.id); }}>Assign reporting authority</Btn>
+              <Btn onClick={() => notice.show(text(hierarchy.data?.total))}>Review handover</Btn>
             </Buttons>
           </Panel>
         </Col>
@@ -108,11 +111,13 @@ export default function SA011ReportingHierarchy() {
             <Buttons>
               <Btn
                 primary
-                onClick={() => {
-                  if (reportsTo === "Not assigned") return notice.show("Choose a reporting admin.");
-                  if (backup === reportsTo) return notice.show("Backup approver must differ from the reporting admin.");
-                  setRows(rows.map((r) => (r.id === sel ? { ...r, reportsTo, status: "Pending", handover: r.handover } : r)));
-                  notice.show(`${sel} → ${reportsTo}: submitted for review (demo).`);
+                disabled={!live.can("users.edit") || live.mutation.busy}
+                onClick={async () => {
+                  const user = live.rows.find(row => row.crmId === (sel || current?.id));
+                  const manager = live.rows.find(row => row.name === reportsTo);
+                  if (!user) return;
+                  const fresh = await authorizedRequest<CrmRecord>('/users/' + user.id);
+                  await live.mutation.run('/users/' + user.id, { method: "PATCH",body: { version: fresh.data.version,reportingToId: manager?.id ?? null } }, "Reporting assignment saved.");
                 }}
               >
                 Submit for review
@@ -124,9 +129,9 @@ export default function SA011ReportingHierarchy() {
             <KVList
               rows={[
                 ["Employee data", "Read-only from HRMS"],
-                ["Last sync", "Demo: 10:20 AM"],
+                ["Last sync", EMPTY],
                 ["Circular reports", "Blocked"],
-                ["Unassigned users", "02"],
+                ["Unassigned users", EMPTY],
                 ["Handover required", <Pill key="p" tone="amber">Pending review</Pill>],
                 ["Acting admin", "Not assigned"],
                 ["Department filter", <NativeSelect key="d" label="Department filter" value={dept} options={deptOpts} onChange={setDept} className="!h-[24px] w-[168px] [&_select]:text-[14.6px]" />],

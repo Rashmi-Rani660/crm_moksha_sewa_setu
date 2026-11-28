@@ -411,11 +411,12 @@ export function ModuleDropdown({ current, className = "w-[250px] [&_button]:!fon
   );
 }
 
-export function PrimaryButton({ icon: Icon, children, onClick, outline = false, className = "" }: { icon?: LucideIcon; children: ReactNode; onClick?: () => void; outline?: boolean; className?: string }) {
+export function PrimaryButton({ icon: Icon, children, onClick, outline = false, className = "", disabled = false }: { icon?: LucideIcon; children: ReactNode; onClick?: () => void; outline?: boolean; className?: string; disabled?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={`flex h-[34px] shrink-0 items-center justify-center gap-[7px] whitespace-nowrap rounded-[8px] px-[14px] text-[15.5px] font-semibold transition-colors ${
         outline
           ? "border-[1.5px] border-[#2f4fe0] bg-white text-[#1d3fc4] hover:bg-[#f1f4ff]"
