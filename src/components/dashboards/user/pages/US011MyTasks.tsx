@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useOperations } from "@/lib/crm/useOperations";
 import { authorizedRequest } from "@/lib/api/authorized";
+import { errorMessage } from "@/lib/api/client";
 import { useDebounced } from "@/lib/api/useCrmQuery";
 import { text, EMPTY, type CrmRecord } from "@/lib/crm/data";
 import { shortDateTime } from "@/lib/format";
@@ -43,17 +44,18 @@ export default function US011MyTasks() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState("All tasks");
   const search = useDebounced(q.trim());
-  const live = useOperations("tasks",show,{ mine: true,search: search || undefined,overdue: filter === "Overdue" ? true : undefined,status: filter === "Accepted" ? "ACCEPTED" : filter === "Awaiting acceptance" || filter === "To do" ? "ASSIGNED" : undefined });
-  const tasks: TaskRow[] = live.rows.map(row => ({ id: text(row.id),title: text(row.taskNo) + ' ? ' + text(row.title),due: shortDateTime(text(row.dueAt,"")),priority: row.priority === "CRITICAL" ? "Critical" : row.priority === "HIGH" ? "High" : "Normal",priorityTone: row.priority === "CRITICAL" ? "red" : "amber",status: row.overdue ? "Overdue" : row.status === "ASSIGNED" ? "Awaiting acceptance" : row.displayStatus,statusTone: row.overdue ? "red" : "blue",action: row.status === "ASSIGNED" ? "Accept task" : row.status === "ACCEPTED" || row.status === "RETURNED" ? "Continue" : "Open" }));
+  const live = useOperations("tasks",show,{ mine: true,search: search || undefined,overdue: filter === "Overdue" ? true : undefined,status: filter === "Accepted" \u00b7 "ACCEPTED" : filter === "Awaiting acceptance" || filter === "To do" \u00b7 "ASSIGNED" : undefined });
+  const tasks: TaskRow[] = live.rows.map(row => ({ id: text(row.id),title: text(row.taskNo) + ' \u00b7 ' + text(row.title),due: shortDateTime(text(row.dueAt,"")),priority: row.priority === "CRITICAL" \u00b7 "Critical" : row.priority === "HIGH" \u00b7 "High" : "Normal",priorityTone: row.priority === "CRITICAL" \u00b7 "red" : "amber",status: row.overdue ? "Overdue" : row.status === "ASSIGNED" \u00b7 "Awaiting acceptance" : row.displayStatus,statusTone: row.overdue ? "red" : "blue",action: row.status === "ASSIGNED" \u00b7 "Accept task" : row.status === "ACCEPTED" || row.status === "RETURNED" \u00b7 "Continue" : "Open" }));
 
   const query = q.trim().toLowerCase();
   const filtered = tasks.filter((t) => {
     const matchQ = !query || t.title.toLowerCase().includes(query);
-    const matchF = filter === "All tasks" || t.status.toLowerCase() === filter.toLowerCase();
+    const matchF = filter === "All tasks" || filter === "To do" || t.status.toLowerCase() === filter.toLowerCase();
     return matchQ && matchF;
   });
 
   const handleAction = async (row: TaskRow) => {
+    try {
     if (row.action === "Accept task") {
       if (!live.can("tasks.edit") || live.mutation.busy) return;
       const fresh = await authorizedRequest<CrmRecord>('/tasks/' + row.id);
@@ -67,6 +69,7 @@ export default function US011MyTasks() {
       if (!started) return;
     }
     router.push(userRoutes.taskExecution + '?id=' + row.id);
+    } catch (err) { show(errorMessage(err)); }
   };
 
   return (
@@ -125,7 +128,7 @@ export default function US011MyTasks() {
                     <td className="whitespace-nowrap px-[8px]">{row.title}</td>
                     <td className="whitespace-nowrap px-[8px]">{row.due}</td>
                     <td className="whitespace-nowrap px-[8px]">
-                      {row.priority === "Normal" ? "Normal" : <UserPill tone={row.priorityTone}>{row.priority}</UserPill>}
+                      {row.priority === "Normal" \u00b7 "Normal" : <UserPill tone={row.priorityTone}>{row.priority}</UserPill>}
                     </td>
                     <td className="whitespace-nowrap px-[8px]">
                       <UserPill tone={row.statusTone}>{row.status}</UserPill>

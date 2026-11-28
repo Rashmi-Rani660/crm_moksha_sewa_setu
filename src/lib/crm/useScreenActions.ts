@@ -40,8 +40,8 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
     "Assign owner": ["assign", "requests.assign"], "Merge duplicate": ["duplicate", "requests.edit"],
     "Return for clarification": ["hold", "requests.edit"], "Record review": ["legal", "requests.edit"],
     "Release dispatch": ["convert", "cases.create"],
-    "Assign team": ["assign", "cases.assign"], Reassign: [resourceModule === "tasks" ? "reassign" : "assign", `${resourceModule}.assign`],
-    "Approve closure": ["closure", "cases.edit"], "Request reopening": ["reopen", "cases.edit"], "Reopen request": ["reopen", "cases.edit"],
+    "Assign team": ["assign", "cases.assign"], Reassign: [resourceModule === "tasks" \u00b7 "reassign" : "assign", `${resourceModule}.assign`],
+    "Approve closure": ["decision", "approvals.approve"], "Request reopening": ["reopen", "cases.edit"], "Reopen request": ["reopen", "cases.edit"],
     "Allocate vehicle": ["dispatch", "fleet.assign"], Allocate: ["dispatch", "fleet.assign"],
     "Verify documents": ["verification", "service_network.approve"],
     "Issue material": ["issue", "inventory.edit"], "Issue / return": ["issue", "inventory.edit"],
@@ -55,6 +55,8 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
     if (/^(Request correction|Correction request)$/.test(label) && resourceModule === "attendance") return "attendance.edit";
     if (/^(Assign selected|Save assignment)$/.test(label) && resourceModule === "tasks") return "tasks.assign";
     if (label === "Register volunteer") return "volunteers.create";
+    if (label === "Assign task") return "tasks.create";
+    if (label === "Review request" && resourceModule === "inventory") return "inventory.view";
     if (label === "Add partner") return "service_network.create";
     if (label === "Create trip") return "fleet.create";
     if (/^(Schedule service|Request maintenance|Report issue)$/.test(label)) return "fleet.edit";
@@ -62,9 +64,9 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
     if (/^(Stock adjustment|Stock audit)$/.test(label)) return "inventory.edit";
     if (label === "Review verification") return "volunteers.edit";
     if (/^(Approve within limit|Reject)$/.test(label) && resourceModule === "approvals") return "approvals.approve";
-    if (label === "Acknowledge") return resourceModule === "notifications" ? "inbox" : "sla.view";
+    if (label === "Acknowledge") return resourceModule === "notifications" \u00b7 "inbox" : "sla.view";
     if (/^(Add work item|Schedule meeting|Set reminder)$/.test(label)) return "planner.create";
-    if (label === "Save draft") return resourceModule === "workflows" ? "workflows.edit" : undefined;
+    if (label === "Save draft") return resourceModule === "workflows" \u00b7 "workflows.edit" : undefined;
     if (label === "Submit for approval" && resourceModule === "tasks") return "tasks.create";
     return actions[label]?.[1];
   }
@@ -78,6 +80,32 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
     if (locked.current || !canAct(label)) return;
     locked.current = true;
     try {
+      if (label === "Assign task") {
+        const title = input("Task title:");
+        const assignee = await pick("/tasks/assignees", "Choose CRM assignee");
+        const type = await pick("/master-data?type=TASK_TYPE&status=ACTIVE&limit=100", "Task type", "label");
+        const dueAt = istTimestamp(input("Due (YYYY-MM-DD HH:MM, IST):") || "");
+        if (title && assignee && type && dueAt) await data.mutation.run("/tasks", { body: { title, assigneeId: assignee.id, typeCode: type.code, dueAt } }, "Task created.");
+        return;
+      }
+      if (label === "Approve closure") {
+        const approvals = (await authorizedRequest<CrmRecord[]>("/approvals?type=CASE_CLOSURE&status=PENDING&mine=to_decide&limit=100")).data;
+        const approval = choose(approvals.filter(row => row.entityId === id), "Choose closure approval", "entityLabel");
+        if (!approval) return;
+        const note = reason(); if (!note) return;
+        await data.mutation.run(`/approvals/${approval.id}/decision`, { body: { decision: "APPROVE", reason: note } }, "Decision saved.");
+        return;
+      }
+      if (label === "Review request" && resourceModule === "inventory") {
+        if (!id) return;
+        const current = (await authorizedRequest<CrmRecord>(`${path}/${id}`)).data;
+        show(`${text(current.requestNo)}: ${text(current.status)}`);
+        if (path.endsWith("purchase-requests") && current.status === "APPROVED" && data.can("inventory.edit") && window.confirm("Record receipt of this approved purchase?")) {
+          const invoiceNo = input("Invoice number:"); if (!invoiceNo) return;
+          await data.mutation.run(`${path}/${id}/receive`, { body: { version: current.version, invoiceNo } }, "Purchase received.");
+        }
+        return;
+      }
       if (/^(Refresh status|Skills filter|Availability filter|Review capacity)$/.test(label)) { data.reload(); return; }
       if (/^(Preview evidence|Review evidence|View evidence|Open received document|Review documents)$/.test(label)) {
         const docs = data.rowsFor("Documents");
@@ -99,9 +127,9 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
         if (action.code === "view") { show(`${text(current.tripNo)} · ${text(current.status)} · ${text(at(current,"vehicle.registrationNo"))}`); return; }
         let body: CrmRecord = { version: current.version };
         if (action.code === "start" || action.code === "complete") {
-          const reading = Number(input(action.code === "start" ? "Starting odometer (km):" : "Ending odometer (km):"));
+          const reading = Number(input(action.code === "start" \u00b7 "Starting odometer (km):" : "Ending odometer (km):"));
           if (!Number.isInteger(reading) || reading < 0) return;
-          body[action.code === "start" ? "odometerStart" : "odometerEnd"] = reading;
+          body[action.code === "start" \u00b7 "odometerStart" : "odometerEnd"] = reading;
         } else {
           const fuel = Number(input("Fuel cost (rupees):")); const toll = Number(input("Toll cost (rupees):")); const other = Number(input("Other cost (rupees):"));
           if (![fuel,toll,other].every(value => Number.isFinite(value) && value >= 0)) return;
@@ -191,7 +219,7 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
       }
       if (/^(Schedule service|Request maintenance|Report issue)$/.test(label)) {
         const scheduledAt = istTimestamp(input("Service date (YYYY-MM-DD HH:MM, IST):") || ""); if (!scheduledAt || !id) return;
-        await data.mutation.run(`/fleet/vehicles/${id}/maintenance`, { body: { kind: label === "Report issue" ? "REPAIR" : "SERVICE", scheduledAt } }, "Maintenance scheduled."); return;
+        await data.mutation.run(`/fleet/vehicles/${id}/maintenance`, { body: { kind: label === "Report issue" \u00b7 "REPAIR" : "SERVICE", scheduledAt } }, "Maintenance scheduled."); return;
       }
       if (/^(Request material|Request purchase|Stock adjustment|Stock audit)$/.test(label)) {
         const c = await centre(); const item = await pick("/inventory/items?status=ACTIVE&limit=100", "Choose item");
@@ -218,13 +246,13 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
       if (resourceModule === "approvals" && /^(Approve within limit|Reject|Return)$/.test(label)) {
         if (!data.detail?.canDecide || !id) return;
         const note = get("Decision reason") || reason(); if (!note || note.length < 5) return;
-        await data.mutation.run(`/approvals/${id}/decision`, { body: { decision: label === "Approve within limit" ? "APPROVE" : "REJECT", reason: note } }, "Decision saved."); return;
+        await data.mutation.run(`/approvals/${id}/decision`, { body: { decision: label === "Approve within limit" \u00b7 "APPROVE" : "REJECT", reason: note } }, "Decision saved."); return;
       }
       if (/^(Add work item|Schedule meeting|Set reminder)$/.test(label)) {
         const title = required(["Title", "Work item", "Meeting title"], "Planner title:");
         const startAt = istTimestamp(required(["Start time", "Date & time"], "Start (YYYY-MM-DD HH:MM, IST):") || "");
         if (!title || !startAt) return;
-        await data.mutation.run("/workforce/planner", { body: { title, startAt, type: label === "Schedule meeting" ? "MEETING" : label === "Set reminder" ? "REMINDER" : "OTHER", visibility: "TEAM" } }, "Planner item saved."); return;
+        await data.mutation.run("/workforce/planner", { body: { title, startAt, type: label === "Schedule meeting" \u00b7 "MEETING" : label === "Set reminder" \u00b7 "REMINDER" : "OTHER", visibility: "TEAM" } }, "Planner item saved."); return;
       }
       if (resourceModule === "workflows" && label === "Save draft") {
         const name = required(["Template name", "Name"], "Template name:"); if (name) await post("", { name }, "PATCH"); return;
@@ -254,15 +282,15 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
       const entry = actions[label]; if (!entry) return;
       const [action] = entry; let body: CrmRecord = {};
       if (action === "assign" || action === "reassign") {
-        const person = await pick("/tasks/assignees", "Choose assignee"); if (!person) return;
-        body[resourceModule === "tasks" ? "assigneeId" : "ownerId"] = person.id;
+        const person = await pick(resourceModule === "tasks" || data.can("tasks.assign") || data.can("tasks.create") ? "/tasks/assignees" : "/users?status=ACTIVE&limit=100", "Choose assignee"); if (!person) return;
+        body[resourceModule === "tasks" \u00b7 "assigneeId" : "ownerId"] = person.id;
         if (action === "reassign") { const note = reason(); if (!note) return; body.reason = note; }
       }
       if (["hold", "closure"].includes(action)) {
-        const code = await pick(`/master-data${qs({ type: action === "hold" ? "HOLD_REASON" : "CLOSURE_REASON", status: "ACTIVE", limit: 100 })}`, "Choose reason", "label"); if (!code) return;
+        const code = await pick(`/master-data${qs({ type: action === "hold" \u00b7 "HOLD_REASON" : "CLOSURE_REASON", status: "ACTIVE", limit: 100 })}`, "Choose reason", "label"); if (!code) return;
         body.reasonCode = code.code;
-        const note = input(action === "closure" ? "Completion summary (at least 10 characters):" : "Hold note:"); if (!note) return;
-        body[action === "closure" ? "summary" : "note"] = note;
+        const note = input(action === "closure" \u00b7 "Completion summary (at least 10 characters):" : "Hold note:"); if (!note) return;
+        body[action === "closure" \u00b7 "summary" : "note"] = note;
       }
       if (["reopen", "return"].includes(action)) { const note = reason(); if (!note) return; body.reason = note; }
       if (action === "duplicate") { const other = await pick("/requests?limit=100", "Duplicate of", "requestNo"); if (!other) return; body.duplicateOfId = other.id; }
