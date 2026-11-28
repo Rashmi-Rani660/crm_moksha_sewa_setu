@@ -43,6 +43,13 @@ export const screensA: Screen[] = [
             ["Unsupported persons", "03", "08"],
             ["Total", "12", "34"],
           ]),
+          {
+            t: "donut",
+            value: "46",
+            unit: "Cases",
+            pct: 74,
+            lines: ["34 completed · 12 active", "Assigned case cohort"],
+          },
         ),
         panel(
           "Team & resource availability",
