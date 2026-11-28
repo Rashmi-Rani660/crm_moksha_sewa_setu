@@ -6,7 +6,7 @@ import Image from "next/image";
  */
 export default function SidebarMotto({ className = "" }: { className?: string }) {
   return (
-    <div className={`pointer-events-none relative h-[232px] w-full select-none ${className}`} role="img" aria-label="Serving Humanity, Preserving Nature, Awakening Divinity">
+    <div className={`pointer-events-none relative h-[232px] w-full select-none ${className}`} aria-hidden="true">
       {/* diya photo (high resolution), edges faded into the sidebar colour */}
       <Image
         src="/images/sidebar-diya.png"
@@ -14,16 +14,8 @@ export default function SidebarMotto({ className = "" }: { className?: string })
         width={660}
         height={422}
         sizes="222px"
-        className="absolute left-1/2 top-[28px] h-[92px] w-[68%] -translate-x-1/2 object-cover [mask-image:radial-gradient(ellipse_62%_58%_at_50%_50%,#000_55%,transparent_100%)]"
+        className="absolute left-1/2 top-[118px] h-[92px] w-[68%] -translate-x-1/2 object-cover [mask-image:radial-gradient(ellipse_62%_58%_at_50%_50%,#000_55%,transparent_100%)]"
       />
-
-      <p className="absolute inset-x-0 top-[128px] text-center text-[11.5px] font-medium leading-[16px] tracking-[0.1px] text-white">
-        Serving Humanity
-        <br />
-        Preserving Nature
-        <br />
-        Awakening Divinity
-      </p>
 
       <Image
         src="/images/sidebar-waves.png"

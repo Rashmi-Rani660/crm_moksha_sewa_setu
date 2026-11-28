@@ -84,7 +84,7 @@ export default function Sidebar({
           sizes="120px"
           className="absolute left-1/2 top-[4px] h-[100px] w-auto -translate-x-1/2"
         />
-        <p className="absolute inset-x-0 top-[108px] text-center text-[14.8px] font-medium leading-none tracking-[-0.3px] text-white">
+        <p className="absolute inset-x-0 top-[108px] px-[12px] text-center text-[13px] font-medium leading-none tracking-[-0.2px] text-white">
           {siteConfig.initiative}
         </p>
       </div>
