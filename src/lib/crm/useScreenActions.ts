@@ -40,7 +40,7 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
     "Assign owner": ["assign", "requests.assign"], "Merge duplicate": ["duplicate", "requests.edit"],
     "Return for clarification": ["hold", "requests.edit"], "Record review": ["legal", "requests.edit"],
     "Release dispatch": ["convert", "cases.create"],
-    "Assign team": ["assign", "cases.assign"], Reassign: [resourceModule === "tasks" \u00b7 "reassign" : "assign", `${resourceModule}.assign`],
+    "Assign team": ["assign", "cases.assign"], Reassign: [resourceModule === "tasks" ? "reassign" : "assign", `${resourceModule}.assign`],
     "Approve closure": ["decision", "approvals.approve"], "Request reopening": ["reopen", "cases.edit"], "Reopen request": ["reopen", "cases.edit"],
     "Allocate vehicle": ["dispatch", "fleet.assign"], Allocate: ["dispatch", "fleet.assign"],
     "Verify documents": ["verification", "service_network.approve"],
@@ -64,9 +64,9 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
     if (/^(Stock adjustment|Stock audit)$/.test(label)) return "inventory.edit";
     if (label === "Review verification") return "volunteers.edit";
     if (/^(Approve within limit|Reject)$/.test(label) && resourceModule === "approvals") return "approvals.approve";
-    if (label === "Acknowledge") return resourceModule === "notifications" \u00b7 "inbox" : "sla.view";
+    if (label === "Acknowledge") return resourceModule === "notifications" ? "inbox" : "sla.view";
     if (/^(Add work item|Schedule meeting|Set reminder)$/.test(label)) return "planner.create";
-    if (label === "Save draft") return resourceModule === "workflows" \u00b7 "workflows.edit" : undefined;
+    if (label === "Save draft") return resourceModule === "workflows" ? "workflows.edit" : undefined;
     if (label === "Submit for approval" && resourceModule === "tasks") return "tasks.create";
     return actions[label]?.[1];
   }
@@ -127,9 +127,9 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
         if (action.code === "view") { show(`${text(current.tripNo)} · ${text(current.status)} · ${text(at(current,"vehicle.registrationNo"))}`); return; }
         let body: CrmRecord = { version: current.version };
         if (action.code === "start" || action.code === "complete") {
-          const reading = Number(input(action.code === "start" \u00b7 "Starting odometer (km):" : "Ending odometer (km):"));
+          const reading = Number(input(action.code === "start" ? "Starting odometer (km):" : "Ending odometer (km):"));
           if (!Number.isInteger(reading) || reading < 0) return;
-          body[action.code === "start" \u00b7 "odometerStart" : "odometerEnd"] = reading;
+          body[action.code === "start" ? "odometerStart" : "odometerEnd"] = reading;
         } else {
           const fuel = Number(input("Fuel cost (rupees):")); const toll = Number(input("Toll cost (rupees):")); const other = Number(input("Other cost (rupees):"));
           if (![fuel,toll,other].every(value => Number.isFinite(value) && value >= 0)) return;
@@ -219,7 +219,7 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
       }
       if (/^(Schedule service|Request maintenance|Report issue)$/.test(label)) {
         const scheduledAt = istTimestamp(input("Service date (YYYY-MM-DD HH:MM, IST):") || ""); if (!scheduledAt || !id) return;
-        await data.mutation.run(`/fleet/vehicles/${id}/maintenance`, { body: { kind: label === "Report issue" \u00b7 "REPAIR" : "SERVICE", scheduledAt } }, "Maintenance scheduled."); return;
+        await data.mutation.run(`/fleet/vehicles/${id}/maintenance`, { body: { kind: label === "Report issue" ? "REPAIR" : "SERVICE", scheduledAt } }, "Maintenance scheduled."); return;
       }
       if (/^(Request material|Request purchase|Stock adjustment|Stock audit)$/.test(label)) {
         const c = await centre(); const item = await pick("/inventory/items?status=ACTIVE&limit=100", "Choose item");
@@ -246,13 +246,13 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
       if (resourceModule === "approvals" && /^(Approve within limit|Reject|Return)$/.test(label)) {
         if (!data.detail?.canDecide || !id) return;
         const note = get("Decision reason") || reason(); if (!note || note.length < 5) return;
-        await data.mutation.run(`/approvals/${id}/decision`, { body: { decision: label === "Approve within limit" \u00b7 "APPROVE" : "REJECT", reason: note } }, "Decision saved."); return;
+        await data.mutation.run(`/approvals/${id}/decision`, { body: { decision: label === "Approve within limit" ? "APPROVE" : "REJECT", reason: note } }, "Decision saved."); return;
       }
       if (/^(Add work item|Schedule meeting|Set reminder)$/.test(label)) {
         const title = required(["Title", "Work item", "Meeting title"], "Planner title:");
         const startAt = istTimestamp(required(["Start time", "Date & time"], "Start (YYYY-MM-DD HH:MM, IST):") || "");
         if (!title || !startAt) return;
-        await data.mutation.run("/workforce/planner", { body: { title, startAt, type: label === "Schedule meeting" \u00b7 "MEETING" : label === "Set reminder" \u00b7 "REMINDER" : "OTHER", visibility: "TEAM" } }, "Planner item saved."); return;
+        await data.mutation.run("/workforce/planner", { body: { title, startAt, type: label === "Schedule meeting" ? "MEETING" : label === "Set reminder" ? "REMINDER" : "OTHER", visibility: "TEAM" } }, "Planner item saved."); return;
       }
       if (resourceModule === "workflows" && label === "Save draft") {
         const name = required(["Template name", "Name"], "Template name:"); if (name) await post("", { name }, "PATCH"); return;
@@ -283,14 +283,14 @@ export function useScreenActions(data: Data, show: (message: string) => void) {
       const [action] = entry; let body: CrmRecord = {};
       if (action === "assign" || action === "reassign") {
         const person = await pick(resourceModule === "tasks" || data.can("tasks.assign") || data.can("tasks.create") ? "/tasks/assignees" : "/users?status=ACTIVE&limit=100", "Choose assignee"); if (!person) return;
-        body[resourceModule === "tasks" \u00b7 "assigneeId" : "ownerId"] = person.id;
+        body[resourceModule === "tasks" ? "assigneeId" : "ownerId"] = person.id;
         if (action === "reassign") { const note = reason(); if (!note) return; body.reason = note; }
       }
       if (["hold", "closure"].includes(action)) {
-        const code = await pick(`/master-data${qs({ type: action === "hold" \u00b7 "HOLD_REASON" : "CLOSURE_REASON", status: "ACTIVE", limit: 100 })}`, "Choose reason", "label"); if (!code) return;
+        const code = await pick(`/master-data${qs({ type: action === "hold" ? "HOLD_REASON" : "CLOSURE_REASON", status: "ACTIVE", limit: 100 })}`, "Choose reason", "label"); if (!code) return;
         body.reasonCode = code.code;
-        const note = input(action === "closure" \u00b7 "Completion summary (at least 10 characters):" : "Hold note:"); if (!note) return;
-        body[action === "closure" \u00b7 "summary" : "note"] = note;
+        const note = input(action === "closure" ? "Completion summary (at least 10 characters):" : "Hold note:"); if (!note) return;
+        body[action === "closure" ? "summary" : "note"] = note;
       }
       if (["reopen", "return"].includes(action)) { const note = reason(); if (!note) return; body.reason = note; }
       if (action === "duplicate") { const other = await pick("/requests?limit=100", "Duplicate of", "requestNo"); if (!other) return; body.duplicateOfId = other.id; }
