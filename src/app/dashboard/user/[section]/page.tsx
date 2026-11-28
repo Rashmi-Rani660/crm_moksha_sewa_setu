@@ -7,7 +7,15 @@ import { userOwnPages } from "@/components/dashboards/user/us/routes";
 
 type Props = { params: Promise<{ section: string }> };
 
-const ownPages = new Set(["my-tasks", "communication-hub", "ai-work-assistant", "resources-expenses"]);
+const ownPages = new Set([
+  "my-tasks",
+  "communication-hub",
+  "ai-work-assistant",
+  "resources-expenses",
+  "training-knowledge",
+  "my-performance",
+  "help-support",
+]);
 
 export function generateStaticParams() {
   /** Sections with their own page folder (US-001 … US-020) are not generated here. */

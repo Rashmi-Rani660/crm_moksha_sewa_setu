@@ -4,9 +4,10 @@ import Image from "next/image";
  * Sidebar footer artwork: diya photo, the Moksha Sewa motto (live text) and
  * blue waves; the motto is live text so it stays sharp at every screen density.
  */
-export default function SidebarMotto({ className = "" }: { className?: string }) {
+/** `compact`: shorter block for sidebars with more menu rows. */
+export default function SidebarMotto({ className = "", compact = false }: { className?: string; compact?: boolean }) {
   return (
-    <div className={`pointer-events-none relative h-[232px] w-full select-none ${className}`} aria-hidden="true">
+    <div className={`pointer-events-none relative ${compact ? "h-[178px]" : "h-[232px]"} w-full select-none ${className}`} aria-hidden="true">
       {/* diya photo (high resolution), edges faded into the sidebar colour */}
       <Image
         src="/images/sidebar-diya.png"
@@ -14,7 +15,7 @@ export default function SidebarMotto({ className = "" }: { className?: string })
         width={660}
         height={422}
         sizes="222px"
-        className="absolute left-1/2 top-[118px] h-[92px] w-[68%] -translate-x-1/2 object-cover [mask-image:radial-gradient(ellipse_62%_58%_at_50%_50%,#000_55%,transparent_100%)]"
+        className={`absolute left-1/2 ${compact ? "top-[64px]" : "top-[118px]"} h-[92px] w-[68%] -translate-x-1/2 object-cover [mask-image:radial-gradient(ellipse_62%_58%_at_50%_50%,#000_55%,transparent_100%)]`}
       />
 
       <Image

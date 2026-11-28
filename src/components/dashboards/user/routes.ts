@@ -1,4 +1,4 @@
-/** URLs of the User Panel module pages (US-011 … US-020). */
+/** URLs of the User Panel module pages (US-011 … US-025). */
 const B = "/dashboard/user";
 
 export const userRoutes = {
@@ -13,6 +13,11 @@ export const userRoutes = {
   aiWorkAssistant: `${B}/ai-work-assistant`,
   vehicleRequests: `${B}/resources-expenses`,
   expenses: `${B}/resources-expenses/expenses`,
+  training: `${B}/training-knowledge`,
+  assessments: `${B}/training-knowledge/assessments`,
+  performance: `${B}/my-performance`,
+  knowledgeBase: `${B}/knowledge-base`,
+  reportsSupport: `${B}/help-support`,
 } as const;
 
 export const userScreenPicker = [
@@ -26,6 +31,11 @@ export const userScreenPicker = [
   { code: "US-018", title: "AI Smart Search & Work Assistant", href: userRoutes.aiWorkAssistant },
   { code: "US-019", title: "Vehicle & Material Requests", href: userRoutes.vehicleRequests },
   { code: "US-020", title: "Expenses & Reimbursement", href: userRoutes.expenses },
+  { code: "US-021", title: "US-021 · My Training & AI Virtual Trainer", href: userRoutes.training },
+  { code: "US-022", title: "US-022 · Assessment & Certification", href: userRoutes.assessments },
+  { code: "US-023", title: "US-023 · My Performance & Recognition", href: userRoutes.performance },
+  { code: "US-024", title: "US-024 · Knowledge Base & SOPs", href: userRoutes.knowledgeBase },
+  { code: "US-025", title: "US-025 · Daily Reports, Settings & Support", href: userRoutes.reportsSupport },
 ] as const;
 
 export type UserScreenCode = (typeof userScreenPicker)[number]["code"];
