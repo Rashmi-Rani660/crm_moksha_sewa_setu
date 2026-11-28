@@ -14,6 +14,8 @@ export type NavItem = {
   /** "gold" = current page pill, "blue" = section heading pill. */
   pill?: "gold" | "blue";
   submenu?: boolean;
+  /** Indented sub-entry of the row above ("↳ Knowledge Base & SOP"): no icon, smaller text. */
+  sub?: boolean;
   /** Pill box override (left, width, height). */
   box?: { x: number; w: number; h: number };
 };
@@ -38,6 +40,8 @@ export type SidebarSpec = {
   pillTextClass?: string;
   /** Box / background of the gold pill (defaults to the dashboard gold). */
   goldClass?: string;
+  /** Shorter diya / motto block (more menu rows). */
+  compactMotto?: boolean;
 };
 
 /**
@@ -57,7 +61,7 @@ export default function Sidebar({
   active?: string;
   onNavigate?: () => void;
 }) {
-  const { width, fontSize, iconSize, textX, iconX, pill, items, diyaShift = 0, rowHeight = 32, pillFontSize = spec.fontSize + 1.5, pillTextClass, goldClass } = spec;
+  const { width, fontSize, iconSize, textX, iconX, pill, items, diyaShift = 0, rowHeight = 32, pillFontSize = spec.fontSize + 1.5, pillTextClass, goldClass, compactMotto } = spec;
   return (
     <aside
       style={{ width }}
@@ -86,7 +90,7 @@ export default function Sidebar({
       <nav aria-label="Main">
         <ul>
           {items.map((item) => {
-            const { label, icon: Icon, y, submenu, box } = item;
+            const { label, icon: Icon, y, submenu, box, sub } = item;
             const href = isHomeItem(item) ? homeHref(role) : sectionHref(role, label);
             // gold = current page; keep the blue heading pill everywhere
             const current = active ? slugify(label) === active : item.pill === "gold";
@@ -110,18 +114,20 @@ export default function Sidebar({
                         : "hover:bg-white/5"
                   }`}
                 >
-                  <Icon
-                    strokeWidth={2}
-                    style={{ width: iconSize, height: iconSize, left: iconX - (kind ? p.x : 0) - iconSize / 2 }}
-                    className="absolute"
-                  />
+                  {!sub && (
+                    <Icon
+                      strokeWidth={2}
+                      style={{ width: iconSize, height: iconSize, left: iconX - (kind ? p.x : 0) - iconSize / 2 }}
+                      className="absolute"
+                    />
+                  )}
                   <span
-                    style={{ left: textX - (kind ? p.x : 0), fontSize: kind ? pillFontSize : fontSize }}
+                    style={{ left: (sub ? iconX : textX) - (kind ? p.x : 0), fontSize: (kind ? pillFontSize : fontSize) * (sub ? 0.82 : 1) }}
                     className={`absolute whitespace-nowrap pt-px leading-none tracking-[-0.2px] ${
                       isCurrent && pillTextClass ? pillTextClass : kind ? "font-semibold" : "font-medium"
                     }`}
                   >
-                    {label}
+                    {sub ? `↳ ${label}` : label}
                   </span>
                   {submenu && (
                     <ChevronRight strokeWidth={2.4} className="absolute right-[10px] h-[12px] w-[12px]" />
@@ -134,7 +140,7 @@ export default function Sidebar({
       </nav>
 
       <div style={{ bottom: -diyaShift }} className="absolute inset-x-0">
-        <SidebarMotto />
+        <SidebarMotto compact={compactMotto} />
       </div>
     </aside>
   );
